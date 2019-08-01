@@ -133,7 +133,7 @@ namespace enki
 		The real time delay between ticks is dependant on the Network Manager's network_send_rate
 		With a network_send_rate of 60 and a network_tick_rate of 1, this entity is serialized 60 times a second.
 		With a network_tick_rate of 10, this entity is serialized 6 times a second.
-		With a network_tick_rate of 0, this entity is never serialized automatically at regular intervals.
+		With a network_tick_rate of 0, this entity is never serialized automatically at regular intervals, just once on connection
 
 		Using network_send_rate as part of a formula can allow for specifying the real-time delay between serialization
 		e.g. network_tick_rate = network_send_rate / 10.0f, for roughly 10 serializations per second (depending on integer truncation).

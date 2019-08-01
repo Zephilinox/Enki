@@ -14,6 +14,5 @@ namespace enki
 	public:
 		NetworkManager* network_manager = nullptr;
 		Scenegraph* scenegraph = nullptr;
-		void* custom = nullptr;
 	};
 }
