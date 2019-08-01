@@ -24,10 +24,10 @@ void Score::onSpawn([[maybe_unused]]enki::Packet& p)
 	score2.setString("0");
 }
 
-void Score::draw(sf::RenderWindow& window) const
+void Score::draw(enki::Renderer* renderer)
 {
-	window.draw(score1);
-	window.draw(score2);
+	renderer->draw(&score1);
+	renderer->draw(&score2);
 }
 
 void Score::serializeOnConnection(enki::Packet& p)

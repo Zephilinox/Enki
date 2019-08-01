@@ -6,6 +6,7 @@
 #include <Enki/Networking/RPC.hpp>
 #include <Enki/Managers/NetworkManager.hpp>
 #include <Enki/GameData.hpp>
+#include <Enki/Renderer.hpp>
 
 class Game
 {
@@ -24,6 +25,7 @@ private:
 	std::unique_ptr<enki::Scenegraph> scenegraph;
 	std::unique_ptr<enki::GameData> game_data;
 	std::unique_ptr<enki::NetworkManager> network_manager;
+	std::unique_ptr<enki::Renderer> renderer;
 
 	enki::Timer timer;
 

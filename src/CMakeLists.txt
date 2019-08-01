@@ -24,6 +24,7 @@ set(Enki_HEADERS
 	"Enki/Scenegraph.hpp"
 	"Enki/Entity.hpp"
 	"Enki/GameData.hpp"
+	"Enki/Renderer.hpp"
 )
 
 set (Enki_SRC
@@ -42,6 +43,7 @@ set (Enki_SRC
 	
 	"Enki/Timer.cpp"
 	"Enki/Scenegraph.cpp"
+	"Enki/Renderer.cpp"
 )
 
 include("../cmake/FilesystemSourceGroup.cmake")

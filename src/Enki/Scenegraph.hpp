@@ -14,6 +14,7 @@
 #include "Enki/GameData.hpp"
 #include "Enki/Networking/RPC.hpp"
 #include "Enki/Networking/RPCManager.hpp"
+#include "Enki/Renderer.hpp"
 
 namespace enki
 {
@@ -44,7 +45,7 @@ namespace enki
 		void update(float dt);
 
 		//Calls draw on all entities in the scenegraph
-		void draw(sf::RenderWindow& window) const;
+		void draw(Renderer* renderer) const;
 
 		/*Register an entity for construction at a later date using that entity's type
 		Use this when you want more control over the entity's construction

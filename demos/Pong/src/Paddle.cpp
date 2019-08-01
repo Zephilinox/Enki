@@ -116,13 +116,13 @@ void Paddle::update(float dt)
 	}
 }
 
-void Paddle::draw(sf::RenderWindow& window) const
+void Paddle::draw(enki::Renderer* renderer)
 {
-	window.draw(sprite);
+	renderer->draw({ &sprite, 0, 0 });
 
 	if (!isOwner() && interpolation_enabled)
 	{
-		window.draw(latest_sprite);
+		renderer->draw({ &latest_sprite, 0, 0});
 	}
 }
 

@@ -49,7 +49,7 @@ void PlayerText::update([[maybe_unused]]float dt)
 	}
 }
 
-void PlayerText::draw(sf::RenderWindow& window) const
+void PlayerText::draw(enki::Renderer* renderer)
 {
-	window.draw(label);
+	renderer->draw(&label);
 }

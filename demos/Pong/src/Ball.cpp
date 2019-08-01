@@ -80,9 +80,9 @@ void Ball::update(float dt)
 	}
 }
 
-void Ball::draw(sf::RenderWindow& window) const
+void Ball::draw(enki::Renderer* renderer)
 {
-	window.draw(sprite);
+	renderer->draw({ &sprite , 0, 0});
 }
 
 void Ball::serializeOnConnection([[maybe_unused]]enki::Packet& p)

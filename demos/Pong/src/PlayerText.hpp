@@ -13,7 +13,7 @@ public:
 
 	void onSpawn(enki::Packet& p) final;
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 private:
 	sf::Font font;

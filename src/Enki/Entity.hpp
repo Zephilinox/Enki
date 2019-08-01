@@ -12,6 +12,7 @@
 #include "GameData.hpp"
 #include "Networking/Client.hpp"
 #include "Managers/NetworkManager.hpp"
+#include "Renderer.hpp"
 
 namespace enki
 {
@@ -87,7 +88,7 @@ namespace enki
 		virtual void update([[maybe_unused]]float dt) {};
 
 		//Called once each game loop
-		virtual void draw([[maybe_unused]]sf::RenderWindow& window) const {};
+		virtual void draw([[maybe_unused]]Renderer* renderer) {};
 
 		//Called when a client connects so the full state can be sent
 		virtual void serializeOnConnection(Packet& p) { serializeOnTick(p); }

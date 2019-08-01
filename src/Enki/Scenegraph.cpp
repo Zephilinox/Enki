@@ -311,11 +311,11 @@ namespace enki
 		});
 	}
 
-	void Scenegraph::draw(sf::RenderWindow& window) const
+	void Scenegraph::draw(Renderer* renderer) const
 	{
 		for (const auto& ent : entities)
 		{
-			ent.second->draw(window);
+			ent.second->draw(renderer);
 		}
 	}
 

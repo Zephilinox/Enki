@@ -22,6 +22,7 @@ Game::Game()
 	auto console = spdlog::get("console");
 	game_data = std::make_unique<enki::GameData>();
 	window = std::make_unique<sf::RenderWindow>(sf::VideoMode(640, 360), "Enki");
+	renderer = std::make_unique<enki::Renderer>(window.get());
 	scenegraph = std::make_unique<enki::Scenegraph>(game_data.get());
 	network_manager = std::make_unique<enki::NetworkManager>();
 	game_data->scenegraph = scenegraph.get();
@@ -175,6 +176,7 @@ void Game::update()
 void Game::draw() const
 {
 	window->clear({ 230, 230, 230, 255 });
-	scenegraph->draw(*window.get());
+	scenegraph->draw(renderer.get());
+	renderer->end();
 	window->display();
 }
