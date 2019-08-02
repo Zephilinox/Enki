@@ -45,7 +45,7 @@ namespace enki
 		void update(float dt);
 
 		//Calls draw on all entities in the scenegraph
-		void draw(Renderer* renderer) const;
+		void draw(Renderer* renderer);
 
 		/*Register an entity for construction at a later date using that entity's type
 		Use this when you want more control over the entity's construction
@@ -130,6 +130,13 @@ namespace enki
 		RPCManager rpc_man;
 
 	private:
+		//this is all hacky bullshit because of how badly designed this scene tree is
+		//REALLY FUCKING SLOW
+		//that being said I don't want to touch it so yeah
+		void inputHierarchy(sf::Event& e, EntityID parentID);
+		void updateHierarchy(float dt, EntityID parentID);
+		void drawHierarchy(enki::Renderer* renderer, EntityID parentID);
+
 		void sendAllNetworkedEntitiesToClient(ClientID client_id);
 
 		std::map<EntityID, std::unique_ptr<Entity>> entities;

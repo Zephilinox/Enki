@@ -283,7 +283,11 @@ namespace enki
 	{
 		for (auto& ent : entities)
 		{
-			ent.second->input(e);
+			if (ent.second->info.parentID == 0)
+			{
+				ent.second->input(e);
+				inputHierarchy(e, ent.second->info.ID);
+			}
 		}
 	}
 
@@ -291,17 +295,10 @@ namespace enki
 	{
 		for (auto& ent : entities)
 		{
-			//If entity has no parent or if it has one and it exists, then update it
-			//If the parent doesn't exist it's because it was deleted and we haven't deleted the child yet
-			if (ent.second->info.parentID == 0 ||
-				entities.count(ent.second->info.parentID))
+			if (ent.second->info.parentID == 0)
 			{
 				ent.second->update(dt);
-			}
-			else
-			{
-				//this marks them for deletion, we can't delete while iterating the container
-				deleteEntity(ent.second->info.ID);
+				updateHierarchy(dt, ent.second->info.ID);
 			}
 		}
 
@@ -311,11 +308,15 @@ namespace enki
 		});
 	}
 
-	void Scenegraph::draw(Renderer* renderer) const
+	void Scenegraph::draw(Renderer* renderer)
 	{
 		for (const auto& ent : entities)
 		{
-			ent.second->draw(renderer);
+			if (ent.second->info.parentID == 0)
+			{
+				ent.second->draw(renderer);
+				drawHierarchy(renderer, ent.second->info.ID);
+			}
 		}
 	}
 
@@ -424,6 +425,42 @@ namespace enki
 		else
 		{
 			console->error("Tried to create networked entity when scenegraph isn't network ready");
+		}
+	}
+
+	void Scenegraph::inputHierarchy(sf::Event& e, EntityID parentID)
+	{
+		for (auto& ent : entities)
+		{
+			if (ent.second->info.parentID == parentID)
+			{
+				ent.second->input(e);
+				inputHierarchy(e, ent.second->info.ID);
+			}
+		}
+	}
+
+	void Scenegraph::updateHierarchy(float dt, EntityID parentID)
+	{
+		for (auto& ent : entities)
+		{
+			if (ent.second->info.parentID == parentID)
+			{
+				ent.second->update(dt);
+				updateHierarchy(dt, ent.second->info.ID);
+			}
+		}
+	}
+
+	void Scenegraph::drawHierarchy(enki::Renderer* renderer, EntityID parentID)
+	{
+		for (auto& ent : entities)
+		{
+			if (ent.second->info.parentID == parentID)
+			{
+				ent.second->draw(renderer);
+				drawHierarchy(renderer, ent.second->info.ID);
+			}
 		}
 	}
 
