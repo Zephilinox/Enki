@@ -14,6 +14,7 @@ set(Enki_HEADERS
 	"Enki/Networking/ServerStandard.hpp"
 	
 	"Enki/Managers/NetworkManager.hpp"
+	"Enki/Managers/TextureManager.hpp"
 	
 	"Enki/Signals/Connection.hpp"
 	"Enki/Signals/Disconnector.hpp"
@@ -38,6 +39,7 @@ set (Enki_SRC
 	"Enki/Networking/Server.cpp"
 	
 	"Enki/Managers/NetworkManager.cpp"
+	"Enki/Managers/TextureManager.cpp"
 	
 	"Enki/Signals/Connection.cpp"
 	

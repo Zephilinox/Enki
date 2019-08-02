@@ -17,7 +17,7 @@ namespace enki
 	public:
 		Renderer(sf::RenderWindow* window);
 
-		void draw(SpriteOrderInfo);
+		void draw(SpriteOrderInfo&&);
 		void draw(sf::Drawable* drawable);
 		void end();
 

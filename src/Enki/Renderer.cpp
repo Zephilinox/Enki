@@ -12,7 +12,7 @@ namespace enki
 		sprites.reserve(10'000);
 	}
 
-	void Renderer::draw(SpriteOrderInfo s)
+	void Renderer::draw(SpriteOrderInfo&& s)
 	{
 		sprites.emplace_back(std::move(s));
 	}
@@ -24,18 +24,18 @@ namespace enki
 
 	void Renderer::end()
 	{
-		std::sort(std::execution::par_unseq, sprites.begin(), sprites.end(),
+		std::sort(std::execution::seq, sprites.begin(), sprites.end(),
 			[](SpriteOrderInfo left, SpriteOrderInfo right)
-		{
-			if (left.layer == right.layer)
 			{
-				return left.order < right.order;
+				if (left.layer == right.layer)
+				{
+					return left.order < right.order;
+				}
+				else
+				{
+					return left.layer < right.layer;
+				}
 			}
-			else
-			{
-				return left.layer < right.layer;
-			}
-		}
 		);
 
 		for (const auto& s : sprites)
