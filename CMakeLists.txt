@@ -23,7 +23,7 @@ else()
 	set(SFML_STATIC_LIBRARIES FALSE)
 endif()
 
-find_package(SFML 2.5 COMPONENTS graphics REQUIRED)
+find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
 add_subdirectory ("src")
 set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT Enki)
