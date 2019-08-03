@@ -1,7 +1,6 @@
 #include "NetworkManager.hpp"
 
 //STD
-#include <iostream>
 #include <chrono>
 
 //LIBS
@@ -68,7 +67,7 @@ namespace enki
 		assert(!client);
 
 		console->info("Starting Client");
-		client = std::move(std::make_unique<ClientStandard>(channel_count, server_ip, server_port));
+		client = std::make_unique<ClientStandard>(channel_count, server_ip, server_port);
 	}
 
 	void NetworkManager::stopServer()

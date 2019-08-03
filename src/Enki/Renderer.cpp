@@ -14,7 +14,7 @@ namespace enki
 
 	void Renderer::draw(SpriteOrderInfo&& s)
 	{
-		sprites.emplace_back(std::move(s));
+		sprites.emplace_back(s);
 	}
 
 	void Renderer::draw(sf::Drawable* drawable)

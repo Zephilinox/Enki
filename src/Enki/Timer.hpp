@@ -25,15 +25,22 @@ namespace enki
 		Timer();
 
 		//in seconds
+		[[nodiscard]]
 		float getElapsedTime() const;
+
 		//for further chrono operations, returns std::chrono::nanoseconds for std::chrono::duration functionality
+		[[nodiscard]]
 		nanoseconds getChronoElapsedTime() const;
+
 		void restart();
 		void pause(bool pause);
-		bool isPaused();
+
+		[[nodiscard]]
+		bool isPaused() const;
 
 		//use with various chrono durations for desired time period, returns a float.
 		template <class T>
+		[[nodiscard]]
 		float getElapsedTime() const;
 
 	private:

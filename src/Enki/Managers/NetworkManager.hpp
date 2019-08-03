@@ -1,7 +1,6 @@
 #pragma once
 
 //STD
-#include <functional>
 #include <thread>
 
 //LIB

@@ -23,7 +23,10 @@ namespace enki
 
 		virtual void sendPacket(enet_uint8 channel_id, Packet* p, enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE) = 0;
 
+		[[nodiscard]]
 		virtual bool isConnected() const = 0;
+
+		[[nodiscard]]
 		virtual bool isConnecting() const = 0;
 
 		void update();
@@ -31,6 +34,7 @@ namespace enki
 		//thread safe
 		void pushPacket(Packet&& p);
 
+		[[nodiscard]]
 		inline ClientID getID() const
 		{
 			return id;

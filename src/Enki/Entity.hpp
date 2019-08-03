@@ -102,6 +102,7 @@ namespace enki
 
 		//Determines if we have control over the entity
 		//Always true for local entities
+		[[nodiscard]]
 		inline bool isOwner() const
 		{
 			//ID less than 0 is local

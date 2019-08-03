@@ -320,9 +320,9 @@ namespace enki
 		}
 	}
 
-	void Scenegraph::registerEntity(std::string type, BuilderFunction builder)
+	void Scenegraph::registerEntity(const std::string& type, BuilderFunction builder)
 	{
-		builders[type] = builder;
+		builders[type] = std::move(builder);
 	}
 
 	Entity* Scenegraph::createEntity(EntityInfo info)
@@ -339,7 +339,7 @@ namespace enki
 
 	Entity* Scenegraph::createEntity(EntityInfo info, Packet& spawnInfo)
 	{
-		if (info.name == "" || info.type == "")
+		if (info.name.empty() || info.type.empty())
 		{
 			console->error("Invalid info when creating entity.\n\t{}", info);
 			return nullptr;
@@ -367,7 +367,7 @@ namespace enki
 	{
 		auto net_man = game_data->network_manager;
 
-		if (info.name == "" || info.type == "")
+		if (info.name.empty() || info.type.empty())
 		{
 			console->error("Invalid info when creating networked entity.\n\t{}", info);
 			return;
@@ -473,7 +473,7 @@ namespace enki
 				auto& ent = *i;
 				EntityInfo info = ent.second->info;
 
-				if (info.name == "" || info.type == "")
+				if (info.name.empty() || info.type.empty())
 				{
 					console->error("Invalid info when sending on connection of client {} for entity.\n\t{}", client_id, info);
 				}
@@ -492,12 +492,12 @@ namespace enki
 		}
 	}
 
-	Entity* Scenegraph::getEntity(EntityID entityID)
+	Entity* Scenegraph::getEntity(EntityID entityID) const
 	{
 		return entities.at(entityID).get();
 	}
 
-	bool Scenegraph::entityExists(EntityID entityID)
+	bool Scenegraph::entityExists(EntityID entityID) const
 	{
 		return entities.count(entityID);
 	}
@@ -524,7 +524,7 @@ namespace enki
 		}
 	}
 
-	std::vector<Entity*> Scenegraph::findEntitiesByType(std::string type) const
+	std::vector<Entity*> Scenegraph::findEntitiesByType(const std::string& type) const
 	{
 		std::vector<Entity*> ents;
 
@@ -539,7 +539,7 @@ namespace enki
 		return ents;
 	}
 
-	std::vector<Entity*> Scenegraph::findEntitiesByName(std::string name) const
+	std::vector<Entity*> Scenegraph::findEntitiesByName(const std::string& name) const
 	{
 		std::vector<Entity*> ents;
 

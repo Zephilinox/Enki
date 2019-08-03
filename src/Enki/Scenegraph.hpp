@@ -50,17 +50,17 @@ namespace enki
 		/*Register an entity for construction at a later date using that entity's type
 		Use this when you want more control over the entity's construction
 		E.g. wanting to use std::move for an entity constructor parameter*/
-		void registerEntity(std::string type, BuilderFunction builder);
+		void registerEntity(const std::string& type, BuilderFunction builder);
 
 		//Register an entity for construction at a later date using that entity's type
 		//Each additional parameter is passed by value to that entity's constructor
 		template <typename T, typename... Args>
-		void registerEntity(std::string type, Args... args);
+		void registerEntity(const std::string& type, Args... args);
 
 		/*Register any number of entities as children of the specified entity
 		Each parameter after the first should be a ChildEntityCreationInfo struct*/
 		template <typename... Args>
-		void registerEntityChildren(std::string type, Args... args);
+		void registerEntityChildren(const std::string& type, Args... args);
 
 		/*Create an entity with the given entity info.
 		Requires entity name and type
@@ -90,41 +90,51 @@ namespace enki
 
 		//Get a pointer based on its ID
 		//Will throw exception if not found
-		Entity* getEntity(EntityID entityID);
+		[[nodiscard]]
+		Entity* getEntity(EntityID entityID) const;
 
 		//Make sure an entity exists before trying to get it
-		bool entityExists(EntityID entityID);
+		[[nodiscard]]
+		bool entityExists(EntityID entityID) const;
 
 		/*Mark the entity for deletion next frame
 		Will be sent across the network if not a local entity*/
 		void deleteEntity(EntityID entityID);
 
 		//Vector will be empty if none found
-		std::vector<Entity*> findEntitiesByType(std::string type) const;
+		[[nodiscard]]
+		std::vector<Entity*> findEntitiesByType(const std::string& type) const;
 
 		//Vector will be empty if none found
-		std::vector<Entity*> findEntitiesByName(std::string name) const;
+		[[nodiscard]]
+		std::vector<Entity*> findEntitiesByName(const std::string& name) const;
 
 		//Vector will be empty if none found
+		[[nodiscard]]
 		std::vector<Entity*> findEntitiesByOwner(ClientID owner) const;
 
 		//Vector will be empty if none found
+		[[nodiscard]]
 		std::vector<Entity*> findEntitiesByParent(EntityID parent) const;
 
-		//Vector will be empty if none found.
+		//Vector will be empty if none found
+		[[nodiscard]]
 		std::vector<Entity*> findEntitiesByPredicate(std::function<bool(const Entity&)> predicate) const;
 
 		/*nullptr if not found.
 		Returns first entity found after static_cast to template type*/
 		template <typename T = Entity>
-		T* findEntityByType(std::string type) const;
+		[[nodiscard]]
+		T* findEntityByType(const std::string& type) const;
 
 		//nullptr if not found. Returns first entity found
 		template <typename T = Entity>
-		T* findEntityByName(std::string name) const;
+		[[nodiscard]]
+		T* findEntityByName(const std::string& name) const;
 
 		//nullptr if not found. Returns first entity found
 		template <typename T = Entity>
+		[[nodiscard]]
 		T* findEntityByPredicate(std::function<bool(const Entity&)> predicate) const;
 
 		RPCManager rpc_man;
@@ -157,7 +167,7 @@ namespace enki
 	};
 
 	template <typename T, typename... Args>
-	void Scenegraph::registerEntity(std::string type, Args... args)
+	void Scenegraph::registerEntity(const std::string& type, Args... args)
 	{
 		//capture any additional constructor arguments by value because it's a safe default
 		//users can use pointers for big objects
@@ -168,7 +178,7 @@ namespace enki
 	}
 
 	template <typename... Args>
-	void Scenegraph::registerEntityChildren(std::string type, Args... args)
+	void Scenegraph::registerEntityChildren(const std::string& type, Args... args)
 	{
 		//We want to store args here if each child entity is valid
 		//but rather than check it before we check it after and then delete
@@ -195,7 +205,7 @@ namespace enki
 	}
 
 	template <typename T>
-	T* Scenegraph::findEntityByType(std::string type) const
+	T* Scenegraph::findEntityByType(const std::string& type) const
 	{
 		for (const auto& ent : entities)
 		{
@@ -209,7 +219,7 @@ namespace enki
 	}
 
 	template <typename T>
-	T* Scenegraph::findEntityByName(std::string name) const
+	T* Scenegraph::findEntityByName(const std::string& name) const
 	{
 		for (const auto& ent : entities)
 		{

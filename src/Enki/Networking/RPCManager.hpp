@@ -1,3 +1,5 @@
+#pragma once
+
 //STD
 #include <tuple>
 
@@ -54,14 +56,17 @@ namespace enki
 		void callUnsafe(std::string name, T* instance, Args... args);
 
 		//global rpc
-		RPCType getRPCType(std::string name) const;
+		[[nodiscard]]
+		RPCType getRPCType(std::string& name) const;
 
 		//entity rpc
-		RPCType getRPCType(std::string type, std::string name) const;
+		[[nodiscard]]
+		RPCType getRPCType(std::string& type, std::string& name) const;
 
 		//class rpc
 		template <typename T>
-		RPCType getRPCType(std::string name) const;
+		[[nodiscard]]
+		RPCType getRPCType(std::string& name) const;
 
 	private:
 		//Serialize variadic template args to packet in reverse (now correct) order, so as to fix right-to-left ordering
@@ -303,7 +308,7 @@ namespace enki
 	}
 
 	template <typename T>
-	RPCType RPCManager::getRPCType(std::string name) const
+	RPCType RPCManager::getRPCType(std::string& name) const
 	{
 		return RPCWrapper<T>::class_rpcs.at(name).rpctype;
 	}

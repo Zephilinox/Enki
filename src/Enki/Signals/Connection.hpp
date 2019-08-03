@@ -58,7 +58,7 @@ namespace enki
 		Connection(std::weak_ptr<Disconnector> dc, unsigned id);
 
 		std::weak_ptr<Disconnector> dc;
-		unsigned slot_id;
+		unsigned slot_id = 0;
 	};
 
 	/*

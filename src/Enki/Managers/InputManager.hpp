@@ -2,7 +2,6 @@
 
 //STD
 #include <array>
-#include <mutex>
 #include <string>
 #include <map>
 #include <experimental/map>
@@ -27,21 +26,40 @@ namespace enki
 
 		void update();
 
+		[[nodiscard]]
 		bool isKeyUp(int key);
+
+		[[nodiscard]]
 		bool isKeyReleased(int key);
+
+		[[nodiscard]]
 		bool isKeyPressed(int key);
+
+		[[nodiscard]]
 		bool isKeyDown(int key);
 
+		[[nodiscard]]
 		bool isMouseButtonUp(int button);
+
+		[[nodiscard]]
 		bool isMouseButtonPressed(int button);
+
+		[[nodiscard]]
 		bool isMouseButtonReleased(int button);
+
+		[[nodiscard]]
 		bool isMouseButtonDown(int button);
 
-		sf::Vector2f getMouseDesktopPos();
-		sf::Vector2f getMouseScreenPos();
-		sf::Vector2f getMouseWorldPos();
+		[[nodiscard]]
+		sf::Vector2f getMouseDesktopPos() const;
 
-		sf::RenderWindow* window;
+		[[nodiscard]]
+		sf::Vector2f getMouseScreenPos() const;
+
+		[[nodiscard]]
+		sf::Vector2f getMouseWorldPos() const;
+
+		sf::RenderWindow* window = nullptr;
 
 	private:
 		std::multimap<std::string, int> actions;

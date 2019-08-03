@@ -39,7 +39,7 @@ namespace enki
 		is_paused = pause;
 	}
 
-	bool Timer::isPaused()
+	bool Timer::isPaused() const
 	{
 		return is_paused;
 	}

@@ -7,7 +7,7 @@ namespace enki
 {
 	RNG::RNG()
 	{
-		seed = (int)std::chrono::system_clock::now().time_since_epoch().count();
+		seed = static_cast<int>(std::chrono::system_clock::now().time_since_epoch().count());
 	}
 
 	void RNG::setSeed(int s)
@@ -16,7 +16,7 @@ namespace enki
 		rng.seed(seed);
 	}
 
-	int RNG::getSeed()
+	int RNG::getSeed() const
 	{
 		return seed;
 	}

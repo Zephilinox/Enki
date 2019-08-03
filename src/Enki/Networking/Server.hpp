@@ -17,6 +17,7 @@ namespace enki
 		ClientID id;
 
 		//required by enetpp
+		[[nodiscard]]
 		ClientID get_id() const noexcept
 		{
 			return id;
@@ -35,7 +36,10 @@ namespace enki
 		virtual void sendPacketToSomeClients(enet_uint8 channel_id, Packet* p, enet_uint32 flags, std::function<bool(const ClientInfo& client)> predicate) = 0;
 		virtual void sendPacketToAllExceptOneClient(ClientID client_id_excluded, enet_uint8 channel_id, Packet* p, enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE) = 0;
 
+		[[nodiscard]]
 		virtual bool isListening() const = 0;
+
+		[[nodiscard]]
 		virtual const std::vector<ClientInfo*>& getConnectedClients() const = 0;
 
 		//Called by the Network Manager

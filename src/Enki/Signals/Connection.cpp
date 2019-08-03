@@ -5,6 +5,11 @@
 
 namespace enki
 {
+	Connection::Connection(std::weak_ptr<Disconnector> dc, unsigned id) noexcept
+		: dc(std::move(dc))
+		, slot_id(id)
+	{}
+
 	Connection::operator bool() const noexcept
 	{
 		return slot_id != 0 && !dc.expired();
@@ -21,13 +26,8 @@ namespace enki
 		return false;
 	}
 
-	Connection::Connection(std::weak_ptr<Disconnector> dc, unsigned id)
-		: dc(dc)
-		, slot_id(id)
-	{}
-
 	ManagedConnection::ManagedConnection(Connection c)
-		: Connection(c)
+		: Connection(std::move(c))
 	{}
 
 	ManagedConnection::~ManagedConnection()

@@ -23,7 +23,7 @@ namespace enki
 				return;
 			}
 
-			std::string name = p.read<std::string>();
+			auto name = p.read<std::string>();
 
 			if (!global_rpcs.count(name))
 			{
@@ -39,12 +39,12 @@ namespace enki
 		}
 	}
 
-	RPCType RPCManager::getRPCType(std::string name) const
+	RPCType RPCManager::getRPCType(const std::string& name) const
 	{
 		return global_rpcs.at(name).rpctype;
 	}
 
-	RPCType RPCManager::getRPCType(std::string type, std::string name) const
+	RPCType RPCManager::getRPCType(const std::string& type, const std::string& name) const
 	{
 		return entity_rpcs.at(type).at(name).rpctype;
 	}

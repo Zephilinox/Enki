@@ -14,12 +14,18 @@ namespace enki
 		RNG();
 
 		void setSeed(int s);
-		int getSeed();
 
+		[[nodiscard]]
+		int getSeed() const;
+
+		[[nodiscard]]
 		int generateInt(int lower, int upper);
+
+		[[nodiscard]]
 		float generateFloat(float lower, float upper);
 
 		template <typename Return, typename Distribution>
+		[[nodiscard]]
 		Return generateFromDistribution(Distribution random);
 
 	private:

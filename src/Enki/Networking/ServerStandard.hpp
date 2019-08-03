@@ -1,7 +1,6 @@
 #pragma once
 
 //STD
-#include <iostream>
 
 //LIB
 #include <enetpp/server.h>
@@ -25,11 +24,13 @@ namespace enki
 		void sendPacketToSomeClients(enet_uint8 channel_id, Packet* p, enet_uint32 flags, std::function<bool(const ClientInfo& client)> predicate) final;
 		void sendPacketToAllExceptOneClient(ClientID client_id_excluded, enet_uint8 channel_id, Packet* p, enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE) final;
 
+		[[nodiscard]]
 		inline bool isListening() const final
 		{
 			return server.is_listening();
 		}
 
+		[[nodiscard]]
 		inline const std::vector<ClientInfo*>& getConnectedClients() const final
 		{
 			return server.get_connected_clients();

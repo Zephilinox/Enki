@@ -115,6 +115,7 @@ namespace enki
 		//More performant than constructing a new packet
 		void clear();
 
+		[[nodiscard]]
 		bool isEmpty() const;
 		
 		//If this function is true, the specified types can be deserialized without throwing an exception
@@ -125,10 +126,16 @@ namespace enki
 		//Set a new packet header and have it serialized automatically
 		void setHeader(PacketHeader header);
 
+		[[nodiscard]]
 		const PacketHeader& getHeader() const;
+
+		[[nodiscard]]
 		const std::vector<std::byte>& getBytes() const;
 
+		[[nodiscard]]
 		std::size_t getBytesWritten() const;
+
+		[[nodiscard]]
 		std::size_t getBytesRead() const;
 
 		Packet& operator <<(Packet& data);

@@ -1,8 +1,5 @@
 #include "InputManager.hpp"
 
-//STD
-#include <cassert>
-
 namespace enki
 {
 	InputManager::InputManager()
@@ -23,7 +20,7 @@ namespace enki
 
 		for (sf::Keyboard::Key key = sf::Keyboard::Key::A; key < sf::Keyboard::Key::KeyCount;)
 		{
-			InputState state = InputState::Released;
+			InputState state;
 
 			if (sf::Keyboard::isKeyPressed(key))
 			{
@@ -61,7 +58,7 @@ namespace enki
 
 		for (sf::Mouse::Button button = sf::Mouse::Button::Left; button < sf::Mouse::Button::ButtonCount;)
 		{
-			InputState state = InputState::Released;
+			InputState state;
 
 			if (sf::Mouse::isButtonPressed(button))
 			{
@@ -137,17 +134,17 @@ namespace enki
 		return (mouse_buttons_this_frame[button] == InputState::Down || mouse_buttons_this_frame[button] == InputState::Pressed);
 	}
 
-	sf::Vector2f InputManager::getMouseDesktopPos()
+	sf::Vector2f InputManager::getMouseDesktopPos() const
 	{
 		return mouse_desktop_pos;
 	}
 
-	sf::Vector2f InputManager::getMouseScreenPos()
+	sf::Vector2f InputManager::getMouseScreenPos() const
 	{
 		return mouse_screen_pos;
 	}
 
-	sf::Vector2f InputManager::getMouseWorldPos()
+	sf::Vector2f InputManager::getMouseWorldPos() const
 	{
 		return window->mapPixelToCoords(static_cast<sf::Vector2i>(mouse_screen_pos));
 	}
