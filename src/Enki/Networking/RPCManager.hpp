@@ -57,16 +57,16 @@ namespace enki
 
 		//global rpc
 		[[nodiscard]]
-		RPCType getRPCType(std::string& name) const;
+		RPCType getRPCType(const std::string& name) const;
 
 		//entity rpc
 		[[nodiscard]]
-		RPCType getRPCType(std::string& type, std::string& name) const;
+		RPCType getRPCType(const std::string& type, const std::string& name) const;
 
 		//class rpc
 		template <typename T>
 		[[nodiscard]]
-		RPCType getRPCType(std::string& name) const;
+		RPCType getRPCType(const std::string& name) const;
 
 	private:
 		//Serialize variadic template args to packet in reverse (now correct) order, so as to fix right-to-left ordering
@@ -308,7 +308,7 @@ namespace enki
 	}
 
 	template <typename T>
-	RPCType RPCManager::getRPCType(std::string& name) const
+	RPCType RPCManager::getRPCType(const std::string& name) const
 	{
 		return RPCWrapper<T>::class_rpcs.at(name).rpctype;
 	}

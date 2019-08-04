@@ -19,8 +19,8 @@ namespace enki
 	}
 
 	Packet::Packet(PacketHeader p_header)
-		: header(p_header)
-		, bytes(sizeof(PacketHeader))
+		: bytes(sizeof(PacketHeader))
+		, header(p_header)
 		, bytes_written(sizeof(PacketHeader))
 		, bytes_read(sizeof(PacketHeader))
 		, bits_written(8)

@@ -70,7 +70,7 @@ namespace enki
 		//Each derived entity will have info and game_data
 		//passed to it by the scenegraph when it is created
 		Entity(EntityInfo info, GameData* game_data)
-			: info(info)
+			: info(std::move(info))
 			, game_data(game_data)
 		{
 		}

@@ -8,7 +8,7 @@
 
 namespace enki
 {
-	ClientStandard::ClientStandard(std::uint8_t channel_count, std::string server_ip, std::uint16_t server_port)
+	ClientStandard::ClientStandard(std::uint8_t channel_count, const std::string& server_ip, std::uint16_t server_port)
 	{
 		auto console = spdlog::get("Enki");
 		console->info("Client Initialized");

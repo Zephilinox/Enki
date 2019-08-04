@@ -119,7 +119,7 @@ namespace enki
 
 		//Vector will be empty if none found
 		[[nodiscard]]
-		std::vector<Entity*> findEntitiesByPredicate(std::function<bool(const Entity&)> predicate) const;
+		std::vector<Entity*> findEntitiesByPredicate(const std::function<bool(const Entity&)>& predicate) const;
 
 		/*nullptr if not found.
 		Returns first entity found after static_cast to template type*/
@@ -135,7 +135,7 @@ namespace enki
 		//nullptr if not found. Returns first entity found
 		template <typename T = Entity>
 		[[nodiscard]]
-		T* findEntityByPredicate(std::function<bool(const Entity&)> predicate) const;
+		T* findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const;
 
 		RPCManager rpc_man;
 
@@ -233,7 +233,7 @@ namespace enki
 	}
 
 	template <typename T>
-	T* Scenegraph::findEntityByPredicate(std::function<bool(const Entity&)> predicate) const
+	T* Scenegraph::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 	{
 		for (const auto& ent : entities)
 		{

@@ -55,7 +55,7 @@ namespace enki
 		friend class Signal;
 
 		//Only meant to be accessed by Signal
-		Connection(std::weak_ptr<Disconnector> dc, unsigned id);
+		Connection(std::weak_ptr<Disconnector> dc, unsigned id) noexcept;
 
 		std::weak_ptr<Disconnector> dc;
 		unsigned slot_id = 0;
@@ -70,7 +70,7 @@ namespace enki
 	{
 	public:
 		ManagedConnection() noexcept = default;
-		ManagedConnection(Connection c);
+		ManagedConnection(const Connection& c);
 
 		//Possibly useful
 		ManagedConnection(const ManagedConnection&) = default;

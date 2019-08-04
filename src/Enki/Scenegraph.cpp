@@ -328,13 +328,13 @@ namespace enki
 	Entity* Scenegraph::createEntity(EntityInfo info)
 	{
 		Packet p;
-		return createEntity(info, p);
+		return createEntity(std::move(info), p);
 	}
 
 	void Scenegraph::createNetworkedEntity(EntityInfo info)
 	{
 		Packet p;
-		createNetworkedEntity(info, p);
+		createNetworkedEntity(std::move(info), p);
 	}
 
 	Entity* Scenegraph::createEntity(EntityInfo info, Packet& spawnInfo)
@@ -584,7 +584,7 @@ namespace enki
 		return ents;
 	}
 
-	std::vector<Entity*> Scenegraph::findEntitiesByPredicate(std::function<bool(const Entity&)> predicate) const
+	std::vector<Entity*> Scenegraph::findEntitiesByPredicate(const std::function<bool(const Entity&)>& predicate) const
 	{
 		std::vector<Entity*> ents;
 

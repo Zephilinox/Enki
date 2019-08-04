@@ -12,7 +12,7 @@ namespace enki
 	class ClientStandard : public Client
 	{
 	public:
-		ClientStandard(std::uint8_t channel_count, std::string server_ip, std::uint16_t server_port);
+		ClientStandard(std::uint8_t channel_count, const std::string& server_ip, std::uint16_t server_port);
 		~ClientStandard() final;
 
 		//Called by the network manager in a different thread
