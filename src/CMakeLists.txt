@@ -25,6 +25,7 @@ set(Enki_HEADERS
 	"Enki/Signals/Slot.hpp"
 	
 	"Enki/Timer.hpp"
+	"Enki/TimerTrigger.hpp"
 	"Enki/Scenegraph.hpp"
 	"Enki/Entity.hpp"
 	"Enki/GameData.hpp"
@@ -51,6 +52,7 @@ set (Enki_SRC
 	"Enki/Signals/Connection.cpp"
 	
 	"Enki/Timer.cpp"
+	"Enki/TimerTrigger.cpp"
 	"Enki/Scenegraph.cpp"
 	"Enki/Renderer.cpp"
 	"Enki/RNG.cpp"
