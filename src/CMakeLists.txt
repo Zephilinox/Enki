@@ -24,6 +24,10 @@ set(Enki_HEADERS
 	"Enki/Signals/Signal.hpp"
 	"Enki/Signals/Slot.hpp"
 	
+	"Enki/Messages/Message.hpp"
+	"Enki/Messages/MessageQueue.hpp"
+	"Enki/Messages/MessageFunction.hpp"
+
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenegraph.hpp"
@@ -31,6 +35,7 @@ set(Enki_HEADERS
 	"Enki/GameData.hpp"
 	"Enki/Renderer.hpp"
 	"Enki/RNG.hpp"
+	"Enki/Hash.hpp"
 )
 
 set (Enki_SRC
@@ -51,6 +56,8 @@ set (Enki_SRC
 	
 	"Enki/Signals/Connection.cpp"
 	
+	"Enki/Messages/MessageQueue.cpp"
+
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
 	"Enki/Scenegraph.cpp"

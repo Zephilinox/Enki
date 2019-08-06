@@ -1,5 +1,9 @@
 #pragma once
 
+// These hash functions exist as a result of manual(well, automated) loop unrolling, as MSVC refused to use them at compile time otherwise.
+// Templating it doesn't work either
+// todo: c++20 check again if MSVC is better at it
+
 using HashedID = uint32_t;
 
 constexpr HashedID hash(const char(&input)[1])

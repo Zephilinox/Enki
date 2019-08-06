@@ -6,10 +6,10 @@
 //LIBS
 #include <Enki/Signals/Signal.hpp>
 
+using namespace std::chrono_literals;
+
 namespace enki
 {
-	using namespace std::chrono_literals;
-
 	class TimerTrigger
 	{
 	public:

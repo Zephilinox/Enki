@@ -3,10 +3,10 @@
 //STD
 #include <chrono>
 
+using namespace std::chrono_literals;
+
 namespace enki
 {
-	using namespace std::chrono_literals;
-
 	class Timer
 	{
 	public:
