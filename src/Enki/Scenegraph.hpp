@@ -15,13 +15,14 @@
 #include "Enki/Networking/RPC.hpp"
 #include "Enki/Networking/RPCManager.hpp"
 #include "Enki/Renderer.hpp"
+#include "Enki/Hash.hpp"
 
 namespace enki
 {
 	//Used when registering which child entity's an entity will have
 	struct ChildEntityCreationInfo
 	{
-		std::string type;
+		HashedID type;
 		std::string name;
 		Packet spawnInfo;
 	};
@@ -50,17 +51,17 @@ namespace enki
 		/*Register an entity for construction at a later date using that entity's type
 		Use this when you want more control over the entity's construction
 		E.g. wanting to use std::move for an entity constructor parameter*/
-		void registerEntity(const std::string& type, BuilderFunction builder);
+		void registerEntity(HashedID type, BuilderFunction builder);
 
 		//Register an entity for construction at a later date using that entity's type
 		//Each additional parameter is passed by value to that entity's constructor
 		template <typename T, typename... Args>
-		void registerEntity(const std::string& type, Args... args);
+		void registerEntity(HashedID type, Args... args);
 
 		/*Register any number of entities as children of the specified entity
 		Each parameter after the first should be a ChildEntityCreationInfo struct*/
 		template <typename... Args>
-		void registerEntityChildren(const std::string& type, Args... args);
+		void registerEntityChildren(HashedID type, Args... args);
 
 		/*Create an entity with the given entity info.
 		Requires entity name and type
@@ -103,7 +104,7 @@ namespace enki
 
 		//Vector will be empty if none found
 		[[nodiscard]]
-		std::vector<Entity*> findEntitiesByType(const std::string& type) const;
+		std::vector<Entity*> findEntitiesByType(HashedID type) const;
 
 		//Vector will be empty if none found
 		[[nodiscard]]
@@ -125,7 +126,7 @@ namespace enki
 		Returns first entity found after static_cast to template type*/
 		template <typename T = Entity>
 		[[nodiscard]]
-		T* findEntityByType(const std::string& type) const;
+		T* findEntityByType(HashedID type) const;
 
 		//nullptr if not found. Returns first entity found
 		template <typename T = Entity>
@@ -150,8 +151,8 @@ namespace enki
 		void sendAllNetworkedEntitiesToClient(ClientID client_id);
 
 		std::map<EntityID, std::unique_ptr<Entity>> entities;
-		std::map<std::string, std::vector<ChildEntityCreationInfo>> entities_child_types;
-		std::map<std::string, BuilderFunction> builders;
+		std::map<HashedID, std::vector<ChildEntityCreationInfo>> entities_child_types;
+		std::map<HashedID, BuilderFunction> builders;
 
 		EntityID ID = 1;
 		EntityID localID = -1;
@@ -167,7 +168,7 @@ namespace enki
 	};
 
 	template <typename T, typename... Args>
-	void Scenegraph::registerEntity(const std::string& type, Args... args)
+	void Scenegraph::registerEntity(HashedID type, Args... args)
 	{
 		//capture any additional constructor arguments by value because it's a safe default
 		//users can use pointers for big objects
@@ -178,7 +179,7 @@ namespace enki
 	}
 
 	template <typename... Args>
-	void Scenegraph::registerEntityChildren(const std::string& type, Args... args)
+	void Scenegraph::registerEntityChildren(HashedID type, Args... args)
 	{
 		//We want to store args here if each child entity is valid
 		//but rather than check it before we check it after and then delete
@@ -205,7 +206,7 @@ namespace enki
 	}
 
 	template <typename T>
-	T* Scenegraph::findEntityByType(const std::string& type) const
+	T* Scenegraph::findEntityByType(HashedID type) const
 	{
 		for (const auto& ent : entities)
 		{

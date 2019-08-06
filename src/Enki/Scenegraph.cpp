@@ -320,7 +320,7 @@ namespace enki
 		}
 	}
 
-	void Scenegraph::registerEntity(const std::string& type, BuilderFunction builder)
+	void Scenegraph::registerEntity(HashedID type, BuilderFunction builder)
 	{
 		builders[type] = std::move(builder);
 	}
@@ -339,7 +339,7 @@ namespace enki
 
 	Entity* Scenegraph::createEntity(EntityInfo info, Packet& spawnInfo)
 	{
-		if (info.name.empty() || info.type.empty())
+		if (info.name.empty() || info.type == 0)
 		{
 			console->error("Invalid info when creating entity.\n\t{}", info);
 			return nullptr;
@@ -367,7 +367,7 @@ namespace enki
 	{
 		auto net_man = game_data->network_manager;
 
-		if (info.name.empty() || info.type.empty())
+		if (info.name.empty() || info.type == 0)
 		{
 			console->error("Invalid info when creating networked entity.\n\t{}", info);
 			return;
@@ -473,7 +473,7 @@ namespace enki
 				auto& ent = *i;
 				EntityInfo info = ent.second->info;
 
-				if (info.name.empty() || info.type.empty())
+				if (info.name.empty() || info.type == 0)
 				{
 					console->error("Invalid info when sending on connection of client {} for entity.\n\t{}", client_id, info);
 				}
@@ -524,7 +524,7 @@ namespace enki
 		}
 	}
 
-	std::vector<Entity*> Scenegraph::findEntitiesByType(const std::string& type) const
+	std::vector<Entity*> Scenegraph::findEntitiesByType(HashedID type) const
 	{
 		std::vector<Entity*> ents;
 

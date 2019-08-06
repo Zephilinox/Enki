@@ -26,7 +26,7 @@ namespace enki
 
 		//Register a derived from Entity RPC with a member function
 		template <typename R, typename Class, typename... Args>
-		void add(RPCType rpctype, std::string type, std::string name, R(Class::*func)(Args...));
+		void add(RPCType rpctype, HashedID type, std::string name, R(Class::*func)(Args...));
 
 		//Handle a global RPC packet
 		void receive(Packet p);
@@ -61,7 +61,7 @@ namespace enki
 
 		//entity rpc
 		[[nodiscard]]
-		RPCType getRPCType(const std::string& type, const std::string& name) const;
+		RPCType getRPCType(HashedID type, const std::string& name) const;
 
 		//class rpc
 		template <typename T>
@@ -83,7 +83,7 @@ namespace enki
 		std::tuple<bool, bool> RPCInfo(RPCType type, bool owner);
 
 		std::map<std::string, GlobalRPC> global_rpcs;
-		std::map<std::string, std::map<std::string, EntityRPC>> entity_rpcs;
+		std::map<HashedID, std::map<std::string, EntityRPC>> entity_rpcs;
 
 		std::shared_ptr<spdlog::logger> console;
 	};
@@ -128,7 +128,7 @@ namespace enki
 
 	//Register a derived from Entity RPC with a member function
 	template <typename R, typename Class, typename... Args>
-	void RPCManager::add(RPCType rpctype, std::string type, std::string name, R(Class::*func)(Args...))
+	void RPCManager::add(RPCType rpctype, HashedID type, std::string name, R(Class::*func)(Args...))
 	{
 		static_assert(std::is_void<R>::value,
 			"You can't register a function as an RPC if it doesn't return void");

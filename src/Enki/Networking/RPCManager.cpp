@@ -44,7 +44,7 @@ namespace enki
 		return global_rpcs.at(name).rpctype;
 	}
 
-	RPCType RPCManager::getRPCType(const std::string& type, const std::string& name) const
+	RPCType RPCManager::getRPCType(HashedID type, const std::string& name) const
 	{
 		return entity_rpcs.at(type).at(name).rpctype;
 	}

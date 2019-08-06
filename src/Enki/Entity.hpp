@@ -8,11 +8,12 @@
 #include <SFML/Graphics.hpp>
 
 //SELF
-#include "Networking/Packet.hpp"
-#include "GameData.hpp"
-#include "Networking/Client.hpp"
-#include "Managers/NetworkManager.hpp"
-#include "Renderer.hpp"
+#include "Enki/Networking/Packet.hpp"
+#include "Enki/GameData.hpp"
+#include "Enki/Networking/Client.hpp"
+#include "Enki/Managers/NetworkManager.hpp"
+#include "Enki/Renderer.hpp"
+#include "Enki/Hash.hpp"
 
 namespace enki
 {
@@ -20,9 +21,8 @@ namespace enki
 
 	struct EntityInfo
 	{
-		//todo: replace strings with compile-time hashed strings for space saving at the cost of debugability
-		std::string type = "";
-		std::string name = "";
+		HashedID type = 0;
+		std::string name = 0;
 
 		EntityID ID = 0;
 		ClientID ownerID = 0;
