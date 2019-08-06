@@ -6,7 +6,7 @@
 
 using HashedID = uint32_t;
 
-constexpr HashedID hash(const char(&input)[1])
+constexpr HashedID hash([[maybe_unused]]const char(&input)[1])
 {
 	return 0;
 }
