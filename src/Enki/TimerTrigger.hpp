@@ -14,12 +14,12 @@ namespace enki
 	{
 	public:
 		void update(float dt);
-		[[nodiscard]] float getTime() const;
+		[[nodiscard]] float getTimeInSeconds() const;
 
 		Signal<> on_trigger;
-		float trigger_time = 0.0f;
+		float trigger_time_seconds = 0.0f;
 
 	private:
-		float time = 0;
+		float time_seconds = 0;
 	};
 }

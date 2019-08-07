@@ -17,4 +17,9 @@ namespace enki
 
 		return nullptr;
 	}
+
+	bool TextureManager::textureExists(const std::string& path)
+	{
+		return textures.find(path) != textures.end();
+	}
 }

@@ -4,17 +4,17 @@ namespace enki
 {
 	void TimerTrigger::update(float dt)
 	{
-		time += dt;
+		time_seconds += dt;
 
-		if (trigger_time > 0.0f && time >= trigger_time)
+		if (trigger_time_seconds > 0.0f && time_seconds >= trigger_time_seconds)
 		{
+			time_seconds -= trigger_time_seconds;
 			on_trigger.emit();
-			time -= trigger_time;
 		}
 	}
 
-	float TimerTrigger::getTime() const
+	float TimerTrigger::getTimeInSeconds() const
 	{
-		return time;
+		return time_seconds;
 	}
 }

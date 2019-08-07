@@ -36,6 +36,7 @@ set(Enki_HEADERS
 	"Enki/Renderer.hpp"
 	"Enki/RNG.hpp"
 	"Enki/Hash.hpp"
+	"Enki/AnimatedSprite.hpp"
 )
 
 set (Enki_SRC
@@ -63,6 +64,7 @@ set (Enki_SRC
 	"Enki/Scenegraph.cpp"
 	"Enki/Renderer.cpp"
 	"Enki/RNG.cpp"
+	"Enki/AnimatedSprite.cpp"
 )
 
 include("../cmake/FilesystemSourceGroup.cmake")
