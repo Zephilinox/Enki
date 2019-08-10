@@ -473,6 +473,11 @@ namespace enki
 				auto& ent = *i;
 				EntityInfo info = ent.second->info;
 
+				if (info.ID <= 0)
+				{
+					continue;
+				}
+
 				if (info.name.empty() || info.type == 0)
 				{
 					console->error("Invalid info when sending on connection of client {} for entity.\n\t{}", client_id, info);
