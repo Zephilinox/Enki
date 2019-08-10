@@ -22,7 +22,7 @@ namespace enki
 	struct EntityInfo
 	{
 		HashedID type = 0;
-		std::string name = 0;
+		std::string name;
 
 		EntityID ID = 0;
 		ClientID ownerID = 0;

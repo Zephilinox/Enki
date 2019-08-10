@@ -47,7 +47,7 @@ namespace enki
 			}
 		}
 
-		if (processedMessages + processedPriorityMessages > 0)
+		if (processedMessages + processedPriorityMessages < 0)
 		{
 			std::cout << "INFO:\t MessageQueue took " <<
 				std::fixed << std::setprecision(2) << std::setfill('0') <<
