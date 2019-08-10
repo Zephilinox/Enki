@@ -82,11 +82,22 @@ namespace enki
 
 	void ClientStandard::sendPacket(enet_uint8 channel_id, Packet* p, enet_uint32 flags)
 	{
+		auto console = spdlog::get("Enki");
+		if (!connected_to_server)
+		{
+			console->error("Client sending packet when not connecting to server, thread will now sleep until connection is established");
+			Timer timer;
+			while (!connected_to_server)
+			{
+				std::this_thread::sleep_for(1ms);
+			}
+			console->error("It took {} seconds to connect to the server", timer.getElapsedTime());
+		}
+
 		auto header = p->getHeader();
 		header.timeSent = enet_time_get();
 		p->setHeader(header);
 
-		auto console = spdlog::get("Enki");
 		//console->info("Client sending packet");
 		auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
 		client.send_packet(channel_id, data, p->getBytesWritten(), flags);
