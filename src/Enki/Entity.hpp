@@ -38,6 +38,11 @@ namespace enki
 			lhs.parentID == rhs.parentID;
 	}
 
+	inline bool operator !=(const EntityInfo& lhs, const EntityInfo& rhs)
+	{
+		return !(lhs == rhs);
+	}
+
 	inline std::ostream& operator <<(std::ostream& os, const EntityInfo& info)
 	{
 		return os << "Type: " << info.type << ", Name: " << info.name << ", ID: " << info.ID << ", ownerID: " << info.ownerID << ", parentID: " << info.parentID;
