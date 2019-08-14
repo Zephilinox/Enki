@@ -53,7 +53,7 @@ namespace enki
 		template <typename T>
 		Connection connect(T* instance, void (T::*function)(Args...))
 		{
-			auto wrapper = [=](Args&&... args)
+			auto wrapper = [=](Args... args)
 			{
 				(instance->*function)(std::forward<Args>(args)...);
 			};
@@ -67,7 +67,7 @@ namespace enki
 		template <typename T>
 		Connection connect(T* instance, void (T::*function)(Args...) const)
 		{
-			auto wrapper = [=](Args&&... args)
+			auto wrapper = [=](Args... args)
 			{
 				(instance->*function)(std::forward<Args>(args)...);
 			};
