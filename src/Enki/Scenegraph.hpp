@@ -150,11 +150,17 @@ namespace enki
 
 		void sendAllNetworkedEntitiesToClient(ClientID client_id);
 
+		void receivedPacketFromClient(Packet p);
+		void receivedEntityRPCFromClient(Packet& p);
+		void receivedEntityDeletionFromClient(Packet& p);
+
+		void receivedPacketFromServer(Packet p);
+
 		std::map<EntityID, std::unique_ptr<Entity>> entities;
 		std::map<HashedID, std::vector<ChildEntityCreationInfo>> entities_child_types;
 		std::map<HashedID, BuilderFunction> builders;
 
-		EntityID ID = 1;
+		EntityID networkID = 1;
 		EntityID localID = -1;
 		GameData* game_data;
 
@@ -182,19 +188,20 @@ namespace enki
 	void Scenegraph::registerEntityChildren(HashedID type, Args... args)
 	{
 		//We want to store args here if each child entity is valid
-		//but rather than check it before we check it after and then delete
-
+		//but rather than check it before, we check it after and then delete
 		//This is because we take advantage of list initialization for a vector
-		//using a parameter pack to make it simpler to do the iteration after-the-fact
+		//Using a parameter pack makes it simpler to do the iteration after-the-fact
 
 		entities_child_types[type] = { args... };
 
+		//todo: check for circular parentage
 		for (const auto& child_type : entities_child_types[type])
 		{
 			if (!builders.count(child_type.type))
 			{
 				entities_child_types[type] = {};
-				console->error("The entity {} is a child of {} but the child entity has not been registered.",
+				console->error("The entity {} is a child of {} "
+					"but the child entity has not been registered.",
 					child_type.type, type);
 			}
 		}
@@ -208,11 +215,11 @@ namespace enki
 	template <typename T>
 	T* Scenegraph::findEntityByType(HashedID type) const
 	{
-		for (const auto& ent : entities)
+		for (const auto& [ID, ent] : entities)
 		{
-			if (ent.second->info.type == type)
+			if (ent->info.type == type)
 			{
-				return static_cast<T*>(ent.second.get());
+				return static_cast<T*>(ent.get());
 			}
 		}
 
@@ -222,11 +229,11 @@ namespace enki
 	template <typename T>
 	T* Scenegraph::findEntityByName(const std::string& name) const
 	{
-		for (const auto& ent : entities)
+		for (const auto& [ID, ent] : entities)
 		{
-			if (ent.second->info.name == name)
+			if (ent->info.name == name)
 			{
-				return static_cast<T*>(ent.second.get());
+				return static_cast<T*>(ent.get());
 			}
 		}
 
@@ -236,11 +243,11 @@ namespace enki
 	template <typename T>
 	T* Scenegraph::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 	{
-		for (const auto& ent : entities)
+		for (const auto& [ID, ent] : entities)
 		{
-			if (predicate(*ent.second.get()))
+			if (predicate(*ent))
 			{
-				return static_cast<T*>(ent.second.get());
+				return static_cast<T*>(ent.get());
 			}
 		}
 
