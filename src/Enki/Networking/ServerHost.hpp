@@ -1,8 +1,5 @@
 #pragma once
 
-//STD
-#include <iostream>
-
 //LIB
 #include <enetpp/server.h>
 
