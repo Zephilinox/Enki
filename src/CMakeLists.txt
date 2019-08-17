@@ -28,6 +28,14 @@ set(Enki_HEADERS
 	"Enki/Messages/MessageQueue.hpp"
 	"Enki/Messages/MessageFunction.hpp"
 
+	"Enki/GUI/IMGUI/imconfig.h"
+	"Enki/GUI/IMGUI/imgui.h"
+	"Enki/GUI/IMGUI/imgui_internal.h"
+	"Enki/GUI/IMGUI/imgui_SFML.h"
+	"Enki/GUI/IMGUI/imstb_rectpack.h"
+	"Enki/GUI/IMGUI/imstb_truetype.h"
+	"Enki/GUI/IMGUI/imstb_textedit.h"
+	
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenegraph.hpp"
@@ -59,6 +67,12 @@ set (Enki_SRC
 	
 	"Enki/Messages/MessageQueue.cpp"
 
+	"Enki/GUI/IMGUI/imgui.cpp"
+	"Enki/GUI/IMGUI/imgui_demo.cpp"
+	"Enki/GUI/IMGUI/imgui_draw.cpp"
+	"Enki/GUI/IMGUI/imgui_SFML.cpp"
+	"Enki/GUI/IMGUI/imgui_widgets.cpp"
+	
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
 	"Enki/Scenegraph.cpp"
