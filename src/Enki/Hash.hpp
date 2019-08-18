@@ -1,10 +1,27 @@
 #pragma once
 
+//STD
+#include <string>
+
 // These hash functions exist as a result of manual(well, automated) loop unrolling, as MSVC refused to use them at compile time otherwise.
 // Templating it doesn't work either
 // todo: c++20 check again if MSVC is better at it
 
 using HashedID = uint32_t;
+
+inline HashedID hash(const std::string& s)
+{
+	HashedID hash = 0x811c9dc5;
+	const HashedID prime = 0x01000193;
+
+	for (const auto& c : s)
+	{
+		hash ^= static_cast<HashedID>(c);
+		hash *= prime;
+	}
+
+	return hash;
+}
 
 constexpr HashedID hash([[maybe_unused]]const char(&input)[1])
 {
