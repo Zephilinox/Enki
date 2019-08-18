@@ -124,6 +124,7 @@ namespace enki
 
 	Entity* Scenegraph::createEntity(EntityInfo info)
 	{
+		console->info("Creating {}", info);
 		Packet p;
 		return createEntity(std::move(info), p);
 	}
