@@ -48,6 +48,7 @@ namespace enki
 		std::string user_input;
 		std::vector<Item> items;
 		std::vector<std::string> history;
+		int history_index = 0;
 		std::vector<Command> commands;
 		ImGuiTextFilter filter;
 	};

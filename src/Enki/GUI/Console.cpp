@@ -140,7 +140,7 @@ namespace enki
 
 			HashedID entity_type = hash(tokens[0]);
 
-			Entity* ent;
+			Entity* ent = nullptr;
 
 			if (tokens.size() == 2)
 			{
@@ -177,7 +177,7 @@ namespace enki
 				});
 			}
 
-			if (ent == nullptr)
+			if (!ent)
 			{
 				addItem({
 					"create",
@@ -306,14 +306,14 @@ namespace enki
 
 	void Console::addInput(std::string input)
 	{
-		addItem({
-			"input",
-			input,
-			sf::Color::White,
-			Item::Type::UserInput,
-		});
+		if (input.empty())
+		{
+			return;
+		}
 
+		//save the untrimmed input, it'll be trimmed later anyway
 		history.push_back(input);
+		history_index = -1;
 
 		std::string trimmed_input;
 		for (int i = 0; i < user_input.size(); ++i)
@@ -326,6 +326,13 @@ namespace enki
 			trimmed_input.push_back(user_input[i]);
 		}
 
+		addItem({
+			"input",
+			trimmed_input,
+			sf::Color::White,
+			Item::Type::UserInput,
+		});
+
 		std::stringstream ss(trimmed_input);
 		std::vector<std::string> tokens;
 		std::string token;
@@ -337,6 +344,8 @@ namespace enki
 		if (!tokens.empty())
 		{
 			std::string name = tokens[0];
+
+			//commands already know the first token, it's their command name
 			tokens.erase(tokens.begin());
 
 			executeCommand(getCommand(name), tokens);
