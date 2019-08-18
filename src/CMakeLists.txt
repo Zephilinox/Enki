@@ -36,6 +36,8 @@ set(Enki_HEADERS
 	"Enki/GUI/IMGUI/imstb_truetype.h"
 	"Enki/GUI/IMGUI/imstb_textedit.h"
 	
+	"Enki/GUI/Console.hpp"
+	
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenegraph.hpp"
@@ -72,6 +74,8 @@ set (Enki_SRC
 	"Enki/GUI/IMGUI/imgui_draw.cpp"
 	"Enki/GUI/IMGUI/imgui_SFML.cpp"
 	"Enki/GUI/IMGUI/imgui_widgets.cpp"
+	
+	"Enki/GUI/Console.cpp"
 	
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
