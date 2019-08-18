@@ -277,11 +277,60 @@ namespace enki
 			ImGui::EndChild();
 			ImGui::Separator();
 
+			static auto callback = [](ImGuiInputTextCallbackData* data) -> int
+			{
+				Console* console = static_cast<Console*>(data->UserData);
+
+				if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory)
+				{
+					const int prev_history_index = console->history_index;
+
+					if (data->EventKey == ImGuiKey_UpArrow)
+					{
+						if (console->history_index < 0)
+						{
+							console->history_index = console->history.size() - 1;
+						}
+						else if (console->history_index > 0)
+						{
+							console->history_index--;
+						}
+					}
+					else if (data->EventKey == ImGuiKey_DownArrow)
+					{
+						if (console->history_index >= 0)
+						{
+							console->history_index++;
+							if (console->history_index > console->history.size() - 1)
+							{
+								console->history_index = -1;
+							}
+						}
+					}
+
+					if (prev_history_index != console->history_index)
+					{
+						std::string history_str = "";
+						if (console->history_index >= 0 &&
+							console->history_index < console->history.size())
+						{
+							history_str = console->history[console->history_index];
+						}
+						data->DeleteChars(0, data->BufTextLen);
+						data->InsertChars(0, history_str.c_str());
+					}
+				}
+				return 0;
+			};
+
 			bool reclaim_focus = false;
 			if (ImGui::InputText("Input",
 				user_input.data(),
 				user_input.size(),
-				ImGuiInputTextFlags_EnterReturnsTrue))
+				ImGuiInputTextFlags_EnterReturnsTrue |
+				ImGuiInputTextFlags_CallbackHistory,
+				callback,
+				static_cast<void*>(this)))
 			{
 				addInput(user_input);
 				user_input.clear();
