@@ -138,6 +138,8 @@ namespace enki
 		[[nodiscard]]
 		T* findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const;
 
+		void forEachEntity(std::function<void(const Entity&)> function);
+
 		RPCManager rpc_man;
 
 	private:

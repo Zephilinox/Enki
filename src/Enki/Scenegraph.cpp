@@ -239,6 +239,14 @@ namespace enki
 		}
 	}
 
+	void Scenegraph::forEachEntity(std::function<void(const Entity&)> function)
+	{
+		for (const auto& [ID, ent] : entities)
+		{
+			function(*ent);
+		}
+	}
+
 	void Scenegraph::inputHierarchy(sf::Event& e, EntityID parentID)
 	{
 		for (auto& [ID, ent] : entities)
