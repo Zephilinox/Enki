@@ -38,8 +38,9 @@ namespace enki
 		void input(sf::Event& e) override;
 		void update(float dt) override;
 
-	private:
 		void addItem(Item item);
+
+	private:
 		void addInput(std::string input);
 		void executeCommand(Command* command, std::vector<std::string> tokens);
 		Command* getCommand(std::string name);

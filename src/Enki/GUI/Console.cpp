@@ -101,6 +101,7 @@ namespace enki
 			}
 
 			EntityID id = std::stoi(tokens[0]);
+
 			if (!this->game_data->scenegraph->entityExists(id))
 			{
 				addItem({
@@ -194,6 +195,59 @@ namespace enki
 				sf::Color::White,
 			Item::Type::CommandOutput,
 			});
+		}});
+
+		commands.emplace_back(Command{
+		"hash",
+		"hash the given string",
+		[&](std::vector<std::string> tokens)
+		{
+			if (tokens.empty())
+			{
+				addItem({
+					"hash",
+					"Failed. You must enter a string",
+					sf::Color::Red,
+					Item::Type::Other,
+				});
+				return;
+			}
+
+			std::string text;
+			for (auto& s : tokens)
+			{
+				text += s + " ";
+			}
+
+			text.pop_back();
+
+			addItem({
+				"hash",
+				std::to_string(hash(text)),
+				sf::Color::White,
+				Item::Type::CommandOutput,
+			});
+		}});
+
+		commands.emplace_back(Command{
+		"clear",
+		"clear the console",
+		[&](std::vector<std::string> tokens)
+		{
+			if (!tokens.empty())
+			{
+				addItem({
+					"clear",
+					"Failed. This command takes no arguments",
+					sf::Color::Red,
+					Item::Type::Other,
+				});
+				return;
+			}
+
+			history.clear();
+			history_index = -1;
+			items.clear();
 		}});
 	}
 
@@ -422,11 +476,24 @@ namespace enki
 				"failed",
 				"The command could not be found",
 				sf::Color::Red,
-			Item::Type::Other,
+				Item::Type::Other,
 			});
 			return;
 		}
 
-		command->function(tokens);
+		try
+		{
+			command->function(tokens);
+		}
+		catch (std::exception& e)
+		{
+			addItem({
+				"exception",
+				e.what(),
+				sf::Color::Red,
+				Item::Type::Other,
+			});
+		}
+
 	}
 }
