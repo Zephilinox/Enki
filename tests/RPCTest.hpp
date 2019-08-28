@@ -62,13 +62,10 @@ TEST_CASE("RPC")
 
 	SUBCASE("Entity")
 	{
-		//ent e;
-		//rpcm.add("do_thing", &ent::do_thing);
-		//todo: update RPCManager and make it clear what's supported and how
-		//registering member functions is doable alongside Entity derived member functions, some of the code is there, just need to make it happen
-
-		//rpcm.call(&ent::do_thing, "do_thing", &e, 1, 2);
-		//std::cout << e.i << "\n";
-		//REQUIRE(e.i == 3);
+		ent e;
+		rpcm.add(enki::RPCType::Local, "do_thing", &ent::do_thing);
+		rpcm.call(&ent::do_thing, "do_thing", &e, 1, 2);
+		std::cout << e.i << "\n";
+		REQUIRE(e.i == 3);
 	}
 }

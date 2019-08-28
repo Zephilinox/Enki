@@ -121,8 +121,8 @@ namespace enki
 				return;
 			}
 
-			RPCWrapper<Class>::class_rpcs[name] = RPCUtil<R(Class::*)(Args...)>::wrap(func);
-			RPCWrapper<Class>::rpctypes[name] = rpctype;
+			RPCWrapper<Class>::class_rpcs[name].function = RPCUtil<R(Class::*)(Args...)>::wrap(func);
+			RPCWrapper<Class>::class_rpcs[name].rpctype = rpctype;
 		}
 	}
 
@@ -154,14 +154,14 @@ namespace enki
 				return;
 			}
 
-			auto info = p.read<EntityInfo>();
-			auto name = p.read<std::string>();
-
 			if constexpr (std::is_base_of_v<Entity, T>)
 			{
+				auto info = p.read<EntityInfo>();
+				auto name = p.read<std::string>();
+
 				if (!entity_rpcs.count(info.type) || !entity_rpcs[info.type].count(name))
 				{
-					console->error("Invalid RPC packet received due to invalid name, ignoring\n");
+					console->error("Invalid RPC packet received due to invalid name {}, ignoring\n{}\n", name, info);
 					return;
 				}
 
@@ -169,18 +169,20 @@ namespace enki
 			}
 			else
 			{
+				auto name = p.read<std::string>();
+
 				if (!RPCWrapper<T>::class_rpcs.count(name))
 				{
-					console->error("Invalid RPC packet received due to invalid name, ignoring\n");
+					console->error("Invalid RPC packet received due to invalid name {}, ignoring\n", name);
 					return;
 				}
 
 				RPCWrapper<T>::class_rpcs[name].function(p, instance);
 			}
 		}
-		catch (std::exception&)
+		catch (std::exception& e)
 		{
-			console->error("Invalid RPC packet received that threw an exception, ignoring\n");
+			console->error("Invalid RPC packet received that threw an exception ({}), ignoring\n", e.what());
 		}
 	}
 
