@@ -23,38 +23,23 @@ TEST_CASE("RPC")
 	enki::RPCManager rpcm;
 	rpcm.add(enki::RPCType::All, "test", test);
 
-	std::cout << "\n";
-
 	rpcm.call(test, "test", 1, 2.0, 3.0f, 4);
-
-	std::cout << "\n";
-
 	rpcm.callUnsafe("test", 1.5, -2.0f, true, true);
 
-	std::cout << "\n";
-
 	//let's try and send a fake rpc
-	rpcm.callUnsafe("two", true);
 	//this checks the function is registered already, so it's fine
-
-	std::cout << "\n";
+	rpcm.callUnsafe("two", true);
 
 	//let's do it manually
 	enki::Packet p;
 	p << std::string("two") << true;
 	rpcm.receive(p);
-	//this makes the client throw an exception, so we need to capture that exception rather than crash the game, now fixed
-
-	std::cout << "\n";
 
 	//now let's try a valid rpc, but one which has the wrong types
 	enki::Packet p2;
 	p2 << std::string("test") << true << true << true << true;
 	rpcm.receive(p2);
-	//this also causes an exception to be thrown and the client to crash, now fixed
-
-	std::cout << "\n";
-
+	
 	//Now let's try sending one big arg to a valid function expecting 4 smaller args
 	enki::Packet p3;
 	p3 << std::string("test") << 50 << 50;
@@ -65,7 +50,6 @@ TEST_CASE("RPC")
 		ent e;
 		rpcm.add(enki::RPCType::Local, "do_thing", &ent::do_thing);
 		rpcm.call(&ent::do_thing, "do_thing", &e, 1, 2);
-		std::cout << e.i << "\n";
 		REQUIRE(e.i == 3);
 	}
 }
