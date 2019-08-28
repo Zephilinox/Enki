@@ -175,7 +175,7 @@ namespace enki
 					return;
 				}
 
-				RPCWrapper<T>::class_rpcs[name](p, instance);
+				RPCWrapper<T>::class_rpcs[name].function(p, instance);
 			}
 		}
 		catch (std::exception&)
@@ -208,16 +208,22 @@ namespace enki
 		static_assert(RPCUtil<R(Class::*)(Args...)>::template matchesArgs<Args...>(),
 			"You tried to call this rpc with the incorrect number or type of parameters");
 
-		if (!RPCWrapper<T>::class_rpcs.count(name))
+		if constexpr (std::is_base_of_v<Entity, T>)
 		{
-			return;
+			static_assert(false);
 		}
+		else
+		{
+			if (!RPCWrapper<T>::class_rpcs.count(name))
+			{
+				return;
+			}
 
-		Packet p({ PacketType::ENTITY_RPC });
-		p << EntityInfo{} << name;
-		fillPacket(p, args...);
-
-		receive(p, instance);
+			Packet p({PacketType::CLASS_RPC});
+			p << name;
+			fillPacket(p, args...);
+			receive(p, instance);
+		}
 	}
 
 	template <typename R, typename Class, typename T, typename... Args>

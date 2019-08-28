@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <EnkiNet/Networking/Packet.hpp>
+#include <Enki/Networking/Packet.hpp>
 
 struct vector2
 {
