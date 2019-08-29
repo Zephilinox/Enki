@@ -2,12 +2,58 @@
 
 //STD
 #include <string>
+#include <map>
+#include <cassert>
+
+//LIBS
+#include <spdlog/spdlog.h>
 
 // These hash functions exist as a result of manual(well, automated) loop unrolling, as MSVC refused to use them at compile time otherwise.
 // Templating it doesn't work either
 // todo: c++20 check again if MSVC is better at it
 
 using HashedID = uint32_t;
+
+inline std::map<HashedID, std::string> hashes_;
+
+inline void registerHash(HashedID hash, std::string string)
+{
+	if (hashes_.count(hash))
+	{
+		if (hashes_[hash] != string)
+		{
+			spdlog::error("Registered the hash {} that already exists with value of {}, "
+				"which is different to requested string of {}",
+				hash, hashes_[hash], string);
+		}
+	}
+	else
+	{
+		hashes_[hash] = string;
+	}
+}
+
+inline std::string hashToString(HashedID hash)
+{
+	if (hashes_.count(hash))
+	{
+		return hashes_[hash];
+	}
+	else
+	{
+		spdlog::error("Tried to get the string that hashes to {} but it hasn't been registered",
+			hash);
+	}
+}
+
+template <typename Callable>
+void forEachHash(Callable c)
+{
+	for (auto [hash, string] : hashes_)
+	{
+		c(hash, string);
+	}
+}
 
 inline HashedID hash(const std::string& s)
 {
@@ -20,9 +66,47 @@ inline HashedID hash(const std::string& s)
 		hash *= prime;
 	}
 
+#if !defined(ENKI_RUNTIME_HASH_FAST) || defined(ENKI_HASH_DEBUG)
+	registerHash(hash, s);
+#endif
 	return hash;
 }
 
+//Use this when you need constexpr hash regardless of hash debugging
+template <std::size_t N>
+constexpr HashedID hash_constexpr(const char(&input)[N])
+{
+	HashedID hash = 0x811c9dc5;
+	const HashedID prime = 0x01000193;
+
+	for (std::size_t i = 0; i < N; ++i)
+	{
+		hash ^= static_cast<HashedID>(input[i]);
+		hash *= prime;
+	}
+
+	return hash;
+}
+
+#if defined(ENKI_HASH_DEBUG) || !defined(NDEBUG)
+inline HashedID hash(const char* input)
+{
+	HashedID hash = 0x811c9dc5;
+	const HashedID prime = 0x01000193;
+
+	const char* c = input;
+	while (*c)
+	{
+		hash ^= static_cast<HashedID>(*c);
+		hash *= prime;
+		++c;
+	}
+
+	registerHash(hash, input);
+
+	return hash;
+}
+#else
 constexpr HashedID hash([[maybe_unused]]const char(&input)[1])
 {
 	return 0;
@@ -10513,3 +10597,4 @@ constexpr HashedID hash(const char(&input)[99])
 	hash *= prime;
 	return hash;
 }
+#endif

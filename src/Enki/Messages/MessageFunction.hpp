@@ -8,7 +8,7 @@
 
 namespace enki
 {
-	class MessageFunction : public MessageID<hash("Function")>
+	class MessageFunction : public MessageID<hash_constexpr("Function")>
 	{
 	public:
 		MessageFunction(std::function<void()> func)

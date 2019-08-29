@@ -249,6 +249,49 @@ namespace enki
 			history_index = -1;
 			items.clear();
 		}});
+
+		commands.emplace_back(Command{
+		"hashes",
+		"list all registered hashes",
+		[&](std::vector<std::string> tokens)
+		{
+			if (!tokens.empty())
+			{
+				addItem({
+					"hashes",
+					"Failed. This command takes no arguments",
+					sf::Color::Red,
+					Item::Type::Other,
+				});
+				return;
+			}
+
+			std::vector<std::string> hashes;
+
+			forEachHash([&](HashedID hash, const std::string& string)
+			{
+				hashes.push_back(fmt::format("{:>10}: {}\n", hash, string));
+			});
+
+			std::sort(hashes.begin(), hashes.end(),
+			[](const std::string& lhs, const std::string& rhs)
+			{
+				return lhs < rhs;
+			});
+
+			std::string hashes_concat;
+			for (const auto& s : hashes)
+			{
+				hashes_concat += s;
+			}
+
+			this->addItem({
+				"hashes",
+				hashes_concat,
+				sf::Color::White,
+			Item::Type::CommandOutput,
+			});
+		}});
 	}
 
 	void Console::input(sf::Event& e)
