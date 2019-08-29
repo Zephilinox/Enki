@@ -20,15 +20,15 @@ void test(int i, double d, float s, int ii)
 
 TEST_CASE("RPC")
 {
-	enki::RPCManager rpcm;
-	rpcm.add(enki::RPCType::All, "test", test);
+	enki::RPCManager rpcm(nullptr);
+	rpcm.registerGlobalRPC(enki::RPCType::All, "test", test);
 
-	rpcm.call(test, "test", 1, 2.0, 3.0f, 4);
-	rpcm.callUnsafe("test", 1.5, -2.0f, true, true);
+	rpcm.callGlobalRPC(test, "test", 1, 2.0, 3.0f, 4);
+	rpcm.callGlobalRPCUnsafe("test", 1.5, -2.0f, true, true);
 
 	//let's try and send a fake rpc
 	//this checks the function is registered already, so it's fine
-	rpcm.callUnsafe("two", true);
+	rpcm.callGlobalRPCUnsafe("two", true);
 
 	//let's do it manually
 	enki::Packet p;
@@ -48,8 +48,26 @@ TEST_CASE("RPC")
 	SUBCASE("Entity")
 	{
 		ent e;
-		rpcm.add(enki::RPCType::Local, "do_thing", &ent::do_thing);
-		rpcm.call(&ent::do_thing, "do_thing", &e, 1, 2);
+		rpcm.registerClassRPC(enki::RPCType::Local, "do_thing", &ent::do_thing);
+		rpcm.callClassRPC(&ent::do_thing, "do_thing", &e, 1, 2);
 		REQUIRE(e.i == 3);
 	}
+}
+
+TEST_CASE("RPC Global Lambda")
+{
+	enki::RPCManager rpcm(nullptr);
+
+	int lol = 0;
+
+	std::function<void(int)> lambda = [&](int inc)
+	{
+		lol += inc;
+	};
+
+	rpcm.registerGlobalRPC(enki::RPCType::All, "lambda", &lambda);
+	rpcm.callGlobalRPCUnsafe("lambda", 1);
+	REQUIRE(lol == 1);
+	rpcm.callGlobalRPC(&lambda, "lambda", 2);
+	REQUIRE(lol == 3);
 }

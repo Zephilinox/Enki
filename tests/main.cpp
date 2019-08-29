@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 	context.setOption("-ltc", true);
 	context.setOption("-lts", true);
 	context.setOption("-s", false);
-	context.setOption("-d", true);
+	context.setOption("-d", false);
 	int result = context.run();
 	if (context.shouldExit())
 	{

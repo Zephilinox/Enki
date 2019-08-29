@@ -38,13 +38,6 @@ namespace enki
 		All,
 	};
 
-	struct EntityRPC
-	{
-		using FunctionType = std::function<void(Packet, Entity*)>;
-		RPCType rpctype;
-		FunctionType function;
-	};
-
 	struct GlobalRPC
 	{
 		using FunctionType = std::function<void(Packet)>;
@@ -79,16 +72,12 @@ namespace enki
 			FunctionType function;
 		};
 
-		static std::map<std::string, ClassRPC> class_rpcs;
+		inline static std::map<std::string, ClassRPC> class_rpcs;
 	};
-
-	template <class Wrapee>
-	std::map<std::string, typename RPCWrapper<Wrapee>::ClassRPC>
-	RPCWrapper<Wrapee>::class_rpcs;
 
 	//Used for getting type info from functions
 	//and having that info available in the wrapped RPC functions
-	template <typename not_important>
+	template <typename NotImportant>
 	struct RPCUtil;
 
 	//For free-standing functions
@@ -107,17 +96,8 @@ namespace enki
 				//Using parameter pack expansion within the call site
 				//Remember lambdas can use template types
 				//that are available when defined
-				f(p.read<Parameters>()...);
+				(*f)(p.read<Parameters>()...);
 			};
-		}
-
-		//Ensure the parameters of the function match
-		//the template arguments of this call
-		//Used for compile-time type-safety when calling RPC's
-		template <typename... Args>
-		constexpr static bool matchesArgs()
-		{
-			return std::is_same_v<std::tuple<Parameters...>, std::tuple<Args...>>;
 		}
 	};
 
@@ -137,22 +117,17 @@ namespace enki
 		}
 
 		//Special case, used for classes derived from Entity's for Entity RPC's
-		template <typename F>
-		static std::function<void(Packet, Entity*)> wrapEntity(F f)
+		template <typename F, typename Base>
+		static std::function<void(Packet, Base*)> wrapAndCast(F f)
 		{
-			static_assert(!std::is_same_v<Class, Entity>);
+			static_assert(!std::is_same_v<Class, Base>);
+			static_assert(!std::is_base_of_v<Base, Class>);
 
-			return [f](Packet p, Entity* instance)
+			return [f](Packet p, Base* instance)
 			{
 				auto derived = static_cast<Class*>(instance);
 				(derived->*f)(p.read<Parameters>()...);
 			};
-		}
-
-		template <typename... Args>
-		constexpr static bool matchesArgs()
-		{
-			return std::is_same_v<std::tuple<Parameters...>, std::tuple<Args...>>;
 		}
 	};
 }

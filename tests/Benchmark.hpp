@@ -52,7 +52,7 @@ void print_time(enki::Timer& t, int count)
 
 void benchmark_entity(enki::Timer&t, int count)
 {
-	enki::RPCManager rpcm;
+	enki::RPCManager rpcm(nullptr);
 	ent e;
 
 	t.restart();
@@ -68,7 +68,7 @@ void benchmark_entity(enki::Timer&t, int count)
 	t.restart();
 	for (int i = 0; i < count; ++i)
 	{
-		rpcm.call(&ent::do_thing, "do_thing", &e, 1, i);
+		rpcm.callClassRPC(&ent::do_thing, "do_thing", &e, 1, i);
 	}
 	std::cout << "###[Entity::do_thing] RPC\n";
 	print_time(t, count);
@@ -78,7 +78,8 @@ void benchmark_entity(enki::Timer&t, int count)
 template <typename F, typename... Args>
 void benchmark(F* function, std::string name, enki::Timer t, int count, Args... args)
 {
-	enki::RPCManager rpcm;
+	//todo: rpcmanagers stuff shouldn't be static
+	enki::RPCManager rpcm(nullptr);
 	t.restart();
 	for (int i = 0; i < count; ++i)
 	{
@@ -90,7 +91,7 @@ void benchmark(F* function, std::string name, enki::Timer t, int count, Args... 
 	t.restart();
 	for (int i = 0; i < count; ++i)
 	{
-		rpcm.call(function, name, args...);
+		rpcm.callGlobalRPC(function, name, args...);
 	}
 	std::cout << "###[" << name << "] RPC\n";
 	print_time(t, count);
@@ -99,12 +100,12 @@ void benchmark(F* function, std::string name, enki::Timer t, int count, Args... 
 
 void benchmark()
 {
-	enki::RPCManager rpcm;
-	rpcm.add(enki::RPCType::All, "zero", &zero);
-	rpcm.add(enki::RPCType::All, "one", &one);
-	rpcm.add(enki::RPCType::All, "two", &two);
-	rpcm.add(enki::RPCType::All, "three", &three);
-	rpcm.add(enki::RPCType::All, "math", &math);
+	enki::RPCManager rpcm(nullptr);
+	rpcm.registerGlobalRPC(enki::RPCType::All, "zero", &zero);
+	rpcm.registerGlobalRPC(enki::RPCType::All, "one", &one);
+	rpcm.registerGlobalRPC(enki::RPCType::All, "two", &two);
+	rpcm.registerGlobalRPC(enki::RPCType::All, "three", &three);
+	rpcm.registerGlobalRPC(enki::RPCType::All, "math", &math);
 
 	enki::Timer timer;
 

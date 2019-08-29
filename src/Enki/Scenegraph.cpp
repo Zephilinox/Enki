@@ -14,8 +14,15 @@
 namespace enki
 {
 	Scenegraph::Scenegraph(GameData* game_data)
-		: game_data(game_data)
+		: rpc_man(game_data->network_manager)
+		, game_data(game_data)
 	{
+		if (game_data == nullptr ||
+			game_data->network_manager == nullptr)
+		{
+			throw;
+		}
+
 		console = spdlog::get("Enki");
 		if (console == nullptr)
 		{
@@ -401,7 +408,7 @@ namespace enki
 	{
 		auto info = p.read<EntityInfo>();
 		auto name = p.read<std::string>();
-		auto rpctype = rpc_man.getRPCType(info.type, name);
+		auto rpctype = rpc_man.getEntityRPCType(info.type, name);
 
 		if (entityExists(info.ID))
 		{

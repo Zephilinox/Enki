@@ -2,7 +2,8 @@
 
 namespace enki
 {
-	RPCManager::RPCManager()
+	RPCManager::RPCManager(NetworkManager* network_manager)
+		: network_manager(network_manager)
 	{
 		console = spdlog::get("Enki");
 		if (console == nullptr)
@@ -39,14 +40,14 @@ namespace enki
 		}
 	}
 
-	RPCType RPCManager::getRPCType(const std::string& name) const
+	RPCType RPCManager::getGlobalRPCType(const std::string& name) const
 	{
 		return global_rpcs.at(name).rpctype;
 	}
 
-	RPCType RPCManager::getRPCType(HashedID type, const std::string& name) const
+	RPCType RPCManager::getEntityRPCType(HashedID type, const std::string& name) const
 	{
-		return entity_rpcs.at(type).at(name).rpctype;
+		return entity_rpcs.at(type).class_rpcs.at(name).rpctype;
 	}
 
 	std::tuple<bool, bool> RPCManager::RPCInfo(RPCType type, bool owner)
@@ -90,6 +91,7 @@ namespace enki
 			local = true;
 			break;
 		default:
+			throw;
 			break;
 		}
 
