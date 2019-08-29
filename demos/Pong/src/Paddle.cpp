@@ -55,7 +55,8 @@ void Paddle::input(sf::Event& e)
 
 		if (e.key.code == sf::Keyboard::Num3)
 		{
-			game_data->scenegraph->rpc_man.call(&Paddle::setColour, std::string("setColour"), game_data->network_manager, this, std::rand() % 255, std::rand() % 255, std::rand() % 255);
+			game_data->scenegraph->rpc_man.callEntityRPC(
+				&Paddle::setColour, "setColour", this, std::rand() % 255, std::rand() % 255, std::rand() % 255);
 		}
 	}
 }

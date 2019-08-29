@@ -5,6 +5,11 @@ namespace enki
 	RPCManager::RPCManager(NetworkManager* network_manager)
 		: network_manager(network_manager)
 	{
+		if (!network_manager)
+		{
+			throw;
+		}
+
 		console = spdlog::get("Enki");
 		if (console == nullptr)
 		{

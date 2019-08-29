@@ -23,38 +23,40 @@ Game::Game()
 	game_data = std::make_unique<enki::GameData>();
 	window = std::make_unique<sf::RenderWindow>(sf::VideoMode(640, 360), "Enki");
 	renderer = std::make_unique<enki::Renderer>(window.get());
-	scenegraph = std::make_unique<enki::Scenegraph>(game_data.get());
+
 	network_manager = std::make_unique<enki::NetworkManager>();
-	game_data->scenegraph = scenegraph.get();
 	game_data->network_manager = network_manager.get();
 
-	scenegraph->registerEntity<PlayerText>("PlayerText3");
+	scenegraph = std::make_unique<enki::Scenegraph>(game_data.get());
+	game_data->scenegraph = scenegraph.get();
 
-	scenegraph->registerEntity<PlayerText>("PlayerText2");
-	scenegraph->registerEntityChildren("PlayerText2",
-		enki::ChildEntityCreationInfo{ "PlayerText3", "my child :O" });
+	scenegraph->registerEntity<PlayerText>(hash("PlayerText3"));
 
-	scenegraph->registerEntity<PlayerText>("PlayerText");
-	scenegraph->registerEntityChildren("PlayerText",
-		enki::ChildEntityCreationInfo{ "PlayerText2", "ayyy" });
+	scenegraph->registerEntity<PlayerText>(hash("PlayerText2"));
+	scenegraph->registerEntityChildren(hash("PlayerText2"),
+		enki::ChildEntityCreationInfo{hash("PlayerText3"), "my child :O" });
 
-	scenegraph->registerEntity<Paddle>("Paddle");
-	scenegraph->registerEntityChildren("Paddle",
-		enki::ChildEntityCreationInfo{ "PlayerText", "yeet" },
-		enki::ChildEntityCreationInfo{ "PlayerText", "yeet" });
+	scenegraph->registerEntity<PlayerText>(hash("PlayerText"));
+	scenegraph->registerEntityChildren(hash("PlayerText"),
+		enki::ChildEntityCreationInfo{hash("PlayerText2"), "ayyy" });
+
+	scenegraph->registerEntity<Paddle>(hash("Paddle"));
+	scenegraph->registerEntityChildren(hash("Paddle"),
+		enki::ChildEntityCreationInfo{hash("PlayerText"), "yeet" },
+		enki::ChildEntityCreationInfo{hash("PlayerText"), "yeet" });
 
 	//if the master calls it, every remote calls it
 	//if a remote tries to call it, nothing will happen
-	game_data->scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "Paddle", "setColour", &Paddle::setColour);
+	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::RemoteAndLocal, hash("Paddle"), "setColour", &Paddle::setColour);
 
-	scenegraph->registerEntity<Ball>("Ball");
+	scenegraph->registerEntity<Ball>(hash("Ball"));
 
-	scenegraph->registerEntity<Collision>("Collision");
-	scenegraph->createEntity({ "Collision", "Collision"});
+	scenegraph->registerEntity<Collision>(hash("Collision"));
+	scenegraph->createEntity({hash("Collision"), "Collision"});
 
-	scenegraph->registerEntity<Score>("Score");
-	game_data->scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "Score", "increaseScore1", &Score::increaseScore1);
-	game_data->scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "Score", "increaseScore2", &Score::increaseScore2);
+	scenegraph->registerEntity<Score>(hash("Score"));
+	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::RemoteAndLocal, hash("Score"), "increaseScore1", &Score::increaseScore1);
+	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::RemoteAndLocal, hash("Score"), "increaseScore2", &Score::increaseScore2);
 
 	run();
 }
@@ -124,9 +126,9 @@ void Game::update()
 		{
 			game_data->network_manager->startHost();
 			scenegraph->enableNetworking();
-			scenegraph->createNetworkedEntity(enki::EntityInfo{ "Paddle", "Paddle 1" });
-			scenegraph->createNetworkedEntity(enki::EntityInfo{ "Ball", "Ball" });
-			scenegraph->createNetworkedEntity({ "Score", "Score" });
+			scenegraph->createNetworkedEntity(enki::EntityInfo{ hash("Paddle"), "Paddle 1" });
+			scenegraph->createNetworkedEntity(enki::EntityInfo{hash("Ball"), "Ball" });
+			scenegraph->createNetworkedEntity({hash("Score"), "Score" });
 
 			mc2 = game_data->network_manager->client->on_packet_received.connect([](enki::Packet p)
 			{
@@ -149,7 +151,7 @@ void Game::update()
 				{
 					if (scenegraph->findEntityByName("Paddle 2") == nullptr)
 					{
-						scenegraph->createNetworkedEntity(enki::EntityInfo{ "Paddle", "Paddle 2", 0, p.info.senderID });
+						scenegraph->createNetworkedEntity(enki::EntityInfo{hash("Paddle"), "Paddle 2", 0, p.info.senderID });
 					}
 				}
 			});

@@ -43,7 +43,7 @@ void PlayerText::update([[maybe_unused]]float dt)
 		auto parent_player_text = dynamic_cast<PlayerText*>(parent);
 		if (parent_player_text)
 		{
-			label.setString(info.type + " " + std::to_string(info.ID));
+			label.setString(std::to_string(info.type) + " " + std::to_string(info.ID));
 			label.setPosition(parent_player_text->label.getPosition() - sf::Vector2f(0, 16));
 		}
 	}

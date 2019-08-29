@@ -30,7 +30,7 @@ void Collision::update([[maybe_unused]]float dt)
 	auto console = spdlog::get("console");
 	auto scenegraph = game_data->scenegraph;
 
-	Ball* ball = scenegraph->findEntityByType<Ball>("Ball");
+	Ball* ball = scenegraph->findEntityByType<Ball>(hash("Ball"));
 	Paddle* paddle1 = scenegraph->findEntityByName<Paddle>("Paddle 1");
 	Paddle* paddle2 = scenegraph->findEntityByName<Paddle>("Paddle 2");
 

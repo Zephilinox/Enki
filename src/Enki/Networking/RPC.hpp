@@ -117,11 +117,11 @@ namespace enki
 		}
 
 		//Special case, used for classes derived from Entity's for Entity RPC's
-		template <typename F, typename Base>
+		template <typename Base, typename F>
 		static std::function<void(Packet, Base*)> wrapAndCast(F f)
 		{
 			static_assert(!std::is_same_v<Class, Base>);
-			static_assert(!std::is_base_of_v<Base, Class>);
+			static_assert(std::is_base_of_v<Base, Class>);
 
 			return [f](Packet p, Base* instance)
 			{

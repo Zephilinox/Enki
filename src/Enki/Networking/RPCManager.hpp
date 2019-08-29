@@ -176,7 +176,7 @@ namespace enki
 			return;
 		}
 
-		entity_rpcs[type].class_rpcs[name].function = RPCUtil<R(Class::*)(Args...)>::template wrapAndCast<Entity*>(func);
+		entity_rpcs[type].class_rpcs[name].function = RPCUtil<R(Class::*)(Args...)>::template wrapAndCast<Entity>(func);
 		entity_rpcs[type].class_rpcs[name].rpctype = rpctype;
 	}
 

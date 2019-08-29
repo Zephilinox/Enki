@@ -17,8 +17,7 @@ namespace enki
 		: rpc_man(game_data->network_manager)
 		, game_data(game_data)
 	{
-		if (game_data == nullptr ||
-			game_data->network_manager == nullptr)
+		if (game_data == nullptr)
 		{
 			throw;
 		}
@@ -410,7 +409,7 @@ namespace enki
 		auto name = p.read<std::string>();
 		auto rpctype = rpc_man.getEntityRPCType(info.type, name);
 
-		if (entityExists(info.ID))
+		if (!entityExists(info.ID))
 		{
 			console->error(
 				"Received request to call RPC {} on entity {} "
