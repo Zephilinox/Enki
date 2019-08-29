@@ -113,19 +113,6 @@ namespace enki
 	template <typename Return, typename... Parameters>
 	void RPCManager::registerGlobalRPC(RPCType rpctype, std::string name, std::function<Return(Parameters...)>* func)
 	{
-		/*using call_operator = decltype(&decltype(lambda)::operator());
-
-		static_assert(std::is_void_v<typename RPCUtil<call_operator>::return_t>,
-			"You can't register a lambda as an RPC if it doesn't return void");
-
-		if (global_rpcs.count(name))
-		{
-			return;
-		}
-
-		global_rpcs[name].function = RPCUtil<call_operator>::wrap(lambda);
-		global_rpcs[name].rpctype = rpctype;*/
-
 		static_assert(std::is_void_v<Return>,
 			"You can't register std::function as an RPC if it doesn't return void");
 
