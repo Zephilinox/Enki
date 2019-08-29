@@ -14,7 +14,7 @@ Player::Player(enki::EntityInfo info, enki::GameData* data, sf::RenderWindow* wi
 	, window(window)
 {
 	network_tick_rate = 1;
-	game_data->scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "Player", "shoot", &Player::shoot);
+	game_data->scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "shoot", &Player::shoot);
 
 	mapWidth = static_cast<CustomData*>(game_data->custom)->map_manager->getWidth();
 	mapHeight = static_cast<CustomData*>(game_data->custom)->map_manager->getHeight();

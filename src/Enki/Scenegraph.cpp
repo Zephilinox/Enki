@@ -432,7 +432,7 @@ namespace enki
 
 		switch (rpctype)
 		{
-			case Local:
+			case LOCAL:
 			{
 				console->error(
 					"Received a request for a "
@@ -442,7 +442,7 @@ namespace enki
 				break;
 			}
 
-			case Master:
+			case MASTER:
 			{
 				if (info.ownerID == p.info.senderID)
 				{
@@ -461,8 +461,8 @@ namespace enki
 				break;
 			}
 
-			case Remote:
-			case RemoteAndLocal:
+			case REMOTE:
+			case REMOTE_AND_LOCAL:
 			{
 				if (info.ownerID == p.info.senderID)
 				{
@@ -482,8 +482,8 @@ namespace enki
 				break;
 			}
 
-			case MasterAndRemote:
-			case All:
+			case MASTER_AND_REMOTE:
+			case ALL:
 			{
 				//send to everyone else
 				game_data->network_manager->server->sendPacketToAllExceptOneClient(

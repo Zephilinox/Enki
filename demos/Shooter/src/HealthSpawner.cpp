@@ -26,8 +26,8 @@ HealthSpawner::HealthSpawner(enki::EntityInfo info, enki::GameData* game_data)
 
 	pickup.setTexture(pickup_texture);
 
-	game_data->scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "HealthSpawner", "spawn", &HealthSpawner::spawn);
-	game_data->scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "HealthSpawner", "pickedUp", &HealthSpawner::pickedUp);
+	game_data->scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "HealthSpawner", "spawn", &HealthSpawner::spawn);
+	game_data->scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "HealthSpawner", "pickedUp", &HealthSpawner::pickedUp);
 }
 
 void HealthSpawner::onSpawn(enki::Packet & p)

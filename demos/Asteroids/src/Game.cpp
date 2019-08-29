@@ -45,8 +45,8 @@ Game::Game()
 	scenegraph->registerEntity<CollisionManager>("CollisionManager", custom_data.get(), window.get());
 	scenegraph->registerEntity<PlayerText>("PlayerText");
 
-	scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "Player", "startInvincible", &Player::startInvincible);
-	scenegraph->rpc_man.add(enki::RPCType::RemoteAndLocal, "Player", "stopInvincible", &Player::stopInvincible);
+	scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "startInvincible", &Player::startInvincible);
+	scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "stopInvincible", &Player::stopInvincible);
 
 	scenegraph->registerEntityChildren("Player", enki::ChildEntityCreationInfo{"PlayerText", "PlayerText"});
 

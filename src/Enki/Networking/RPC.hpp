@@ -10,32 +10,34 @@ namespace enki
 {
 	enum RPCType
 	{
+		//For non-entity RPC's, ownership is always true.
+
 		//RPC only runs for master
 		//If you own the entity and call this RPC, it will execute only for you
 		//If you don't own the entity and call this RPC, only the owner will execute the RPC
-		Master,
+		MASTER,
 
 		//RPC runs for all non-owners
 		//If you own the entity and call this RPC, all remote entities will execute the RPC, but not yourself.
 		//If you don't own the entity and call this RPC, nothing will happen
-		Remote,
+		REMOTE,
 
 		//if you own the entity it will also execute it for you
 		//Note that this might be slower than just using Remote and then calling the function directly as normal
 		//This is provided mainly for ease-of-use, as well as when you might not be able to call it directly for some reason
-		RemoteAndLocal,
+		REMOTE_AND_LOCAL,
 
 		//RPC runs for masters and non-owners
 		//Calling this RPC will execute it for everyone, except yourself
-		MasterAndRemote,
+		MASTER_AND_REMOTE,
 
 		//Calling this RPC will execute it only for yourself
-		Local,
+		LOCAL,
 
 		//Calling this RPC will execute it for everyone, including yourself
 		//Note that this might be slower than just using MasterAndRemote and then calling the function directly as normal
 		//This is provided mainly for ease-of-use, as well as when you might not be able to call it directly for some reason
-		All,
+		ALL,
 	};
 
 	struct GlobalRPC

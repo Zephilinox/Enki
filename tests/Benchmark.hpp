@@ -101,11 +101,11 @@ void benchmark(F* function, std::string name, enki::Timer t, int count, Args... 
 void benchmark()
 {
 	enki::RPCManager rpcm(nullptr);
-	rpcm.registerGlobalRPC(enki::RPCType::All, "zero", &zero);
-	rpcm.registerGlobalRPC(enki::RPCType::All, "one", &one);
-	rpcm.registerGlobalRPC(enki::RPCType::All, "two", &two);
-	rpcm.registerGlobalRPC(enki::RPCType::All, "three", &three);
-	rpcm.registerGlobalRPC(enki::RPCType::All, "math", &math);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "zero", &zero);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "one", &one);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "two", &two);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "three", &three);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "math", &math);
 
 	enki::Timer timer;
 

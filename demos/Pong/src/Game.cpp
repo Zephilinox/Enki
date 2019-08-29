@@ -47,7 +47,7 @@ Game::Game()
 
 	//if the master calls it, every remote calls it
 	//if a remote tries to call it, nothing will happen
-	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::RemoteAndLocal, hash("Paddle"), "setColour", &Paddle::setColour);
+	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Paddle"), "setColour", &Paddle::setColour);
 
 	scenegraph->registerEntity<Ball>(hash("Ball"));
 
@@ -55,8 +55,8 @@ Game::Game()
 	scenegraph->createEntity({hash("Collision"), "Collision"});
 
 	scenegraph->registerEntity<Score>(hash("Score"));
-	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::RemoteAndLocal, hash("Score"), "increaseScore1", &Score::increaseScore1);
-	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::RemoteAndLocal, hash("Score"), "increaseScore2", &Score::increaseScore2);
+	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Score"), "increaseScore1", &Score::increaseScore1);
+	game_data->scenegraph->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Score"), "increaseScore2", &Score::increaseScore2);
 
 	run();
 }

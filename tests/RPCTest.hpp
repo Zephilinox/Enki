@@ -21,7 +21,7 @@ void test(int i, double d, float s, int ii)
 TEST_CASE("RPC")
 {
 	enki::RPCManager rpcm(nullptr);
-	rpcm.registerGlobalRPC(enki::RPCType::All, "test", test);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "test", test);
 
 	rpcm.callGlobalRPC(test, "test", 1, 2.0, 3.0f, 4);
 	rpcm.callGlobalRPCUnsafe("test", 1.5, -2.0f, true, true);
@@ -48,7 +48,7 @@ TEST_CASE("RPC")
 	SUBCASE("Entity")
 	{
 		ent e;
-		rpcm.registerClassRPC(enki::RPCType::Local, "do_thing", &ent::do_thing);
+		rpcm.registerClassRPC(enki::RPCType::LOCAL, "do_thing", &ent::do_thing);
 		rpcm.callClassRPC(&ent::do_thing, "do_thing", &e, 1, 2);
 		REQUIRE(e.i == 3);
 	}
@@ -65,7 +65,7 @@ TEST_CASE("RPC Global Lambda")
 		lol += inc;
 	};
 
-	rpcm.registerGlobalRPC(enki::RPCType::All, "lambda", &lambda);
+	rpcm.registerGlobalRPC(enki::RPCType::ALL, "lambda", &lambda);
 	rpcm.callGlobalRPCUnsafe("lambda", 1);
 	REQUIRE(lol == 1);
 	rpcm.callGlobalRPC(&lambda, "lambda", 2);

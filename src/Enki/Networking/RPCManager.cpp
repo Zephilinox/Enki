@@ -62,7 +62,7 @@ namespace enki
 
 		switch (type)
 		{
-		case Master:
+		case MASTER:
 			if (owner)
 			{
 				local = true;
@@ -72,26 +72,26 @@ namespace enki
 				remote = true;
 			}
 			break;
-		case Remote:
+		case REMOTE:
 			if (owner)
 			{
 				remote = true;
 			}
 			break;
-		case RemoteAndLocal:
+		case REMOTE_AND_LOCAL:
 			if (owner)
 			{
 				remote = true;
 				local = true;
 			}
 			break;
-		case MasterAndRemote:
+		case MASTER_AND_REMOTE:
 			remote = true;
 			break;
-		case Local:
+		case LOCAL:
 			local = true;
 			break;
-		case All:
+		case ALL:
 			remote = true;
 			local = true;
 			break;
