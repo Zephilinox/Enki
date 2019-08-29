@@ -41,8 +41,7 @@ inline std::string hashToString(HashedID hash)
 	}
 	else
 	{
-		spdlog::error("Tried to get the string that hashes to {} but it hasn't been registered",
-			hash);
+		return "";
 	}
 }
 

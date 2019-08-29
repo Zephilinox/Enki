@@ -292,6 +292,45 @@ namespace enki
 			Item::Type::CommandOutput,
 			});
 		}});
+
+		commands.emplace_back(Command{
+		"hashToString",
+		"If the hash has been registered, prints the string version",
+		[&](std::vector<std::string> tokens)
+		{
+			if (tokens.size() != 1)
+			{
+				addItem({
+					"hashToString",
+					"Failed. This command requires one parameter",
+					sf::Color::Red,
+					Item::Type::Other,
+				});
+				return;
+			}
+
+			HashedID hash = std::stoi(tokens[0]);
+			std::string hashString = hashToString(hash);
+
+			if (hashString.empty())
+			{
+				addItem({
+					"hashToString",
+					fmt::format("Hash {} hasn't been registered so its string value is unknown", hash),
+					sf::Color::Red,
+					Item::Type::Other,
+				});
+			}
+			else
+			{
+				addItem({
+					"hashToString",
+					fmt::format("{} is the hash of {}", hash, hashString),
+					sf::Color::White,
+					Item::Type::CommandOutput,
+				});
+			}
+		}});
 	}
 
 	void Console::input(sf::Event& e)
