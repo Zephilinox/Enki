@@ -1,5 +1,5 @@
 # Enki
-Enki is a 2D Game Engine in C++17, and a continuation of EnkiNet, which was my dissertation project for a networked scenegraph.
+Enki is a 2D Game Engine in C++17, and a continuation of [EnkiNet](https://github.com/Zephilinox/EnkiNet), which was my dissertation project for a networked scenegraph.
 
 ## Instructions
 ### Make sure SFML is installed
