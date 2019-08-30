@@ -1,5 +1,10 @@
 #pragma once
 
+#ifdef WIN32
+#	undef min
+#	undef max
+#endif
+
 //STD
 #include <random>
 
@@ -23,6 +28,9 @@ namespace enki
 
 		[[nodiscard]]
 		float generateFloat(float lower, float upper);
+
+		[[nodiscard]]
+		double generateDouble(double lower, double upper);
 
 		template <typename Return, typename Distribution>
 		[[nodiscard]]

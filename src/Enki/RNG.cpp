@@ -8,6 +8,7 @@ namespace enki
 	RNG::RNG()
 	{
 		seed = static_cast<int>(std::chrono::system_clock::now().time_since_epoch().count());
+		rng.seed(seed);
 	}
 
 	void RNG::setSeed(int s)
@@ -29,7 +30,13 @@ namespace enki
 
 	float RNG::generateFloat(float lower, float upper)
 	{
-		std::uniform_real_distribution<> random(lower, upper);
+		std::uniform_real_distribution<float> random(lower, upper);
 		return random(rng);
 	}
-}
+
+	double RNG::generateDouble(double lower, double upper)
+	{
+		std::uniform_real_distribution<double> random(lower, upper);
+		return random(rng);
+	}
+	}
