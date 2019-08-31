@@ -5,24 +5,24 @@
 
 namespace enki
 {
-	struct SpriteOrderInfo
-	{
-		sf::Sprite* sprite = nullptr;
-		std::uint8_t layer = 0;
-		float order = 0;
-	};
+struct SpriteOrderInfo
+{
+	sf::Sprite* sprite = nullptr;
+	std::uint8_t layer = 0;
+	float order = 0;
+};
 
-	class Renderer
-	{
-	public:
-		Renderer(sf::RenderWindow* window);
+class Renderer
+{
+public:
+	Renderer(sf::RenderWindow* window);
 
-		void draw(SpriteOrderInfo&&);
-		void draw(sf::Drawable* drawable);
-		void end();
+	void draw(SpriteOrderInfo&&);
+	void draw(sf::Drawable* drawable);
+	void end();
 
-	private:
-		std::vector<SpriteOrderInfo> sprites;
-		sf::RenderWindow* window = nullptr;
-	};
-}
+private:
+	std::vector<SpriteOrderInfo> sprites;
+	sf::RenderWindow* window = nullptr;
+};
+}	// namespace enki

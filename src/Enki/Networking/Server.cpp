@@ -2,29 +2,29 @@
 
 namespace enki
 {
-	void Server::update()
+void Server::update()
+{
+	packetsReceived += packets.size();
+
+	if (packetsTimer.getElapsedTime() > 10)
 	{
-		packetsReceived += packets.size();
-
-		if (packetsTimer.getElapsedTime() > 10)
-		{
-			auto console = spdlog::get("Enki");
-			packetsTimer.restart();
-			console->info("server received {} packets in the last 10 seconds", packetsReceived);
-			packetsReceived = 0;
-		}
-
-		std::lock_guard<std::mutex> guard(mutex);
-		while (!packets.empty())
-		{
-			on_packet_received.emit(packets.front());
-			packets.pop();
-		}
+		auto console = spdlog::get("Enki");
+		packetsTimer.restart();
+		console->info("server received {} packets in the last 10 seconds", packetsReceived);
+		packetsReceived = 0;
 	}
 
-	void Server::pushPacket(Packet&& p)
+	std::lock_guard<std::mutex> guard(mutex);
+	while (!packets.empty())
 	{
-		std::lock_guard<std::mutex> lock(mutex);
-		packets.push(std::move(p));
+		on_packet_received.emit(packets.front());
+		packets.pop();
 	}
 }
+
+void Server::pushPacket(Packet&& p)
+{
+	std::lock_guard<std::mutex> lock(mutex);
+	packets.push(std::move(p));
+}
+}	// namespace enki

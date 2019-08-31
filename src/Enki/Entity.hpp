@@ -8,135 +8,129 @@
 #include <SFML/Graphics.hpp>
 
 //SELF
-#include "Enki/Networking/Packet.hpp"
 #include "Enki/GameData.hpp"
-#include "Enki/Networking/Client.hpp"
-#include "Enki/Managers/NetworkManager.hpp"
-#include "Enki/Renderer.hpp"
 #include "Enki/Hash.hpp"
+#include "Enki/Managers/NetworkManager.hpp"
+#include "Enki/Networking/Client.hpp"
+#include "Enki/Networking/Packet.hpp"
+#include "Enki/Renderer.hpp"
 
 namespace enki
 {
-	using EntityID = std::int32_t;
+using EntityID = std::int32_t;
 
-	struct EntityInfo
+struct EntityInfo
+{
+	HashedID type = 0;
+	std::string name;
+
+	EntityID ID = 0;
+	ClientID ownerID = 0;
+	EntityID parentID = 0;
+};
+
+inline bool operator==(const EntityInfo& lhs, const EntityInfo& rhs)
+{
+	return lhs.ID == rhs.ID &&
+		   lhs.name == rhs.name &&
+		   lhs.type == rhs.type &&
+		   lhs.ownerID == rhs.ownerID &&
+		   lhs.parentID == rhs.parentID;
+}
+
+inline bool operator!=(const EntityInfo& lhs, const EntityInfo& rhs)
+{
+	return !(lhs == rhs);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const EntityInfo& info)
+{
+	return os << "Type: " << info.type << ", Name: " << info.name << ", ID: " << info.ID << ", ownerID: " << info.ownerID << ", parentID: " << info.parentID;
+}
+
+inline Packet& operator<<(Packet& p, EntityInfo& e)
+{
+	p << e.ID
+	  << e.ownerID
+	  << e.type
+	  << e.name
+	  << e.parentID;
+	return p;
+}
+
+inline Packet& operator>>(Packet& p, EntityInfo& e)
+{
+	p >> e.ID >> e.ownerID >> e.type >> e.name >> e.parentID;
+	return p;
+}
+
+class Entity
+{
+public:
+	//Each derived entity will have info and game_data
+	//passed to it by the scenegraph when it is created
+	Entity(EntityInfo info, GameData* game_data)
+		: info(std::move(info))
+		, game_data(game_data)
 	{
-		HashedID type = 0;
-		std::string name;
-
-		EntityID ID = 0;
-		ClientID ownerID = 0;
-		EntityID parentID = 0;
-	};
-
-	inline bool operator ==(const EntityInfo& lhs, const EntityInfo& rhs)
-	{
-		return lhs.ID == rhs.ID &&
-			lhs.name == rhs.name &&
-			lhs.type == rhs.type &&
-			lhs.ownerID == rhs.ownerID &&
-			lhs.parentID == rhs.parentID;
 	}
 
-	inline bool operator !=(const EntityInfo& lhs, const EntityInfo& rhs)
-	{
-		return !(lhs == rhs);
-	}
+	virtual ~Entity() = default;
 
-	inline std::ostream& operator <<(std::ostream& os, const EntityInfo& info)
-	{
-		return os << "Type: " << info.type << ", Name: " << info.name << ", ID: " << info.ID << ", ownerID: " << info.ownerID << ", parentID: " << info.parentID;
-	}
+	//Called when an entity is created
+	//Called for children before parents
+	virtual void onSpawn([[maybe_unused]] Packet& p){};
 
-	inline Packet& operator <<(Packet& p, EntityInfo& e)
-	{
-		p << e.ID
-			<< e.ownerID
-			<< e.type
-			<< e.name
-			<< e.parentID;
-		return p;
-	}
+	//Called when an SFML event occurs
+	virtual void input([[maybe_unused]] sf::Event& e){};
 
-	inline Packet& operator >>(Packet& p, EntityInfo& e)
-	{
-		p >> e.ID
-			>> e.ownerID
-			>> e.type
-			>> e.name
-			>> e.parentID;
-		return p;
-	}
+	//Called once each game loop
+	virtual void update([[maybe_unused]] float dt){};
 
-	class Entity
-	{
-	public:
+	//Called once each game loop
+	virtual void draw([[maybe_unused]] Renderer* renderer){};
 
-		//Each derived entity will have info and game_data
-		//passed to it by the scenegraph when it is created
-		Entity(EntityInfo info, GameData* game_data)
-			: info(std::move(info))
-			, game_data(game_data)
+	//Called when a client connects so the full state can be sent
+	virtual void serializeOnConnection(Packet& p) { serializeOnTick(p); }
+	//Called when a client connects and we receive serialized data
+	virtual void deserializeOnConnection(Packet& p) { deserializeOnTick(p); }
+
+	//Called as often as the network_tick_rate of the entity
+	virtual void serializeOnTick([[maybe_unused]] Packet& p) {}
+	//Called when receiving an entity update from a network tick
+	virtual void deserializeOnTick([[maybe_unused]] Packet& p) {}
+
+	//Determines if we have control over the entity
+	//Always true for local entities
+	[[nodiscard]] inline bool isOwner() const
+	{
+		//ID less than 0 is local
+		if (info.ID < 0)
 		{
+			return true;
 		}
 
-		virtual ~Entity() = default;
-
-		//Called when an entity is created
-		//Called for children before parents
-		virtual void onSpawn([[maybe_unused]]Packet& p) {};
-
-		//Called when an SFML event occurs
-		virtual void input([[maybe_unused]]sf::Event& e) {};
-
-		//Called once each game loop
-		virtual void update([[maybe_unused]]float dt) {};
-
-		//Called once each game loop
-		virtual void draw([[maybe_unused]]Renderer* renderer) {};
-
-		//Called when a client connects so the full state can be sent
-		virtual void serializeOnConnection(Packet& p) { serializeOnTick(p); }
-		//Called when a client connects and we receive serialized data
-		virtual void deserializeOnConnection(Packet& p) { deserializeOnTick(p); }
-
-		//Called as often as the network_tick_rate of the entity
-		virtual void serializeOnTick([[maybe_unused]]Packet& p) {}
-		//Called when receiving an entity update from a network tick
-		virtual void deserializeOnTick([[maybe_unused]]Packet& p) {}
-
-		//Determines if we have control over the entity
-		//Always true for local entities
-		[[nodiscard]]
-		inline bool isOwner() const
+		//If we are the server and the owner isn't specified then we own it
+		if (!game_data->network_manager->client)
 		{
-			//ID less than 0 is local
-			if (info.ID < 0)
-			{
-				return true;
-			}
-
-			//If we are the server and the owner isn't specified then we own it
-			if (!game_data->network_manager->client)
-			{
-				return info.ownerID == 0;
-			}
-
-			//If the owner ID matches our ID then we own it
-			return game_data->network_manager->client->getID() == info.ownerID;
+			return info.ownerID == 0;
 		}
 
-		//Should not be modified directly in most cases
-		EntityInfo info;
+		//If the owner ID matches our ID then we own it
+		return game_data->network_manager->client->getID() == info.ownerID;
+	}
 
-		//Provides access to scenegraph and network manager for all entities
-		GameData* game_data;
+	//Should not be modified directly in most cases
+	EntityInfo info;
 
-		//Used by the Scenegraph to mark entities for removal
-		//Can be used by the owning entity for safely marking itself for deletion next frame
-		bool remove = false;
+	//Provides access to scenegraph and network manager for all entities
+	GameData* game_data;
 
-		/*Every x ticks the entity will be automatically serialized via serializeOnTick
+	//Used by the Scenegraph to mark entities for removal
+	//Can be used by the owning entity for safely marking itself for deletion next frame
+	bool remove = false;
+
+	/*Every x ticks the entity will be automatically serialized via serializeOnTick
 		The real time delay between ticks is dependant on the Network Manager's network_send_rate
 		With a network_send_rate of 60 and a network_tick_rate of 1, this entity is serialized 60 times a second.
 		With a network_tick_rate of 10, this entity is serialized 6 times a second.
@@ -145,6 +139,6 @@ namespace enki
 		Using network_send_rate as part of a formula can allow for specifying the real-time delay between serialization
 		e.g. network_tick_rate = network_send_rate / 10.0f, for roughly 10 serializations per second (depending on integer truncation).
 		This relies on the network_send_rate not being modified after the network_tick_rate is set*/
-		std::uint32_t network_tick_rate = 0;
-	};
-}
+	std::uint32_t network_tick_rate = 0;
+};
+}	// namespace enki

@@ -5,23 +5,23 @@
 
 namespace enki
 {
-	class Message
+class Message
+{
+public:
+	virtual ~Message() noexcept = default;
+
+	virtual HashedID getID() = 0;
+};
+
+template <HashedID Hash>
+class MessageID : public Message
+{
+public:
+	HashedID getID() final
 	{
-	public:
-		virtual ~Message() noexcept = default;
+		return ID;
+	}
 
-		virtual HashedID getID() = 0;
-	};
-
-	template <HashedID Hash>
-	class MessageID : public Message
-	{
-	public:
-		HashedID getID() final
-		{
-			return ID;
-		}
-
-		static constexpr HashedID ID = Hash;
-	};
-}
+	static constexpr HashedID ID = Hash;
+};
+}	// namespace enki

@@ -4,39 +4,37 @@
 #include <enetpp/client.h>
 
 //SELF
+#include "Enki/GameData.hpp"
 #include "Enki/Networking/Client.hpp"
 #include "Enki/Networking/ServerHost.hpp"
-#include "Enki/GameData.hpp"
 
 namespace enki
 {
-	class ClientHost : public Client
+class ClientHost : public Client
+{
+public:
+	ClientHost();
+	~ClientHost() final;
+
+	//Called by the network manager in a different thread
+	void processPackets() final{};
+
+	//Send a packet to the server directly
+	void sendPacket(enet_uint8 channel_id, Packet* p, enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE) final;
+
+	[[nodiscard]] inline bool isConnected() const final
 	{
-	public:
-		ClientHost();
-		~ClientHost() final;
+		return true;
+	}
 
-		//Called by the network manager in a different thread
-		void processPackets() final {};
+	[[nodiscard]] inline bool isConnecting() const final
+	{
+		return true;
+	}
 
-		//Send a packet to the server directly
-		void sendPacket(enet_uint8 channel_id, Packet* p, enet_uint32 flags = ENET_PACKET_FLAG_RELIABLE) final;
-
-		[[nodiscard]]
-		inline bool isConnected() const final
-		{
-			return true;
-		}
-
-		[[nodiscard]]
-		inline bool isConnecting() const final
-		{
-			return true;
-		}
-
-		//This must be assigned after creating a ClientHost
-		//Used to send packets to the local server directly
-		//Cannot be passed through in constructor due to ServerHost requiring access to the client
-		Server* server = nullptr;
-	};
-}
+	//This must be assigned after creating a ClientHost
+	//Used to send packets to the local server directly
+	//Cannot be passed through in constructor due to ServerHost requiring access to the client
+	Server* server = nullptr;
+};
+}	// namespace enki

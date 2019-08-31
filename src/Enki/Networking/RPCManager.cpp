@@ -2,68 +2,67 @@
 
 namespace enki
 {
-	RPCManager::RPCManager(NetworkManager* network_manager)
-		: network_manager(network_manager)
+RPCManager::RPCManager(NetworkManager* network_manager)
+	: network_manager(network_manager)
+{
+	if (!network_manager)
 	{
-		if (!network_manager)
-		{
-			throw;
-		}
+		throw;
+	}
 
+	console = spdlog::get("Enki");
+	if (console == nullptr)
+	{
+		spdlog::stdout_color_mt("Enki");
 		console = spdlog::get("Enki");
-		if (console == nullptr)
+	}
+}
+
+void RPCManager::receive(Packet p)
+{
+	try
+	{
+		//done this way because getBytesRead will be sizeof(PacketHeader), and anything less than that is invalid
+		if (p.getBytes().size() <= p.getBytesRead())
 		{
-			spdlog::stdout_color_mt("Enki");
-			console = spdlog::get("Enki");
+			console->error("Invalid RPC packet received due to being empty, ignoring\n");
+			return;
 		}
-	}
 
-	void RPCManager::receive(Packet p)
-	{
-		try
+		auto name = p.read<std::string>();
+
+		if (!global_rpcs.count(name))
 		{
-			//done this way because getBytesRead will be sizeof(PacketHeader), and anything less than that is invalid
-			if (p.getBytes().size() <= p.getBytesRead())
-			{
-				console->error("Invalid RPC packet received due to being empty, ignoring\n");
-				return;
-			}
-
-			auto name = p.read<std::string>();
-
-			if (!global_rpcs.count(name))
-			{
-				console->error("Invalid RPC packet received due to invalid name, ignoring\n");
-				return;
-			}
-
-			global_rpcs[name].function(p);
+			console->error("Invalid RPC packet received due to invalid name, ignoring\n");
+			return;
 		}
-		catch (std::exception&)
-		{
-			console->error("Invalid RPC packet received that threw an exception, ignoring\n");
-		}
+
+		global_rpcs[name].function(p);
 	}
-
-	RPCType RPCManager::getGlobalRPCType(const std::string& name) const
+	catch (std::exception&)
 	{
-		return global_rpcs.at(name).rpctype;
+		console->error("Invalid RPC packet received that threw an exception, ignoring\n");
 	}
+}
 
-	RPCType RPCManager::getEntityRPCType(HashedID type, const std::string& name) const
+RPCType RPCManager::getGlobalRPCType(const std::string& name) const
+{
+	return global_rpcs.at(name).rpctype;
+}
+
+RPCType RPCManager::getEntityRPCType(HashedID type, const std::string& name) const
+{
+	return entity_rpcs.at(type).class_rpcs.at(name).rpctype;
+}
+
+std::tuple<bool, bool> RPCManager::RPCInfo(RPCType type, bool owner)
+{
+	bool local = false;
+	bool remote = false;
+
+	switch (type)
 	{
-		return entity_rpcs.at(type).class_rpcs.at(name).rpctype;
-	}
-
-	std::tuple<bool, bool> RPCManager::RPCInfo(RPCType type, bool owner)
-	{
-		bool local = false;
-		bool remote = false;
-
-		switch (type)
-		{
-		case MASTER:
-			if (owner)
+		case MASTER: if (owner)
 			{
 				local = true;
 			}
@@ -72,34 +71,28 @@ namespace enki
 				remote = true;
 			}
 			break;
-		case REMOTE:
-			if (owner)
+		case REMOTE: if (owner)
 			{
 				remote = true;
 			}
 			break;
-		case REMOTE_AND_LOCAL:
-			if (owner)
+		case REMOTE_AND_LOCAL: if (owner)
 			{
 				remote = true;
 				local = true;
 			}
 			break;
-		case MASTER_AND_REMOTE:
-			remote = true;
+		case MASTER_AND_REMOTE: remote = true;
 			break;
-		case LOCAL:
+		case LOCAL: local = true;
+			break;
+		case ALL: remote = true;
 			local = true;
 			break;
-		case ALL:
-			remote = true;
-			local = true;
+		default: throw;
 			break;
-		default:
-			throw;
-			break;
-		}
-
-		return std::make_tuple(local, remote);
 	}
+
+	return std::make_tuple(local, remote);
 }
+} // namespace enki

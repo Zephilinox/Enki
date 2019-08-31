@@ -1,9 +1,9 @@
 #pragma once
 
 //STD
-#include <string>
-#include <map>
 #include <cassert>
+#include <map>
+#include <string>
 
 //LIBS
 #include <spdlog/spdlog.h>
@@ -22,9 +22,12 @@ inline void registerHash(HashedID hash, std::string string)
 	{
 		if (hashes_[hash] != string)
 		{
-			spdlog::error("Registered the hash {} that already exists with value of {}, "
+			spdlog::error(
+				"Registered the hash {} that already exists with value of {}, "
 				"which is different to requested string of {}",
-				hash, hashes_[hash], string);
+				hash,
+				hashes_[hash],
+				string);
 		}
 	}
 	else
@@ -73,7 +76,7 @@ inline HashedID hash(const std::string& s)
 
 //Use this when you need constexpr hash regardless of hash debugging
 template <std::size_t N>
-constexpr HashedID hash_constexpr(const char(&input)[N])
+constexpr HashedID hash_constexpr(const char (&input)[N])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -106,12 +109,12 @@ inline HashedID hash(const char* input)
 	return hash;
 }
 #else
-constexpr HashedID hash([[maybe_unused]]const char(&input)[1])
+constexpr HashedID hash([[maybe_unused]] const char (&input)[1])
 {
 	return 0;
 }
 
-constexpr HashedID hash(const char(&input)[2])
+constexpr HashedID hash(const char (&input)[2])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -121,7 +124,7 @@ constexpr HashedID hash(const char(&input)[2])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[3])
+constexpr HashedID hash(const char (&input)[3])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -133,7 +136,7 @@ constexpr HashedID hash(const char(&input)[3])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[4])
+constexpr HashedID hash(const char (&input)[4])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -147,7 +150,7 @@ constexpr HashedID hash(const char(&input)[4])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[5])
+constexpr HashedID hash(const char (&input)[5])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -163,7 +166,7 @@ constexpr HashedID hash(const char(&input)[5])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[6])
+constexpr HashedID hash(const char (&input)[6])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -181,7 +184,7 @@ constexpr HashedID hash(const char(&input)[6])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[7])
+constexpr HashedID hash(const char (&input)[7])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -201,7 +204,7 @@ constexpr HashedID hash(const char(&input)[7])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[8])
+constexpr HashedID hash(const char (&input)[8])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -223,7 +226,7 @@ constexpr HashedID hash(const char(&input)[8])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[9])
+constexpr HashedID hash(const char (&input)[9])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -247,7 +250,7 @@ constexpr HashedID hash(const char(&input)[9])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[10])
+constexpr HashedID hash(const char (&input)[10])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -273,7 +276,7 @@ constexpr HashedID hash(const char(&input)[10])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[11])
+constexpr HashedID hash(const char (&input)[11])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -301,7 +304,7 @@ constexpr HashedID hash(const char(&input)[11])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[12])
+constexpr HashedID hash(const char (&input)[12])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -331,7 +334,7 @@ constexpr HashedID hash(const char(&input)[12])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[13])
+constexpr HashedID hash(const char (&input)[13])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -363,7 +366,7 @@ constexpr HashedID hash(const char(&input)[13])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[14])
+constexpr HashedID hash(const char (&input)[14])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -397,7 +400,7 @@ constexpr HashedID hash(const char(&input)[14])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[15])
+constexpr HashedID hash(const char (&input)[15])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -433,7 +436,7 @@ constexpr HashedID hash(const char(&input)[15])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[16])
+constexpr HashedID hash(const char (&input)[16])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -471,7 +474,7 @@ constexpr HashedID hash(const char(&input)[16])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[17])
+constexpr HashedID hash(const char (&input)[17])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -511,7 +514,7 @@ constexpr HashedID hash(const char(&input)[17])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[18])
+constexpr HashedID hash(const char (&input)[18])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -553,7 +556,7 @@ constexpr HashedID hash(const char(&input)[18])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[19])
+constexpr HashedID hash(const char (&input)[19])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -597,7 +600,7 @@ constexpr HashedID hash(const char(&input)[19])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[20])
+constexpr HashedID hash(const char (&input)[20])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -643,7 +646,7 @@ constexpr HashedID hash(const char(&input)[20])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[21])
+constexpr HashedID hash(const char (&input)[21])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -691,7 +694,7 @@ constexpr HashedID hash(const char(&input)[21])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[22])
+constexpr HashedID hash(const char (&input)[22])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -741,7 +744,7 @@ constexpr HashedID hash(const char(&input)[22])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[23])
+constexpr HashedID hash(const char (&input)[23])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -793,7 +796,7 @@ constexpr HashedID hash(const char(&input)[23])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[24])
+constexpr HashedID hash(const char (&input)[24])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -847,7 +850,7 @@ constexpr HashedID hash(const char(&input)[24])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[25])
+constexpr HashedID hash(const char (&input)[25])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -903,7 +906,7 @@ constexpr HashedID hash(const char(&input)[25])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[26])
+constexpr HashedID hash(const char (&input)[26])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -961,7 +964,7 @@ constexpr HashedID hash(const char(&input)[26])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[27])
+constexpr HashedID hash(const char (&input)[27])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1021,7 +1024,7 @@ constexpr HashedID hash(const char(&input)[27])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[28])
+constexpr HashedID hash(const char (&input)[28])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1083,7 +1086,7 @@ constexpr HashedID hash(const char(&input)[28])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[29])
+constexpr HashedID hash(const char (&input)[29])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1147,7 +1150,7 @@ constexpr HashedID hash(const char(&input)[29])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[30])
+constexpr HashedID hash(const char (&input)[30])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1213,7 +1216,7 @@ constexpr HashedID hash(const char(&input)[30])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[31])
+constexpr HashedID hash(const char (&input)[31])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1281,7 +1284,7 @@ constexpr HashedID hash(const char(&input)[31])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[32])
+constexpr HashedID hash(const char (&input)[32])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1351,7 +1354,7 @@ constexpr HashedID hash(const char(&input)[32])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[33])
+constexpr HashedID hash(const char (&input)[33])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1423,7 +1426,7 @@ constexpr HashedID hash(const char(&input)[33])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[34])
+constexpr HashedID hash(const char (&input)[34])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1497,7 +1500,7 @@ constexpr HashedID hash(const char(&input)[34])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[35])
+constexpr HashedID hash(const char (&input)[35])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1573,7 +1576,7 @@ constexpr HashedID hash(const char(&input)[35])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[36])
+constexpr HashedID hash(const char (&input)[36])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1651,7 +1654,7 @@ constexpr HashedID hash(const char(&input)[36])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[37])
+constexpr HashedID hash(const char (&input)[37])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1731,7 +1734,7 @@ constexpr HashedID hash(const char(&input)[37])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[38])
+constexpr HashedID hash(const char (&input)[38])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1813,7 +1816,7 @@ constexpr HashedID hash(const char(&input)[38])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[39])
+constexpr HashedID hash(const char (&input)[39])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1897,7 +1900,7 @@ constexpr HashedID hash(const char(&input)[39])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[40])
+constexpr HashedID hash(const char (&input)[40])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -1983,7 +1986,7 @@ constexpr HashedID hash(const char(&input)[40])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[41])
+constexpr HashedID hash(const char (&input)[41])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2071,7 +2074,7 @@ constexpr HashedID hash(const char(&input)[41])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[42])
+constexpr HashedID hash(const char (&input)[42])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2161,7 +2164,7 @@ constexpr HashedID hash(const char(&input)[42])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[43])
+constexpr HashedID hash(const char (&input)[43])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2253,7 +2256,7 @@ constexpr HashedID hash(const char(&input)[43])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[44])
+constexpr HashedID hash(const char (&input)[44])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2347,7 +2350,7 @@ constexpr HashedID hash(const char(&input)[44])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[45])
+constexpr HashedID hash(const char (&input)[45])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2443,7 +2446,7 @@ constexpr HashedID hash(const char(&input)[45])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[46])
+constexpr HashedID hash(const char (&input)[46])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2541,7 +2544,7 @@ constexpr HashedID hash(const char(&input)[46])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[47])
+constexpr HashedID hash(const char (&input)[47])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2641,7 +2644,7 @@ constexpr HashedID hash(const char(&input)[47])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[48])
+constexpr HashedID hash(const char (&input)[48])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2743,7 +2746,7 @@ constexpr HashedID hash(const char(&input)[48])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[49])
+constexpr HashedID hash(const char (&input)[49])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2847,7 +2850,7 @@ constexpr HashedID hash(const char(&input)[49])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[50])
+constexpr HashedID hash(const char (&input)[50])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -2953,7 +2956,7 @@ constexpr HashedID hash(const char(&input)[50])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[51])
+constexpr HashedID hash(const char (&input)[51])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3061,7 +3064,7 @@ constexpr HashedID hash(const char(&input)[51])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[52])
+constexpr HashedID hash(const char (&input)[52])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3171,7 +3174,7 @@ constexpr HashedID hash(const char(&input)[52])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[53])
+constexpr HashedID hash(const char (&input)[53])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3283,7 +3286,7 @@ constexpr HashedID hash(const char(&input)[53])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[54])
+constexpr HashedID hash(const char (&input)[54])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3397,7 +3400,7 @@ constexpr HashedID hash(const char(&input)[54])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[55])
+constexpr HashedID hash(const char (&input)[55])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3513,7 +3516,7 @@ constexpr HashedID hash(const char(&input)[55])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[56])
+constexpr HashedID hash(const char (&input)[56])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3631,7 +3634,7 @@ constexpr HashedID hash(const char(&input)[56])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[57])
+constexpr HashedID hash(const char (&input)[57])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3751,7 +3754,7 @@ constexpr HashedID hash(const char(&input)[57])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[58])
+constexpr HashedID hash(const char (&input)[58])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3873,7 +3876,7 @@ constexpr HashedID hash(const char(&input)[58])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[59])
+constexpr HashedID hash(const char (&input)[59])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -3997,7 +4000,7 @@ constexpr HashedID hash(const char(&input)[59])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[60])
+constexpr HashedID hash(const char (&input)[60])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4123,7 +4126,7 @@ constexpr HashedID hash(const char(&input)[60])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[61])
+constexpr HashedID hash(const char (&input)[61])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4251,7 +4254,7 @@ constexpr HashedID hash(const char(&input)[61])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[62])
+constexpr HashedID hash(const char (&input)[62])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4381,7 +4384,7 @@ constexpr HashedID hash(const char(&input)[62])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[63])
+constexpr HashedID hash(const char (&input)[63])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4513,7 +4516,7 @@ constexpr HashedID hash(const char(&input)[63])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[64])
+constexpr HashedID hash(const char (&input)[64])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4647,7 +4650,7 @@ constexpr HashedID hash(const char(&input)[64])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[65])
+constexpr HashedID hash(const char (&input)[65])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4783,7 +4786,7 @@ constexpr HashedID hash(const char(&input)[65])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[66])
+constexpr HashedID hash(const char (&input)[66])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -4921,7 +4924,7 @@ constexpr HashedID hash(const char(&input)[66])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[67])
+constexpr HashedID hash(const char (&input)[67])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5061,7 +5064,7 @@ constexpr HashedID hash(const char(&input)[67])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[68])
+constexpr HashedID hash(const char (&input)[68])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5203,7 +5206,7 @@ constexpr HashedID hash(const char(&input)[68])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[69])
+constexpr HashedID hash(const char (&input)[69])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5347,7 +5350,7 @@ constexpr HashedID hash(const char(&input)[69])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[70])
+constexpr HashedID hash(const char (&input)[70])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5493,7 +5496,7 @@ constexpr HashedID hash(const char(&input)[70])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[71])
+constexpr HashedID hash(const char (&input)[71])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5641,7 +5644,7 @@ constexpr HashedID hash(const char(&input)[71])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[72])
+constexpr HashedID hash(const char (&input)[72])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5791,7 +5794,7 @@ constexpr HashedID hash(const char(&input)[72])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[73])
+constexpr HashedID hash(const char (&input)[73])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -5943,7 +5946,7 @@ constexpr HashedID hash(const char(&input)[73])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[74])
+constexpr HashedID hash(const char (&input)[74])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -6097,7 +6100,7 @@ constexpr HashedID hash(const char(&input)[74])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[75])
+constexpr HashedID hash(const char (&input)[75])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -6253,7 +6256,7 @@ constexpr HashedID hash(const char(&input)[75])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[76])
+constexpr HashedID hash(const char (&input)[76])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -6411,7 +6414,7 @@ constexpr HashedID hash(const char(&input)[76])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[77])
+constexpr HashedID hash(const char (&input)[77])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -6571,7 +6574,7 @@ constexpr HashedID hash(const char(&input)[77])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[78])
+constexpr HashedID hash(const char (&input)[78])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -6733,7 +6736,7 @@ constexpr HashedID hash(const char(&input)[78])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[79])
+constexpr HashedID hash(const char (&input)[79])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -6897,7 +6900,7 @@ constexpr HashedID hash(const char(&input)[79])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[80])
+constexpr HashedID hash(const char (&input)[80])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -7063,7 +7066,7 @@ constexpr HashedID hash(const char(&input)[80])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[81])
+constexpr HashedID hash(const char (&input)[81])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -7231,7 +7234,7 @@ constexpr HashedID hash(const char(&input)[81])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[82])
+constexpr HashedID hash(const char (&input)[82])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -7401,7 +7404,7 @@ constexpr HashedID hash(const char(&input)[82])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[83])
+constexpr HashedID hash(const char (&input)[83])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -7573,7 +7576,7 @@ constexpr HashedID hash(const char(&input)[83])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[84])
+constexpr HashedID hash(const char (&input)[84])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -7747,7 +7750,7 @@ constexpr HashedID hash(const char(&input)[84])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[85])
+constexpr HashedID hash(const char (&input)[85])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -7923,7 +7926,7 @@ constexpr HashedID hash(const char(&input)[85])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[86])
+constexpr HashedID hash(const char (&input)[86])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -8101,7 +8104,7 @@ constexpr HashedID hash(const char(&input)[86])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[87])
+constexpr HashedID hash(const char (&input)[87])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -8281,7 +8284,7 @@ constexpr HashedID hash(const char(&input)[87])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[88])
+constexpr HashedID hash(const char (&input)[88])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -8463,7 +8466,7 @@ constexpr HashedID hash(const char(&input)[88])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[89])
+constexpr HashedID hash(const char (&input)[89])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -8647,7 +8650,7 @@ constexpr HashedID hash(const char(&input)[89])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[90])
+constexpr HashedID hash(const char (&input)[90])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -8833,7 +8836,7 @@ constexpr HashedID hash(const char(&input)[90])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[91])
+constexpr HashedID hash(const char (&input)[91])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -9021,7 +9024,7 @@ constexpr HashedID hash(const char(&input)[91])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[92])
+constexpr HashedID hash(const char (&input)[92])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -9211,7 +9214,7 @@ constexpr HashedID hash(const char(&input)[92])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[93])
+constexpr HashedID hash(const char (&input)[93])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -9403,7 +9406,7 @@ constexpr HashedID hash(const char(&input)[93])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[94])
+constexpr HashedID hash(const char (&input)[94])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -9597,7 +9600,7 @@ constexpr HashedID hash(const char(&input)[94])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[95])
+constexpr HashedID hash(const char (&input)[95])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -9793,7 +9796,7 @@ constexpr HashedID hash(const char(&input)[95])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[96])
+constexpr HashedID hash(const char (&input)[96])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -9991,7 +9994,7 @@ constexpr HashedID hash(const char(&input)[96])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[97])
+constexpr HashedID hash(const char (&input)[97])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -10191,7 +10194,7 @@ constexpr HashedID hash(const char(&input)[97])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[98])
+constexpr HashedID hash(const char (&input)[98])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
@@ -10393,7 +10396,7 @@ constexpr HashedID hash(const char(&input)[98])
 	return hash;
 }
 
-constexpr HashedID hash(const char(&input)[99])
+constexpr HashedID hash(const char (&input)[99])
 {
 	HashedID hash = 0x811c9dc5;
 	const HashedID prime = 0x01000193;
