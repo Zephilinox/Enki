@@ -1,7 +1,7 @@
 ﻿---
 BasedOnStyle: Chromium
 AccessModifierOffset: '-4'
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: DontAlign
 AlignEscapedNewlines: Left
 AlignOperands: 'true'
 AlignTrailingComments: 'true'
