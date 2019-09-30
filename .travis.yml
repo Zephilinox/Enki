@@ -13,7 +13,7 @@ install:
   #- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 90
     # cppcheck
   #- sudo apt-get install -qq cppcheck
-   - sudo apt-get install libsfml-dev=2.5
+   - sudo apt-get install libsfml-dev=2.5.1
 
 script: 
   #- g++ main.cpp -std=c++17 -o travis_gcc_cpp17
