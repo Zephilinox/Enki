@@ -26,6 +26,8 @@ install:
     - sudo apt-get install libsfml-dev
     - sudo apt-cache policy cmake
     - sudo apt-cache policy libsfml-dev
+    - sudo ls /usr/local/bin
+    - sudo ls /usr/local
 
 script: 
   #- g++ main.cpp -std=c++17 -o travis_gcc_cpp17
