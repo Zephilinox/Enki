@@ -28,6 +28,8 @@ install:
     - sudo apt-cache policy libsfml-dev
     - sudo ls /usr/local/bin
     - sudo ls /usr/local
+    - sudo ls /usr/local/cmake
+    - sudo ls /usr/local/cmake/bin
 
 script: 
   #- g++ main.cpp -std=c++17 -o travis_gcc_cpp17
@@ -35,4 +37,4 @@ script:
   # cppcheck
   #- cppcheck --quiet --error-exitcode=1 . 
     - cd build
-    - /usr/local/bin/cmake ..
+    - /usr/local/cmake ..
