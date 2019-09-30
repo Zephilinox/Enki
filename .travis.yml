@@ -43,6 +43,7 @@ before_script:
       cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
     - ls ../
     - cmake --build . --target install
+    - ls ../install
     - cd ../..
 
 script: 
