@@ -145,6 +145,8 @@ target_link_libraries(Enki
 	${UNIX_LIBS}
 )
 
+target_link_libraries(Enki PUBLIC coverage_config)
+
 target_include_directories(Enki PUBLIC
 	"${CMAKE_SOURCE_DIR}/src/"
 )
