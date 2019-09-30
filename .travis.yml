@@ -33,4 +33,4 @@ script:
   # cppcheck
   #- cppcheck --quiet --error-exitcode=1 . 
     - cd build
-    - cmake ..
+    - /usr/local/bin/cmake ..
