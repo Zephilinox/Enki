@@ -4,7 +4,7 @@ dist: bionic
 
 before_install:
     # C++17
-  #- sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo add-apt-repository universe
   - sudo apt-get update -qq
 
@@ -14,7 +14,7 @@ install:
   #- sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 90
     # cppcheck
   #- sudo apt-get install -qq cppcheck
-   - sudo apt-get install libsfml-dev=2.5.1
+   - sudo apt-get install libsfml-dev
 
 script: 
   #- g++ main.cpp -std=c++17 -o travis_gcc_cpp17
