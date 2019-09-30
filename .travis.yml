@@ -53,7 +53,7 @@ script:
     - cd build
     - cmake -DSFML_DIR=sfml/install/lib/cmake/SFML/ ..
     - cmake --build . --config Debug -- -j2
-    - cppcheck --quiet . 
+    - cppcheck . --force
     
 after_success:
     # Create lcov report
