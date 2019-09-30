@@ -41,8 +41,7 @@ install:
 before_script:
     - git clone https://github.com/sfml/sfml && cd sfml && mkdir build && cd build &&
       cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
-    - ls .
-    - ls ../install
+    - ls ../
     - cmake --build . --target install
     - cd ../..
 
