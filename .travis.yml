@@ -55,5 +55,5 @@ script:
   #- cppcheck --quiet --error-exitcode=1 . 
     - ls .
     - cd build
-    - cmake -DSFML_DIR=../sfml/install/lib/cmake/SFML ..
-    - cmake -DSFML_DIR=../sfml/install/lib/cmake/ ..
+    - cmake -DSFML_DIR=../sfml/install/lib/cmake/SFML/ ..
+    - ls ../sfml/install/lib/cmake/SFML/
