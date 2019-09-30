@@ -9,6 +9,7 @@ set (CMAKE_MODULE_PATH "${EnkiEngine_SOURCE_DIR}/cmake")
 
 #Includes library and demos and stuff
 project ("EnkiEngine")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Code Coverage Configuration
 add_library(coverage_config INTERFACE)
