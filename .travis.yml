@@ -51,7 +51,7 @@ script:
   # cppcheck
   #- cppcheck --quiet --error-exitcode=1 . 
     - cd build
-    - cmake -DSFML_DIR=sfml/install/lib/cmake/SFML/ ..
+    - cmake -DSFML_DIR=sfml/install/lib/cmake/SFML/ -DCODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug ..
     - cmake --build . --config Debug -- -j2
     - cppcheck . --force
     - cd ../
