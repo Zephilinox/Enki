@@ -138,14 +138,13 @@ if (UNIX)
 endif()
 
 target_link_libraries(Enki
+	coverage_config
 	sfml-graphics
 	sfml-audio
 	spdlog
 	enet
 	${UNIX_LIBS}
 )
-
-target_link_libraries(Enki PUBLIC coverage_config)
 
 target_include_directories(Enki PUBLIC
 	"${CMAKE_SOURCE_DIR}/src/"
