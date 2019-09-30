@@ -54,7 +54,6 @@ script:
     - cmake -DSFML_DIR=sfml/install/lib/cmake/SFML/ -DCODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DDEMOS=OFF ..
     - cmake --build . --config Debug -- -j2
     - cppcheck --project=compile_commands.json -j2 -q --report-progress
-    - cd ../
     
 after_success:
     # Create lcov report
