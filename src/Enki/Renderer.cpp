@@ -2,7 +2,7 @@
 
 //STD
 #include <algorithm>
-#include <execution>
+//#include <execution>
 
 namespace enki
 {
@@ -24,7 +24,7 @@ void Renderer::draw(sf::Drawable* drawable)
 
 void Renderer::end()
 {
-	std::sort(std::execution::seq, sprites.begin(), sprites.end(), [](SpriteOrderInfo left, SpriteOrderInfo right) {
+	std::sort(sprites.begin(), sprites.end(), [](SpriteOrderInfo left, SpriteOrderInfo right) {
 		if (left.layer == right.layer)
 		{
 			return left.order < right.order;
