@@ -6,6 +6,8 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <cstddef>
+#include <cstring>
 
 namespace enki
 {
