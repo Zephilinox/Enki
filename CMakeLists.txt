@@ -21,6 +21,7 @@ else()
 	#SFML isn't built statically for distros or something?
 	message(STATUS "Make sure SFML is installed")
 	set(SFML_STATIC_LIBRARIES FALSE)
+	message(STATUS "SFML_DIR is set to " ${SFML_DIR})
 endif()
 
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
