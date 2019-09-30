@@ -6,8 +6,8 @@
 //LIB
 #include <enetpp/client.h>
 #include <enetpp/server.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 //SELF
 #include "../Signals/Signal.hpp"

@@ -47,6 +47,7 @@ set(Enki_HEADERS
 	"Enki/RNG.hpp"
 	"Enki/Hash.hpp"
 	"Enki/AnimatedSprite.hpp"
+	"Enki/TimerLog.hpp"
 )
 
 set (Enki_SRC
@@ -83,6 +84,7 @@ set (Enki_SRC
 	"Enki/Renderer.cpp"
 	"Enki/RNG.cpp"
 	"Enki/AnimatedSprite.cpp"
+	"Enki/TimerLog.cpp"
 )
 
 include("../cmake/FilesystemSourceGroup.cmake")
