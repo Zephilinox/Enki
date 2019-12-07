@@ -8,20 +8,17 @@ namespace enki
 class Message
 {
 public:
+	explicit Message(HashedID id) : id(id) {}
 	virtual ~Message() noexcept = default;
 
-	virtual HashedID getID() = 0;
+	const HashedID id;
 };
 
 template <HashedID Hash>
 class MessageID : public Message
 {
 public:
-	HashedID getID() final
-	{
-		return ID;
-	}
-
+	MessageID() : Message(Hash) {}
 	static constexpr HashedID ID = Hash;
 };
 }	// namespace enki
