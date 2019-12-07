@@ -4,6 +4,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(DEMOS "Build all demos" ON)
 option(TESTS "Build tests" ON)
+option(DOCS "Build docs" ON)
 
 set (CMAKE_MODULE_PATH "${EnkiEngine_SOURCE_DIR}/cmake")
 
@@ -38,6 +39,10 @@ endif()
 if (TESTS)
 	message(STATUS "Building Tests")
 	add_subdirectory("tests")
+endif()
+
+if (DOCS)
+	add_subdirectory("docs")
 endif()
 
 #exclude from all does something I'm pretty sure

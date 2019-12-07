@@ -18,6 +18,9 @@ public:
 
 	//Note: This is not a hard limit.
 	//Highly dependent on the number of listeners and priority messages.
+	/**
+	 * @param more like min amirite lul
+	 * */
 	std::size_t processMessages(Timer::nanoseconds_float max_processing_time);
 
 	Connection addListener(FunctionType&& function);
