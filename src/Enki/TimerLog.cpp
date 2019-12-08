@@ -5,11 +5,7 @@ TimerLog::TimerLog(std::string file, std::string function, int line)
 	, func(function)
 	, line(line)
 {
-	std::string indent;
-	for (int i = 0; i < indentation; ++i)
-	{
-		indent += '#';
-	}
+	const std::string_view indent(indents, indentation);
 
 	spdlog::info("{}{}::{}", indent, func, line);
 	indentation++;
@@ -18,23 +14,18 @@ TimerLog::TimerLog(std::string file, std::string function, int line)
 
 TimerLog::~TimerLog()
 {
-	auto now = clock::now();
-	auto duration = std::chrono::duration<float, nanoseconds::period>(now - start).count();
+	const auto now = clock::now();
+	const auto duration = std::chrono::duration<float, nanoseconds::period>(now - start).count();
 
-	float avg = 0;
-	avg = durations[func].avg * durations[func].times;
+	float avg = durations[func].avg * durations[func].times;
 	avg += duration;
 	durations[func].times++;
 	avg /= durations[func].times;
 	durations[func].avg = avg;
 
 	indentation--;
-	std::string indent;
-	for (int i = 0; i < indentation; ++i)
-	{
-		indent += '#';
-	}
+	const std::string_view indent(indents, indentation);
 
-	spdlog::info("{}{}::{} {}ms {}ms", indent, func, line,
-		duration / 1'000'000, durations[func].avg / 1'000'000);
+	spdlog::info("{}{}::{} {}ms vs {}avg ms", indent, func, line,
+		duration / 1'000'000, avg / 1'000'000);
 }

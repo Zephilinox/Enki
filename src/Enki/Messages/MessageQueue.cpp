@@ -4,6 +4,9 @@
 #include <iomanip>
 #include <iostream>
 
+//SELF
+#include "Enki/TimerLog.hpp"
+
 namespace enki
 {
 std::size_t MessageQueue::processMessages(Timer::nanoseconds_float max_processing_time)
@@ -62,7 +65,7 @@ std::size_t MessageQueue::processNormalMessages(Timer::nanoseconds_float max_pro
 	//If we have any extra time, process any other messages we can
 	int msg_count = 0;
 
-	while (timer.getChronoElapsedTime() < max_processing_time)
+	while (!message_queue.empty() && timer.getChronoElapsedTime() < max_processing_time)
 	{
 		//do 100 messages at a time as getChronoElapsedTime() is super expensive
 		for (int i = 0; i < 100 && !message_queue.empty(); ++i)
