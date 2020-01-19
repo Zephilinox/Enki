@@ -4,7 +4,7 @@
 #include <set>
 
 //LIBS
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 #include <Enki/Timer.hpp>
 #include <Enki/Networking/RPC.hpp>
 #include <Enki/GameData.hpp>
@@ -27,7 +27,7 @@ private:
 
 	enki::Timer timer;
 	std::unique_ptr<sf::RenderWindow> window;
-	std::unique_ptr<enki::Scenegraph> scenegraph;
+	std::unique_ptr<enki::Scenetree> scenetree;
 	std::unique_ptr<enki::GameData> game_data;
 	std::unique_ptr<enki::NetworkManager> network_manager;
 	std::unique_ptr<CustomData> custom_data;

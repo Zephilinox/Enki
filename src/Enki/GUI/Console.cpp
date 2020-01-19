@@ -452,8 +452,6 @@ void Console::update(float dt)
 		ImGui::Separator();
 		ImGui::End();
 	}
-
-	ImGui::ShowDemoWindow();
 }
 
 void Console::addItem(Item item)

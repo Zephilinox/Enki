@@ -9,7 +9,7 @@ Score::Score(enki::EntityInfo info, enki::GameData* game_data)
 	}
 }
 
-void Score::onSpawn([[maybe_unused]]enki::Packet& p)
+void Score::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	score1.setFont(font);
 	score1.setCharacterSize(30);

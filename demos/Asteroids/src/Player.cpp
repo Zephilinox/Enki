@@ -4,7 +4,7 @@
 #include <experimental/vector>
 
 //LIBS
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 Player::Player(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
 	: Entity(info, data)
@@ -171,12 +171,12 @@ void Player::update(float dt)
 			<< ship.getColor().r
 			<< ship.getColor().g
 			<< ship.getColor().b;
-		game_data->scenegraph->createNetworkedEntity({ "Bullet", "Bullet" }, p);
+		game_data->scenetree->createNetworkedEntity({ "Bullet", "Bullet" }, p);
 	}
 
 	if (flashing_timer.getElapsedTime() > flashing_duration)
 	{
-		game_data->scenegraph->rpc_man.call(&Player::stopInvincible, "stopInvincible", game_data->network_manager, this);
+		game_data->scenetree->rpc_man.call(&Player::stopInvincible, "stopInvincible", game_data->network_manager, this);
 	}
 }
 
@@ -258,6 +258,6 @@ void Player::handleCollision()
 			lives--;
 		}
 
-		game_data->scenegraph->rpc_man.call(&Player::startInvincible, "startInvincible", game_data->network_manager, this);
+		game_data->scenetree->rpc_man.call(&Player::startInvincible, "startInvincible", game_data->network_manager, this);
 	}
 }

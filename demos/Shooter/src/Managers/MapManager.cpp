@@ -9,8 +9,8 @@
 #include "Floor.hpp"
 #include "Wall.hpp"
 
-MapManager::MapManager(enki::Scenegraph* scenegraph, enki::NetworkManager* network_manager)
-	: scenegraph(scenegraph)
+MapManager::MapManager(enki::Scenetree* scenetree, enki::NetworkManager* network_manager)
+	: scenetree(scenetree)
 	, network_manager(network_manager)
 {
 	auto console = spdlog::get("console");
@@ -101,21 +101,21 @@ void MapManager::createMap()
 				case Tile::Floor:
 				{
 					std::string name = std::string("Floor ") + std::to_string(x) + ", " + std::to_string(y);
-					scenegraph->createNetworkedEntity({ "Floor", name }, p);
+					scenetree->createNetworkedEntity({ "Floor", name }, p);
 					break;
 				}
 
 				case Tile::Wall:
 				{
 					std::string name = std::string("Wall ") + std::to_string(x) + ", " + std::to_string(y);
-					scenegraph->createNetworkedEntity({ "Wall", name }, p);
+					scenetree->createNetworkedEntity({ "Wall", name }, p);
 					break;
 				}
 
 				case Tile::HealthPickup:
 				{
 					std::string name = std::string("HealthSpawner ") + std::to_string(x) + ", " + std::to_string(y);
-					scenegraph->createNetworkedEntity({ "HealthSpawner", name }, p);
+					scenetree->createNetworkedEntity({ "HealthSpawner", name }, p);
 					break;
 				}
 				}

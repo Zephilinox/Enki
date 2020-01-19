@@ -10,7 +10,7 @@ class Paddle : public enki::Entity
 public:
 	Paddle(enki::EntityInfo info, enki::GameData* game_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 	void input(sf::Event& e) final;
 	void update(float dt) final;
 	void draw(enki::Renderer* renderer) final;

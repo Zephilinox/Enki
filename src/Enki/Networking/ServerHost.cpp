@@ -103,6 +103,11 @@ void ServerHost::sendPacketToOneClient(ClientID client_id, enet_uint8 channel_id
 	else
 	{
 		p->resetReadPosition();
+		//p->resetWritePosition();
+
+		p->info.timeReceived = header.timeSent;
+		p->info.senderID = 1;
+
 		client->on_packet_received.emit(*p);
 	}
 }
@@ -123,8 +128,11 @@ void ServerHost::sendPacketToAllClients(enet_uint8 channel_id, Packet* p, enet_u
 	}
 
 	p->resetReadPosition();
+	//p->resetWritePosition();
+
 	p->info.timeReceived = header.timeSent;
 	p->info.senderID = 1;
+
 	client->on_packet_received.emit(*p);
 }
 
@@ -144,8 +152,11 @@ void ServerHost::sendPacketToSomeClients(enet_uint8 channel_id, Packet* p, enet_
 	if (predicate({1}))
 	{
 		p->resetReadPosition();
+		//p->resetWritePosition();
+
 		p->info.timeReceived = header.timeSent;
 		p->info.senderID = 1;
+
 		client->on_packet_received.emit(*p);
 	}
 }
@@ -167,8 +178,12 @@ void ServerHost::sendPacketToAllExceptOneClient(ClientID client_id_excluded, ene
 	if (client_id_excluded != 1)
 	{
 		p->resetReadPosition();
+		p->bytes.resize(p->getBytesWritten());
+		p->resetWritePosition();
+
 		p->info.timeReceived = header.timeSent;
 		p->info.senderID = 1;
+
 		client->on_packet_received.emit(*p);
 	}
 }

@@ -4,7 +4,7 @@
 #include <experimental/vector>
 
 //LIBS
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 //SELF
 #include "CustomData.hpp"
@@ -14,7 +14,7 @@ Player::Player(enki::EntityInfo info, enki::GameData* data, sf::RenderWindow* wi
 	, window(window)
 {
 	network_tick_rate = 1;
-	game_data->scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "shoot", &Player::shoot);
+	game_data->scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "shoot", &Player::shoot);
 
 	mapWidth = static_cast<CustomData*>(game_data->custom)->map_manager->getWidth();
 	mapHeight = static_cast<CustomData*>(game_data->custom)->map_manager->getHeight();
@@ -87,7 +87,7 @@ void Player::update(float dt)
 		if (shootTimer.getElapsedTime() > shootDelay)
 		{
 			sf::Vector2f pos = static_cast<CustomData*>(game_data->custom)->input_manager->getMouseWorldPos();
-			game_data->scenegraph->rpc_man.call(&Player::shoot, "shoot", game_data->network_manager, this, pos.x, pos.y);
+			game_data->scenetree->rpc_man.call(&Player::shoot, "shoot", game_data->network_manager, this, pos.x, pos.y);
 			shootTimer.restart();
 		}
 	}

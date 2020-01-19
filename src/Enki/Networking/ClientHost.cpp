@@ -26,8 +26,12 @@ void ClientHost::sendPacket([[maybe_unused]] enet_uint8 channel_id, Packet* p, [
 
 	auto console = spdlog::get("Enki");
 
+	p->resetReadPosition();
+	//p->resetWritePosition();
+
 	p->info.senderID = id;
 	p->info.timeReceived = enet_time_get();
+
 	server->on_packet_received.emit(*p);
 }
 }	// namespace enki

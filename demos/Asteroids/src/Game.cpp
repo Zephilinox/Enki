@@ -30,25 +30,25 @@ Game::Game()
 
 	custom_data->input_manager = &input_manager;
 
-	scenegraph = std::make_unique<enki::Scenegraph>(game_data.get());
+	scenetree = std::make_unique<enki::Scenetree>(game_data.get());
 	auto enki_logger = spdlog::get("Enki");
 	enki_logger->set_level(spdlog::level::err);
 
 	network_manager = std::make_unique<enki::NetworkManager>();
 
-	game_data->scenegraph = scenegraph.get();
+	game_data->scenetree = scenetree.get();
 	game_data->network_manager = network_manager.get();
 
-	scenegraph->registerEntity<Player>("Player", custom_data.get(), window.get());
-	scenegraph->registerEntity<Asteroid>("Asteroid", custom_data.get(), window.get());
-	scenegraph->registerEntity<Bullet>("Bullet", custom_data.get(), window.get());
-	scenegraph->registerEntity<CollisionManager>("CollisionManager", custom_data.get(), window.get());
-	scenegraph->registerEntity<PlayerText>("PlayerText");
+	scenetree->registerEntity<Player>("Player", custom_data.get(), window.get());
+	scenetree->registerEntity<Asteroid>("Asteroid", custom_data.get(), window.get());
+	scenetree->registerEntity<Bullet>("Bullet", custom_data.get(), window.get());
+	scenetree->registerEntity<CollisionManager>("CollisionManager", custom_data.get(), window.get());
+	scenetree->registerEntity<PlayerText>("PlayerText");
 
-	scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "startInvincible", &Player::startInvincible);
-	scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "stopInvincible", &Player::stopInvincible);
+	scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "startInvincible", &Player::startInvincible);
+	scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "stopInvincible", &Player::stopInvincible);
 
-	scenegraph->registerEntityChildren("Player", enki::ChildEntityCreationInfo{"PlayerText", "PlayerText"});
+	scenetree->registerEntityChildren("Player", enki::ChildEntityCreationInfo{"PlayerText", "PlayerText"});
 
 	run();
 }
@@ -93,7 +93,7 @@ void Game::input()
 			custom_data->window_active = false;
 		}
 
-		scenegraph->input(e);
+		scenetree->input(e);
 	}
 }
 
@@ -113,7 +113,7 @@ void Game::update()
 			<< static_cast<float>(std::rand() % 1280)
 			<< static_cast<float>(std::rand() % 720)
 			<< static_cast<float>((std::rand() % 200) + 50);
-		scenegraph->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+		scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
 		asteroid_spawn_timer.restart();
 	}
 
@@ -123,9 +123,9 @@ void Game::update()
 		{
 			networking = true;
 			network_manager->startHost();
-			scenegraph->enableNetworking();
-			scenegraph->createNetworkedEntity({ "Player", "Player 1" });
-			scenegraph->createEntity({ "CollisionManager", "CollisionManager" });
+			scenetree->enableNetworking();
+			scenetree->createNetworkedEntity({ "Player", "Player 1" });
+			scenetree->createEntity({ "CollisionManager", "CollisionManager" });
 
 			for (int i = 0; i < 20; ++i)
 			{
@@ -134,22 +134,22 @@ void Game::update()
 					<< static_cast<float>(std::rand() % 1280)
 					<< static_cast<float>(std::rand() % 720)
 					<< static_cast<float>((std::rand() % 200) + 50);
-				scenegraph->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+				scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
 			}
 
 			mc1 = network_manager->server->on_packet_received.connect([this](enki::Packet p)
 			{
 				if (p.getHeader().type == enki::PacketType::CONNECTED)
 				{
-					scenegraph->createNetworkedEntity({ "Player", "Player " + std::to_string(p.info.senderID), 0, p.info.senderID });
+					scenetree->createNetworkedEntity({ "Player", "Player " + std::to_string(p.info.senderID), 0, p.info.senderID });
 				}
 
 				if (p.getHeader().type == enki::PacketType::DISCONNECTED)
 				{
-					auto ent = scenegraph->findEntityByName("Player " + std::to_string(p.info.senderID));
+					auto ent = scenetree->findEntityByName("Player " + std::to_string(p.info.senderID));
 					if (ent)
 					{
-						scenegraph->deleteEntity(ent->info.ID);
+						scenetree->deleteEntity(ent->info.ID);
 					}
 				}
 			});
@@ -159,17 +159,17 @@ void Game::update()
 		{
 			networking = true;
 			network_manager->startClient();
-			scenegraph->enableNetworking();
-			scenegraph->createEntity({ "CollisionManager", "CollisionManager" });
+			scenetree->enableNetworking();
+			scenetree->createEntity({ "CollisionManager", "CollisionManager" });
 		}
 	}
 
-	scenegraph->update(dt);
+	scenetree->update(dt);
 }
 
 void Game::draw() const
 {
 	window->clear({ 40, 40, 40, 255 });
-	scenegraph->draw(*window.get());
+	scenetree->draw(*window.get());
 	window->display();
 }

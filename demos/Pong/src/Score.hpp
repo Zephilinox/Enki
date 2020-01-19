@@ -9,7 +9,7 @@ class Score : public enki::Entity
 public:
 	Score(enki::EntityInfo info, enki::GameData* game_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 	void draw(enki::Renderer* renderer) final;
 
 	void serializeOnConnection(enki::Packet& p) final;

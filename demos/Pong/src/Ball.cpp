@@ -1,7 +1,7 @@
 #include "Ball.hpp"
 
 //SELF
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 #include "Score.hpp"
 
 Ball::Ball(enki::EntityInfo info, enki::GameData* game_data)
@@ -10,7 +10,7 @@ Ball::Ball(enki::EntityInfo info, enki::GameData* game_data)
 	network_tick_rate = 1;
 }
 
-void Ball::onSpawn([[maybe_unused]]enki::Packet& p)
+void Ball::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	texture.loadFromFile("resources/Ball.png");
 	sprite.setTexture(texture);
@@ -19,7 +19,7 @@ void Ball::onSpawn([[maybe_unused]]enki::Packet& p)
 
 void Ball::update(float dt)
 {
-	if (game_data->scenegraph->findEntitiesByType(hash("Paddle")).size() != 2 ||
+	if (game_data->scenetree->findEntitiesByType(hash("Paddle")).size() != 2 ||
 		!isOwner())
 	{
 		return;
@@ -33,10 +33,10 @@ void Ball::update(float dt)
 			sprite.setPosition(320 - 16, 180 - 16);
 			y_speed = float(std::rand() % 300 + 100);
 
-			Score* score = game_data->scenegraph->findEntityByType<Score>(hash("Score"));
+			Score* score = game_data->scenetree->findEntityByType<Score>(hash("Score"));
 			if (score)
 			{
-				game_data->scenegraph->rpc_man.callEntityRPC(&Score::increaseScore2, "increaseScore2", score);
+				game_data->scenetree->rpc_man.callEntityRPC(&Score::increaseScore2, "increaseScore2", score);
 			}
 
 			moving_left = false;
@@ -50,10 +50,10 @@ void Ball::update(float dt)
 			sprite.setPosition(320 - 16, 180 - 16);
 			y_speed = float(std::rand() % 300 + 100);
 
-			Score* score = game_data->scenegraph->findEntityByType<Score>(hash("Score"));
+			Score* score = game_data->scenetree->findEntityByType<Score>(hash("Score"));
 			if (score)
 			{
-				game_data->scenegraph->rpc_man.callEntityRPC(&Score::increaseScore1, "increaseScore1", score);
+				game_data->scenetree->rpc_man.callEntityRPC(&Score::increaseScore1, "increaseScore1", score);
 			}
 
 			moving_left = true;

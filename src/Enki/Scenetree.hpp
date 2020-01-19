@@ -237,7 +237,7 @@ private:
 		Packet& p);
 
 	//Used by clients when receiving a packet containing a tree of entities that they need to reproduce on their machine
-	void createEntityNetworkedTree(Packet p);
+	void createEntitiesFromTreePacket(Packet p);
 
 	void input(sf::Event& e, EntityID ID);
 	void update(float dt, EntityID ID);

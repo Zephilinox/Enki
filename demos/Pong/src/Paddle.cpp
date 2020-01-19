@@ -2,7 +2,7 @@
 
 //LIBS
 #include <spdlog/fmt/fmt.h>
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 Paddle::Paddle(enki::EntityInfo info, enki::GameData* game_data)
 	: enki::Entity(info, game_data)
@@ -10,7 +10,7 @@ Paddle::Paddle(enki::EntityInfo info, enki::GameData* game_data)
 	network_tick_rate = 1;
 }
 
-void Paddle::onSpawn([[maybe_unused]]enki::Packet& p)
+void Paddle::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	texture.loadFromFile("resources/Paddle.png");
 	sprite.setTexture(texture);
@@ -55,7 +55,7 @@ void Paddle::input(sf::Event& e)
 
 		if (e.key.code == sf::Keyboard::Num3)
 		{
-			game_data->scenegraph->rpc_man.callEntityRPC(
+			game_data->scenetree->rpc_man.callEntityRPC(
 				&Paddle::setColour, "setColour", this, std::rand() % 255, std::rand() % 255, std::rand() % 255);
 		}
 	}

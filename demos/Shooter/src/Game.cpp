@@ -29,20 +29,20 @@ Game::Game()
 
 	custom_data->input_manager = &input_manager;
 
-	scenegraph = std::make_unique<enki::Scenegraph>(game_data.get());
+	scenetree = std::make_unique<enki::Scenetree>(game_data.get());
 	auto enki_logger = spdlog::get("Enki");
 	enki_logger->set_level(spdlog::level::err);
 
 	network_manager = std::make_unique<enki::NetworkManager>();
 
-	game_data->scenegraph = scenegraph.get();
+	game_data->scenetree = scenetree.get();
 	game_data->network_manager = network_manager.get();
 	game_data->custom = custom_data.get();
 
-	scenegraph->registerEntity<Player>("Player", window.get());
-	scenegraph->registerEntity<class Floor>("Floor");
-	scenegraph->registerEntity<class Wall>("Wall");
-	scenegraph->registerEntity<HealthSpawner>("HealthSpawner");
+	scenetree->registerEntity<Player>("Player", window.get());
+	scenetree->registerEntity<class Floor>("Floor");
+	scenetree->registerEntity<class Wall>("Wall");
+	scenetree->registerEntity<HealthSpawner>("HealthSpawner");
 
 	run();
 }
@@ -87,7 +87,7 @@ void Game::input()
 			custom_data->window_active = false;
 		}
 
-		scenegraph->input(e);
+		scenetree->input(e);
 	}
 }
 
@@ -104,13 +104,13 @@ void Game::update()
 		{
 			networking = true;
 			network_manager->startHost();
-			scenegraph->enableNetworking();
+			scenetree->enableNetworking();
 
-			map_manager = std::make_unique<MapManager>(scenegraph.get(), network_manager.get());
+			map_manager = std::make_unique<MapManager>(scenetree.get(), network_manager.get());
 			custom_data->map_manager = map_manager.get();
 			map_manager->createMap();
 
-			scenegraph->createNetworkedEntity({ "Player", "Player 1" });
+			scenetree->createNetworkedEntity({ "Player", "Player 1" });
 
 			mc1 = network_manager->server->on_packet_received.connect([this](enki::Packet p)
 			{
@@ -119,7 +119,7 @@ void Game::update()
 					//not already part of the game
 					if (!players.count(p.info.senderID))
 					{
-						scenegraph->createNetworkedEntity({ "Player", "Player " + std::to_string(p.info.senderID), 0, p.info.senderID });
+						scenetree->createNetworkedEntity({ "Player", "Player " + std::to_string(p.info.senderID), 0, p.info.senderID });
 						players.insert(p.info.senderID);
 					}
 				}
@@ -130,19 +130,19 @@ void Game::update()
 		{
 			networking = true;
 			network_manager->startClient();
-			scenegraph->enableNetworking();
+			scenetree->enableNetworking();
 
-			map_manager = std::make_unique<MapManager>(scenegraph.get(), network_manager.get());
+			map_manager = std::make_unique<MapManager>(scenetree.get(), network_manager.get());
 			custom_data->map_manager = map_manager.get();
 		}
 	}
 
-	scenegraph->update(dt);
+	scenetree->update(dt);
 }
 
 void Game::draw() const
 {
 	window->clear({ 0, 0, 0, 255 });
-	scenegraph->draw(*window.get());
+	scenetree->draw(*window.get());
 	window->display();
 }

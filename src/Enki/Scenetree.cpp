@@ -567,7 +567,7 @@ void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 		"Creating networked entity as the server "
 		"to all clients. Sending tree\n\t{}",
 		e->info);
-	game_data->network_manager->server->sendPacketToAllClients(0, &p);
+	game_data->network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
 }
 
 Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
@@ -679,41 +679,60 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	return entity;
 }
 
-void Scenetree::createEntityNetworkedTree(Packet p)
+void Scenetree::createEntitiesFromTreePacket(Packet p)
 {
-	/*if (!net_man->client)
+	if (!game_data->network_manager->client)
 	{
 		throw;
 	}
 
-	auto [local, version, index] = splitID(info.ID);
-	auto type = info.type;
-	auto e = registeredTypes[type](std::move(info), this);
-	auto entity = e.get();
-
-	if (index >= entitiesNetworked.size())	//need to create a new one
+	try
 	{
-		while (index != entitiesNetworked.size())	//need to create empty ents to match required index
+		auto info = p.read<EntityInfo>();
+		auto spawnInfo = p.read<Packet>();
+
+		auto [local, version, index] = splitID(info.ID);
+		auto type = info.type;
+
+		if (info.parentID == 0)
 		{
-			entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+			entitiesParentless.push_back(info.ID);
 		}
 
-		//now index == size, so last push back is the correct index
-		entitiesNetworked.emplace_back(VersionEntityPair{version, std::move(e)});
+		auto e = registeredTypes[type](std::move(info), game_data);
+		auto entity = e.get();
+
+		if (index >= entitiesNetworked.size())	//need to create a new one
+		{
+			while (index != entitiesNetworked.size())	//need to create empty ents to match required index
+			{
+				entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+			}
+
+			//now index == size, so last push back is the correct index
+			entitiesNetworked.emplace_back(VersionEntityPair{version, std::move(e)});
+		}
+		else
+		{
+			if (entitiesNetworked[index].version != version)
+			{
+				throw;
+			}
+			else if (entitiesNetworked[index].entity != nullptr)
+			{
+				throw;
+			}
+
+			entitiesNetworked[index] = {version, std::move(e)};
+		}
+
+		//todo: this is calling it from parent-to-child, should be child-to-parent
+		entity->onSpawn(spawnInfo);
 	}
-	else
+	catch (...)
 	{
-		if (entitiesNetworked[index].version != version)
-		{
-			throw;
-		}
-		else if (entitiesNetworked[index].entity != nullptr)
-		{
-			throw;
-		}
-
-		entitiesNetworked[index] = {version, std::move(e)};
-	}*/
+		//todo: this is a shit way of handling this problem
+	}
 }
 
 void Scenetree::input(sf::Event& event, EntityID ID)
@@ -914,6 +933,8 @@ void Scenetree::receivedPacketFromClient(Packet p)
 			//Don't send entity updates back to the sender
 			game_data->network_manager->server->sendPacketToAllExceptOneClient(
 				p.info.senderID, 0, &p);
+			//game_data->network_manager->server->sendPacketToAllClients(
+			//	p.info.senderID, &p);
 			break;
 		}
 
@@ -1138,7 +1159,9 @@ void Scenetree::receivedPacketFromServer(Packet p)
 
 		case ENTITY_CREATION_TREE:
 		{
-			createEntityNetworkedTree(std::move(p));
+			//todo: this only happens when a new entity is created on the server
+			//for on-connection, it's a different enum, silly
+			createEntitiesFromTreePacket(std::move(p));
 			break;
 		}
 
@@ -1147,12 +1170,37 @@ void Scenetree::receivedPacketFromServer(Packet p)
 			//auto info = p.read<EntityInfo>();
 			//auto ent = createEntityNetworkedFromRequest(info, {}, {});	//todo: children/packet
 			//ent->deserializeOnConnection(p);
+
+			//todo: this is the on-connection stuff :)
+			//so we'll need to grab info, deserialize on connection, and loop until reaching the end
+			//onSpawn doesn't get called here though, not sure if that's okay or not
+			//we would need to save the spawn info for every networked entity on the server and resend it when someone new connects if not
+			//also, what order is deserialization called? no clue, does it matter? no clue, but probably
 			break;
 		}
 
 		case ENTITY_UPDATE:
 		{
-			auto info = p.read<EntityInfo>();
+			/* //todo: user has some way of overriding expected size, as sizeof() is only accurate for POD (and even then iffy, i.e compressed floats, all depends on how it gets serialized)
+			 * //but even then iffy, because what about vector? it's variable, so it would be a minimum size requirement at best in that case, or max in the compressed case, so... useless?
+			if (!p.canDeserialize<EntityInfo>())
+			{
+				console->error(
+					"Received entity update with an invalid packet{}");
+				return;
+			}*/
+
+			EntityInfo info;
+			try
+			{
+				p >> info;
+			}
+			catch (...)
+			{
+				console->error("Received entity update with an invalid packet as it failed to deserialize EntityInfo {}", info);
+				return;
+			}
+
 			auto ent = findEntity(info.ID);
 			if (!ent)
 			{

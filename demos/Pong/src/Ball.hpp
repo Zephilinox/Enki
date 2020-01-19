@@ -9,7 +9,7 @@ class Ball : public enki::Entity
 public:
 	Ball(enki::EntityInfo info, enki::GameData* game_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 	void update(float dt) final;
 	void draw(enki::Renderer* renderer) final;
 

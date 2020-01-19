@@ -4,7 +4,7 @@
 #include <experimental/vector>
 
 //LIBS
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 Bullet::Bullet(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
 	: Entity(info, data)
@@ -95,7 +95,7 @@ void Bullet::update(float dt)
 
 	if (!alive)
 	{
-		game_data->scenegraph->deleteEntity(info.ID);
+		game_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
@@ -168,6 +168,6 @@ void Bullet::handleCollision()
 	if (alive)
 	{
 		alive = false;
-		game_data->scenegraph->deleteEntity(info.ID);
+		game_data->scenetree->deleteEntity(info.ID);
 	}
 }

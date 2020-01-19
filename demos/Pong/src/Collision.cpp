@@ -2,7 +2,7 @@
 
 //LIBS
 #include <spdlog/fmt/fmt.h>
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 //SELF
 #include "Ball.hpp"
@@ -13,7 +13,7 @@ Collision::Collision(enki::EntityInfo info, enki::GameData* game_data)
 {
 }
 
-void Collision::onSpawn([[maybe_unused]] enki::Packet& p)
+void Collision::onSpawn([[maybe_unused]] enki::Packet p)
 {
 	ball_collider.height = 32;
 	ball_collider.width = 32;
@@ -28,11 +28,11 @@ void Collision::onSpawn([[maybe_unused]] enki::Packet& p)
 void Collision::update([[maybe_unused]]float dt)
 {
 	auto console = spdlog::get("console");
-	auto scenegraph = game_data->scenegraph;
+	auto scenetree = game_data->scenetree;
 
-	Ball* ball = scenegraph->findEntityByType<Ball>(hash("Ball"));
-	Paddle* paddle1 = scenegraph->findEntityByName<Paddle>("Paddle 1");
-	Paddle* paddle2 = scenegraph->findEntityByName<Paddle>("Paddle 2");
+	Ball* ball = scenetree->findEntityByType<Ball>(hash("Ball"));
+	Paddle* paddle1 = scenetree->findEntityByName<Paddle>("Paddle 1");
+	Paddle* paddle2 = scenetree->findEntityByName<Paddle>("Paddle 2");
 
 	if (ball && paddle1 && paddle2)
 	{

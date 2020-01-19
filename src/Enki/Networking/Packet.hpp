@@ -113,6 +113,9 @@ public:
 	//Used before sending the packet to some other function which may want to deserialize all the data itself
 	void resetReadPosition();
 
+	//Used before the client host sends a packet to the server host directly, and vice/versa
+	void resetWritePosition();
+
 	//Clear the packet of all written data
 	//More performant than constructing a new packet
 	void clear();
@@ -204,7 +207,7 @@ Packet& Packet::operator<<(std::vector<T> data)
 {
 	*this << data.size();
 
-	if (data.size() == 0) return *this;
+	if (data.empty()) return *this;
 
 	if constexpr (std::is_trivially_copyable_v<T>)
 	{
@@ -227,6 +230,8 @@ Packet& Packet::operator>>(std::vector<T>& data)
 	std::size_t size;
 	*this >> size;
 	data.resize(size);
+
+	if (data.empty()) return *this;
 
 	if constexpr (std::is_trivially_copyable_v<T>)
 	{

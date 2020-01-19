@@ -247,9 +247,16 @@ void Packet::resetReadPosition()
 	bits_read = 8;
 }
 
+void Packet::resetWritePosition()
+{
+	bytes_written = sizeof(PacketHeader);
+	bits_written = 8;
+}
+
 void Packet::clear()
 {
 	bytes.clear();
+	bytes.resize(sizeof(PacketHeader));
 	memcpy(bytes.data(), &header, sizeof(PacketHeader));
 	bytes_read = sizeof(PacketHeader);
 	bits_read = 8;

@@ -40,7 +40,7 @@ set(Enki_HEADERS
 	
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
-	"Enki/Scenegraph.hpp"
+	"Enki/Scenetree.hpp"
 	"Enki/Entity.hpp"
 	"Enki/GameData.hpp"
 	"Enki/Renderer.hpp"
@@ -82,7 +82,7 @@ set (Enki_SRC
 	
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
-	"Enki/Scenegraph.cpp"
+	"Enki/Scenetree.cpp"
 	"Enki/Renderer.cpp"
 	"Enki/RNG.cpp"
 	"Enki/AnimatedSprite.cpp"

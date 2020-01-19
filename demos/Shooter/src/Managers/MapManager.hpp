@@ -5,7 +5,7 @@
 
 //LIB
 #include <SFML/Graphics.hpp>
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 enum Tile
 {
@@ -19,7 +19,7 @@ enum Tile
 class MapManager
 {
 public:
-	MapManager(enki::Scenegraph* scenegraph, enki::NetworkManager* network_manager);
+	MapManager(enki::Scenetree* scenetree, enki::NetworkManager* network_manager);
 
 	void createMap();
 	
@@ -36,6 +36,6 @@ private:
 	int height;
 	int tile_size = 64;
 	std::vector<std::vector<Tile>> map;
-	enki::Scenegraph* scenegraph;
+	enki::Scenetree* scenetree;
 	enki::NetworkManager* network_manager;
 };

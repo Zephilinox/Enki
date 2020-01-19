@@ -2,7 +2,7 @@
 
 //LIBS
 #include <Enki/GameData.hpp>
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 //SELF
 #include "Player.hpp"
@@ -26,8 +26,8 @@ HealthSpawner::HealthSpawner(enki::EntityInfo info, enki::GameData* game_data)
 
 	pickup.setTexture(pickup_texture);
 
-	game_data->scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "HealthSpawner", "spawn", &HealthSpawner::spawn);
-	game_data->scenegraph->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "HealthSpawner", "pickedUp", &HealthSpawner::pickedUp);
+	game_data->scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "HealthSpawner", "spawn", &HealthSpawner::spawn);
+	game_data->scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "HealthSpawner", "pickedUp", &HealthSpawner::pickedUp);
 }
 
 void HealthSpawner::onSpawn(enki::Packet & p)
@@ -54,7 +54,7 @@ void HealthSpawner::update(float dt)
 		elapsed_spawn_time += dt;
 		if (elapsed_spawn_time > spawn_delay)
 		{
-			game_data->scenegraph->rpc_man.call(&HealthSpawner::spawn, "spawn", game_data->network_manager, this);
+			game_data->scenetree->rpc_man.call(&HealthSpawner::spawn, "spawn", game_data->network_manager, this);
 			elapsed_spawn_time = 0;
 		}
 	}
@@ -84,6 +84,6 @@ void HealthSpawner::spawn()
 void HealthSpawner::pickedUp(enki::EntityID playerID)
 {
 	pickupAvailable = false;
-	auto player = static_cast<Player*>(game_data->scenegraph->getEntity(playerID));
+	auto player = static_cast<Player*>(game_data->scenetree->getEntity(playerID));
 	player->increaseHP();
 }

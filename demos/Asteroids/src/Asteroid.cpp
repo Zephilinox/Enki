@@ -4,7 +4,7 @@
 #include <experimental/vector>
 
 //LIBS
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 Asteroid::Asteroid(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
 	: Entity(info, data)
@@ -58,7 +58,7 @@ void Asteroid::update(float dt)
 
 	if (!alive)
 	{
-		game_data->scenegraph->deleteEntity(info.ID);
+		game_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
@@ -194,7 +194,7 @@ void Asteroid::split()
 				<< shape.getPosition().x + (std::rand() % 20 - 10)
 				<< shape.getPosition().y + (std::rand() % 20 - 10)
 				<< speed + (std::rand() % 200 + 50);
-			game_data->scenegraph->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+			game_data->scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
 		};
 
 		newAsteroid();
@@ -202,5 +202,5 @@ void Asteroid::split()
 	}
 
 	alive = false;
-	game_data->scenegraph->deleteEntity(info.ID);
+	game_data->scenetree->deleteEntity(info.ID);
 }

@@ -4,7 +4,7 @@
 #include <experimental/vector>
 
 //LIBS
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 //SELF
 #include "Bullet.hpp"
@@ -26,12 +26,12 @@ void CollisionManager::onSpawn([[maybe_unused]]enki::Packet& p)
 
 void CollisionManager::update(float dt)
 {
-	auto bullets = game_data->scenegraph->findEntitiesByType("Bullet");
-	auto asteroids = game_data->scenegraph->findEntitiesByType("Asteroid");
-	auto player1 = game_data->scenegraph->findEntityByName<Player>("Player 1");
-	auto player2 = game_data->scenegraph->findEntityByName<Player>("Player 2");
-	auto player3 = game_data->scenegraph->findEntityByName<Player>("Player 3");
-	auto player4 = game_data->scenegraph->findEntityByName<Player>("Player 4");
+	auto bullets = game_data->scenetree->findEntitiesByType("Bullet");
+	auto asteroids = game_data->scenetree->findEntitiesByType("Asteroid");
+	auto player1 = game_data->scenetree->findEntityByName<Player>("Player 1");
+	auto player2 = game_data->scenetree->findEntityByName<Player>("Player 2");
+	auto player3 = game_data->scenetree->findEntityByName<Player>("Player 3");
+	auto player4 = game_data->scenetree->findEntityByName<Player>("Player 4");
 
 	const auto circlesColliding = [](sf::CircleShape& shape_one, sf::CircleShape& shape_two) -> bool
 	{

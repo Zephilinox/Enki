@@ -2,7 +2,7 @@
 
 //LIBS
 #include <spdlog/fmt/fmt.h>
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 //SELF
 #include "Ball.hpp"
@@ -13,7 +13,7 @@ PlayerText::PlayerText(enki::EntityInfo info, enki::GameData* game_data)
 {
 }
 
-void PlayerText::onSpawn([[maybe_unused]] enki::Packet& p)
+void PlayerText::onSpawn([[maybe_unused]] enki::Packet p)
 {
 	if (!font.loadFromFile("resources/arial.ttf"))
 	{
@@ -26,25 +26,27 @@ void PlayerText::onSpawn([[maybe_unused]] enki::Packet& p)
 	label.setCharacterSize(12);
 }
 
-void PlayerText::update([[maybe_unused]]float dt)
+void PlayerText::update([[maybe_unused]] float dt)
 {
 	auto console = spdlog::get("console");
-	auto scenegraph = game_data->scenegraph;
-	auto parent = scenegraph->getEntity(info.parentID);
+	auto scenetree = game_data->scenetree;
+	auto parent = scenetree->findEntity(info.parentID);
 
 	if (parent)
 	{
-		auto parent_paddle = dynamic_cast<Paddle*>(parent);
-		if (parent_paddle)
+		if (parent->info.type == hash("Paddle"))
 		{
+			auto parent_paddle = static_cast<Paddle*>(parent);
 			label.setPosition(parent_paddle->sprite.getPosition() - sf::Vector2f(6, 16));
 		}
-
-		auto parent_player_text = dynamic_cast<PlayerText*>(parent);
-		if (parent_player_text)
+		else if (parent->info.type == hash("PlayerText"))
 		{
-			label.setString(std::to_string(info.type) + " " + std::to_string(info.ID));
-			label.setPosition(parent_player_text->label.getPosition() - sf::Vector2f(0, 16));
+			auto parent_player_text = static_cast<PlayerText*>(parent);
+			if (parent_player_text)
+			{
+				label.setString(std::to_string(info.type) + " " + std::to_string(info.ID));
+				label.setPosition(parent_player_text->label.getPosition() - sf::Vector2f(0, 16));
+			}
 		}
 	}
 }

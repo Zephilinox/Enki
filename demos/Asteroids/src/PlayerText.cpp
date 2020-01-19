@@ -2,7 +2,7 @@
 
 //LIBS
 #include <spdlog/fmt/fmt.h>
-#include <Enki/Scenegraph.hpp>
+#include <Enki/Scenetree.hpp>
 
 //SELF
 #include "Player.hpp"
@@ -27,7 +27,7 @@ void PlayerText::onSpawn([[maybe_unused]] enki::Packet& p)
 void PlayerText::update([[maybe_unused]]float dt)
 {
 	auto console = spdlog::get("console");
-	auto parent = game_data->scenegraph->getEntity(info.parentID);
+	auto parent = game_data->scenetree->getEntity(info.parentID);
 
 	if (parent && parent->info.type == "Player")
 	{
