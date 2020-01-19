@@ -96,11 +96,11 @@ script:
     
 after_success:
     - ls -Rla
-    - cat coverage.info
-    - less coverage.info
     # Create lcov report
     # capture coverage info
     - lcov --capture --directory . --output-file coverage.info
+    - cat coverage.info
+    - less coverage.info
     # filter out system and extra files.
     # To also not include test code in coverage add them with full path to the patterns: '*/tests/*'
     - lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
