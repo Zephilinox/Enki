@@ -69,6 +69,8 @@ script:
   #- ./travis_gcc_cpp17
   # cppcheck
   #- cppcheck --quiet --error-exitcode=1 . 
+    - rm -rf build
+    - mkdir build
     - cd build
     - cmake -DSFML_DIR=sfml/install/lib/cmake/SFML/ -DCODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DDEMOS=OFF -DTESTS=ON ..
     # -- passes j2 to the build tool
