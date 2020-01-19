@@ -98,6 +98,7 @@ script:
     - ./Tests
     - lcov --capture --directory . --output-file coverage.info
     - cat coverage.info
+    - find . -name '*.gcda' -print -exec cat {} \; -exec echo \;
     - cd src
     - ./Tests
     - lcov --capture --directory . --output-file coverage.info
