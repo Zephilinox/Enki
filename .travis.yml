@@ -57,7 +57,7 @@ install:
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
   - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-8 90
   - gcov -v
-  - ln -sf /usr/bin/gcov-8 /usr/bin/gcov
+  - sudo ln -sf /usr/bin/gcov-8 /usr/bin/gcov
 
 before_script:
     - git clone https://github.com/sfml/sfml && cd sfml && mkdir build && cd build &&
@@ -70,7 +70,7 @@ script:
   #- ./travis_gcc_cpp17
   # cppcheck
   #- cppcheck --quiet --error-exitcode=1 . 
-    - ln -sf /usr/bin/gcov-8 /usr/bin/gcov
+    - sudo ln -sf /usr/bin/gcov-8 /usr/bin/gcov
     - gcov -v
     - rm -rf build
     - mkdir build
