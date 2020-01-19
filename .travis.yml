@@ -14,11 +14,10 @@ addons:
     - libflac-dev
     - libvorbis-dev
     - libgl1-mesa-dev
-    - lcov
   apt: {
     packages:
       [
-        "g++-8", "valgrind"
+        "g++-8", "valgrind", "lcov"
       ],
     sources:
       [
