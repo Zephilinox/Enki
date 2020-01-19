@@ -79,6 +79,11 @@ after_success:
     - pwd
     - cd bin
     - ls
+    - pwd
+    - cd ./Tests
+    - cd tests
+    - cd /Tests
+    - cd Tests/
     - cd Tests
     - ls
     - cd Debug
