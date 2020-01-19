@@ -27,25 +27,25 @@ struct ChildEntityCreationInfo
 	Packet spawnInfo;
 };
 
-class Scenegraph
+class Scenetree
 {
 public:
 	using BuilderFunction = std::function<std::unique_ptr<Entity>(EntityInfo)>;
 
 	//game_data will be passed to all created entities
-	Scenegraph(GameData* game_data);
+	Scenetree(GameData* game_data);
 
-	/*Set up the scenegraph for networked entities
+	/*Set up the scenetree for networked entities
 		Make sure the server or client has already been started*/
 	void enableNetworking();
 
-	//Calls input on all entities in the scenegraph
+	//Calls input on all entities in the scenetree
 	void input(sf::Event& e);
 
-	//Calls update on all entities in the scenegraph
+	//Calls update on all entities in the scenetree
 	void update(float dt);
 
-	//Calls draw on all entities in the scenegraph
+	//Calls draw on all entities in the scenetree
 	void draw(Renderer* renderer);
 
 	/*Register an entity for construction at a later date using that entity's type
@@ -166,7 +166,7 @@ private:
 };
 
 template <typename T, typename... Args>
-void Scenegraph::registerEntity(HashedID type, Args... args)
+void Scenetree::registerEntity(HashedID type, Args... args)
 {
 	//capture any additional constructor arguments by value because it's a safe default
 	//users can use pointers for big objects
@@ -176,7 +176,7 @@ void Scenegraph::registerEntity(HashedID type, Args... args)
 }
 
 template <typename... Args>
-void Scenegraph::registerEntityChildren(HashedID type, Args... args)
+void Scenetree::registerEntityChildren(HashedID type, Args... args)
 {
 	//We want to store args here if each child entity is valid
 	//but rather than check it before, we check it after and then delete
@@ -206,7 +206,7 @@ void Scenegraph::registerEntityChildren(HashedID type, Args... args)
 }
 
 template <typename T>
-T* Scenegraph::findEntityByType(HashedID type) const
+T* Scenetree::findEntityByType(HashedID type) const
 {
 	for (const auto& [ID, ent] : entities)
 	{
@@ -220,7 +220,7 @@ T* Scenegraph::findEntityByType(HashedID type) const
 }
 
 template <typename T>
-T* Scenegraph::findEntityByName(const std::string& name) const
+T* Scenetree::findEntityByName(const std::string& name) const
 {
 	for (const auto& [ID, ent] : entities)
 	{
@@ -234,7 +234,7 @@ T* Scenegraph::findEntityByName(const std::string& name) const
 }
 
 template <typename T>
-T* Scenegraph::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
+T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 {
 	for (const auto& [ID, ent] : entities)
 	{

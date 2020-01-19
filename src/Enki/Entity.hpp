@@ -1,5 +1,8 @@
 #pragma once
 
+//STD
+#include <sstream>
+
 //LIBS
 //For whatever reason fmt and enet conflict a bit because of the ordering of winsock includes
 //fmt includes all of WIN32, including winsocks2, so defining this fixes that
@@ -17,16 +20,18 @@
 
 namespace enki
 {
-using EntityID = std::int32_t;
+using EntityID = std::int64_t;
 
 struct EntityInfo
 {
-	HashedID type = 0;
-	std::string name;
+	HashedID type{};
+	std::string name{};
 
-	EntityID ID = 0;
-	ClientID ownerID = 0;
-	EntityID parentID = 0;
+	EntityID ID{};
+	ClientID ownerID{};
+	EntityID parentID{};
+
+	std::vector<EntityID> childIDs{};
 };
 
 inline bool operator==(const EntityInfo& lhs, const EntityInfo& rhs)
@@ -35,7 +40,8 @@ inline bool operator==(const EntityInfo& lhs, const EntityInfo& rhs)
 		   lhs.name == rhs.name &&
 		   lhs.type == rhs.type &&
 		   lhs.ownerID == rhs.ownerID &&
-		   lhs.parentID == rhs.parentID;
+		   lhs.parentID == rhs.parentID &&
+		   lhs.childIDs == rhs.childIDs;
 }
 
 inline bool operator!=(const EntityInfo& lhs, const EntityInfo& rhs)
@@ -45,7 +51,31 @@ inline bool operator!=(const EntityInfo& lhs, const EntityInfo& rhs)
 
 inline std::ostream& operator<<(std::ostream& os, const EntityInfo& info)
 {
-	return os << "Type: " << info.type << ", Name: " << info.name << ", ID: " << info.ID << ", ownerID: " << info.ownerID << ", parentID: " << info.parentID;
+	std::stringstream ss;
+
+	ss << "Type: " << info.type
+	   << ", Name: " << info.name
+	   << ", ID: " << info.ID
+	   << ", ownerID: " << info.ownerID
+	   << ", parentID: " << info.parentID
+	   << ", children = {";
+
+	for (auto id : info.childIDs)
+	{
+		ss << "\n"
+		   << id;
+	}
+
+	if (info.childIDs.empty())
+	{
+		ss << "}";
+	}
+	else
+	{
+		ss << "\n}";
+	}
+
+	return os << ss.str();
 }
 
 inline Packet& operator<<(Packet& p, EntityInfo& e)
@@ -54,13 +84,19 @@ inline Packet& operator<<(Packet& p, EntityInfo& e)
 	  << e.ownerID
 	  << e.type
 	  << e.name
-	  << e.parentID;
+	  << e.parentID
+	  << e.childIDs;
 	return p;
 }
 
 inline Packet& operator>>(Packet& p, EntityInfo& e)
 {
-	p >> e.ID >> e.ownerID >> e.type >> e.name >> e.parentID;
+	p >> e.ID
+	  >> e.ownerID
+	  >> e.type
+	  >> e.name
+	  >> e.parentID
+	  >> e.childIDs;
 	return p;
 }
 
@@ -68,7 +104,7 @@ class Entity
 {
 public:
 	//Each derived entity will have info and game_data
-	//passed to it by the scenegraph when it is created
+	//passed to it by the scenetree when it is created
 	Entity(EntityInfo info, GameData* game_data)
 		: info(std::move(info))
 		, game_data(game_data)
@@ -79,7 +115,9 @@ public:
 
 	//Called when an entity is created
 	//Called for children before parents
-	virtual void onSpawn([[maybe_unused]] Packet& p){};
+	virtual void onSpawn([[maybe_unused]] Packet p){};
+
+	virtual void onDespawn(){};
 
 	//Called when an SFML event occurs
 	virtual void input([[maybe_unused]] sf::Event& e){};
@@ -100,34 +138,36 @@ public:
 	//Called when receiving an entity update from a network tick
 	virtual void deserializeOnTick([[maybe_unused]] Packet& p) {}
 
+	[[nodiscard]] inline bool isLocal() const
+	{
+		//todo: better than localFromID?
+		return info.ID < 0;
+	}
+
 	//Determines if we have control over the entity
 	//Always true for local entities
 	[[nodiscard]] inline bool isOwner() const
 	{
-		//ID less than 0 is local
-		if (info.ID < 0)
+		if (isLocal())
 		{
 			return true;
 		}
-
-		//If we are the server and the owner isn't specified then we own it
-		if (!game_data->network_manager->client)
+		else
 		{
-			return info.ownerID == 0;
+			//If the owner ID matches our ID then we own it
+			return game_data->network_manager->client->getID() == info.ownerID;
 		}
-
-		//If the owner ID matches our ID then we own it
-		return game_data->network_manager->client->getID() == info.ownerID;
 	}
 
 	//Should not be modified directly in most cases
+	//todo: fix access
 	EntityInfo info;
 
-	//Provides access to scenegraph and network manager for all entities
+	//Provides access to scenetree and network manager for all entities
 	GameData* game_data;
 
-	//Used by the Scenegraph to mark entities for removal
-	//Can be used by the owning entity for safely marking itself for deletion next frame
+	//Used by the Scenetree to mark entities for removal
+	//todo: move out of entity, it's not safe to change it manually if networked
 	bool remove = false;
 
 	/*Every x ticks the entity will be automatically serialized via serializeOnTick

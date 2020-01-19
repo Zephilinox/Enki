@@ -36,28 +36,30 @@ enum PacketType : std::uint8_t
 	//Used by the RPCManager for free-standing, global function RPC's
 	GLOBAL_RPC,
 
-	//Used by the RPCManager and Scenegraph for Entity RPC's
+	//Used by the RPCManager and Scenetree for Entity RPC's
 	ENTITY_RPC,
 
 	//Used by the RPCManager for member function RPC's
 	CLASS_RPC,
 
-	//Used by the Scenegraph
+	//Used by the Scenetree
 	//Server sends this to a client to tell them a new networked entity is created
 	//Client sends this to request a new networked entity is created
-	ENTITY_CREATION,
+	ENTITY_CREATION_REQUEST,
 
-	//Used by the Scenegraph
+	ENTITY_CREATION_TREE,
+
+	//Used by the Scenetree
 	//Server sends this to a client when they first connect
 	//One sent per entity
 	ENTITY_CREATION_ON_CONNECTION,
 
-	//Used by the Scenegraph
+	//Used by the Scenetree
 	//Server sends this to a client to inform them of an entity update
 	//Client sends this to a server to inform it that an owned entity has updated
 	ENTITY_UPDATE,
 
-	//Used by the Scenegraph
+	//Used by the Scenetree
 	//Server sends this to a client to inform them that an entity has been deleted
 	//Client sends this to a server to inform it that an owned entity has been deleted
 	ENTITY_DELETION
@@ -133,7 +135,7 @@ public:
 
 	[[nodiscard]] std::size_t getBytesRead() const;
 
-	Packet& operator<<(Packet& data);
+	Packet& operator<<(Packet data);
 	Packet& operator>>(Packet& data);
 
 	Packet& operator<<(std::string data);
@@ -201,7 +203,21 @@ template <typename T>
 Packet& Packet::operator<<(std::vector<T> data)
 {
 	*this << data.size();
-	serialize(data.data(), sizeof(T) * data.size());
+
+	if (data.size() == 0) return *this;
+
+	if constexpr (std::is_trivially_copyable_v<T>)
+	{
+		serialize(data.data(), sizeof(T) * data.size());
+	}
+	else
+	{
+		for (auto& thing : data)
+		{
+			*this << thing;
+		}
+	}
+
 	return *this;
 }
 
@@ -211,7 +227,19 @@ Packet& Packet::operator>>(std::vector<T>& data)
 	std::size_t size;
 	*this >> size;
 	data.resize(size);
-	deserialize(data.data(), sizeof(T) * size);
+
+	if constexpr (std::is_trivially_copyable_v<T>)
+	{
+		deserialize(data.data(), sizeof(T) * data.size());
+	}
+	else
+	{
+		for (auto& thing : data)
+		{
+			*this >> thing;
+		}
+	}
+
 	return *this;
 }
 
@@ -249,6 +277,8 @@ T Packet::read()
 	*this >> t;
 	return t;
 }
+
+//todo: read multiple types and return as tuple for structured bindings
 
 template <typename T>
 void Packet::serialize(T* data, std::size_t size)
@@ -311,4 +341,4 @@ bool Packet::canDeserialize()
 
 	return true;
 }
-} // namespace enki
+}	// namespace enki

@@ -4,7 +4,7 @@
 #include <sstream>
 
 //SELF
-#include "Enki/Scenegraph.hpp"
+#include "Enki/Scenetree.hpp"
 #include "IMGUI/imgui_SFML.h"
 
 namespace enki
@@ -67,7 +67,7 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 		"print all entities",
 		[this](std::vector<std::string> tokens) {
 			std::string entity_strings;
-			this->game_data->scenegraph->forEachEntity([&](const Entity& ent) {
+			this->game_data->scenetree->forEachEntity([&](const Entity& ent) {
 				entity_strings += fmt::format("{}\n", ent.info);
 			});
 
@@ -77,6 +77,8 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				sf::Color::White,
 				Item::Type::CommandOutput,
 			});
+
+			printTree(this->game_data->scenetree);
 		}});
 
 	commands.emplace_back(Command{
@@ -94,9 +96,11 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				return;
 			}
 
-			EntityID id = std::stoi(tokens[0]);
+			EntityID id = std::stoll(tokens[0]);
 
-			if (!this->game_data->scenegraph->entityExists(id))
+			auto e = this->game_data->scenetree->findEntity(id);
+
+			if (!e)
 			{
 				addItem({
 					"delete",
@@ -107,25 +111,25 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				return;
 			}
 
-			this->game_data->scenegraph->deleteEntity(id);
-
 			this->addItem({
 				"delete",
-				fmt::format("deleted {}", this->game_data->scenegraph->getEntity(id)->info),
+				fmt::format("deleted {}", e->info),
 				sf::Color::White,
 				Item::Type::CommandOutput,
 			});
+
+			this->game_data->scenetree->deleteEntity(id);
 		}});
 
 	commands.emplace_back(Command{
 		"create",
 		"create an entity. e.g. create Console MainConsole",
 		[this](std::vector<std::string> tokens) {
-			if (tokens.size() < 2 || tokens.size() > 5)
+			if (tokens.size() < 2 || tokens.size() > 3)
 			{
 				addItem({
 					"create",
-					"Failed. Tokens must be between 2 and 5",
+					"Failed. Tokens must be between 2 and 3",
 					sf::Color::Red,
 					Item::Type::Other,
 				});
@@ -138,44 +142,25 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 
 			if (tokens.size() == 2)
 			{
-				ent = this->game_data->scenegraph->createEntity({
+				ent = this->game_data->scenetree->createEntityLocal(
 					entity_type,
-					tokens[1],
-				});
+					tokens[1]
+				);
 			}
 			else if (tokens.size() == 3)
 			{
-				ent = this->game_data->scenegraph->createEntity({
+				ent = this->game_data->scenetree->createEntityLocal(
 					entity_type,
 					tokens[1],
-					std::stoi(tokens[2]),
-				});
-			}
-			else if (tokens.size() == 4)
-			{
-				ent = this->game_data->scenegraph->createEntity({
-					entity_type,
-					tokens[1],
-					std::stoi(tokens[2]),
-					static_cast<ClientID>(std::stoi(tokens[3])),
-				});
-			}
-			else if (tokens.size() == 5)
-			{
-				ent = this->game_data->scenegraph->createEntity({
-					entity_type,
-					tokens[1],
-					std::stoi(tokens[2]),
-					static_cast<ClientID>(std::stoi(tokens[3])),
-					std::stoi(tokens[4]),
-				});
+					std::stoi(tokens[2])
+				);
 			}
 
 			if (!ent)
 			{
 				addItem({
 					"create",
-					"Failed. The scenegraph could not construct that entity",
+					"Failed. The scenetree could not construct that entity",
 					sf::Color::Red,
 					Item::Type::Other,
 				});
@@ -467,6 +452,8 @@ void Console::update(float dt)
 		ImGui::Separator();
 		ImGui::End();
 	}
+
+	ImGui::ShowDemoWindow();
 }
 
 void Console::addItem(Item item)

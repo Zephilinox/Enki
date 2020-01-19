@@ -288,7 +288,7 @@ std::size_t Packet::getBytesRead() const
 	return bytes_read;
 }
 
-Packet& Packet::operator<<(Packet& data)
+Packet& Packet::operator<<(Packet data)
 {
 	*this << data.bytes;
 	return *this;

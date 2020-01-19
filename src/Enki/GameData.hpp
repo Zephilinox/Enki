@@ -2,16 +2,16 @@
 
 namespace enki
 {
-class Scenegraph;
+class Scenetree;
 class NetworkManager;
 
-//Used by Entities to access the scenegraph and network manager
+//Used by Entities to access the scenetree and network manager
 //Alternatively users can pass required data to a derived entity constructor
-//when registering it with the scenegraph
+//when registering it with the scenetree
 struct GameData
 {
 public:
 	NetworkManager* network_manager = nullptr;
-	Scenegraph* scenegraph = nullptr;
+	Scenetree* scenetree = nullptr;
 };
 }	// namespace enki
