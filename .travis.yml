@@ -51,6 +51,8 @@ install:
     #- sudo apt-get install libsfml-dev
     #- sudo apt-cache policy cmake
     #- sudo apt-cache policy libsfml-dev
+  - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
+  - ${CXX} --version
 
 before_script:
     - git clone https://github.com/sfml/sfml && cd sfml && mkdir build && cd build &&
