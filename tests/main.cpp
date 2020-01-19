@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv)
 {
-#if _DEBUG
+#if !defined(NDEBUG)
 	doctest::Context context;
 	context.setOption("abort-after", 5);
 	context.applyCommandLine(argc, argv);
@@ -27,11 +27,12 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	fmt::print("Press enter to start benchmark");
+	//todo: detect CI
+	//fmt::print("Press enter to start benchmark");
 
-	std::cin.ignore();
+	//std::cin.ignore();
 
-	benchmark();
+	//benchmark();
 
 	return 0;
 }
