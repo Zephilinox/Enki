@@ -100,7 +100,6 @@ after_success:
     # capture coverage info
     - lcov --capture --directory . --output-file coverage.info
     - cat coverage.info
-    - less coverage.info
     # filter out system and extra files.
     # To also not include test code in coverage add them with full path to the patterns: '*/tests/*'
     - lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
