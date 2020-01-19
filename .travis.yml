@@ -22,7 +22,7 @@ addons:
       ],
     sources:
       [
-        "ubuntu-toolchain-r-test"
+        sourceline: "ppa:ubuntu-toolchain-r/test"
       ]
   }
 
