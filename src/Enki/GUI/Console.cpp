@@ -96,7 +96,23 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				return;
 			}
 
-			EntityID id = std::stoll(tokens[0]);
+			bool is_pretty = tokens[0][0] == 'L';
+			EntityID id;
+			if (is_pretty)
+				id = generateEntityIDFromPrettyID(tokens[0]);
+			else
+				id = std::stoll(tokens[0]);
+
+			if (id == this->info.ID)
+			{
+				addItem({
+					"delete",
+					"Failed. Cannot delete myself.",
+					sf::Color::Red,
+					Item::Type::Other,
+				});
+				return;
+			}
 
 			auto e = this->game_data->scenetree->findEntity(id);
 
@@ -104,7 +120,7 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 			{
 				addItem({
 					"delete",
-					"Failed. The entity does not exist",
+					fmt::format("Failed. The entity with ID {}({}) does not exist", id, prettyID(id)),
 					sf::Color::Red,
 					Item::Type::Other,
 				});

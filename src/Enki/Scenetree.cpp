@@ -98,7 +98,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 	Packet spawnInfo,
 	const std::vector<EntityChildCreationInfo>& children)
 {
-	if (parentID != 0 && findEntity(parentID) == nullptr)
+	if (parentID != Entity::InvalidID && findEntity(parentID) == nullptr)
 		return nullptr;
 	if (registeredTypes[type] == nullptr)
 		return nullptr;
@@ -114,7 +114,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 		info.ID = generateEntityID(true, 0, entitiesLocal.size());
 		info.parentID = parentID;
 
-		if (parentID == 0)
+		if (parentID == Entity::InvalidID)
 		{
 			entitiesParentless.push_back(info.ID);
 		}
@@ -136,7 +136,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 		info.ID = generateEntityID(true, entitiesLocal[index].version, index);
 		info.parentID = parentID;
 
-		if (parentID == 0)
+		if (parentID == Entity::InvalidID)
 		{
 			entitiesParentless.push_back(info.ID);
 		}
@@ -243,7 +243,7 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 	auto& e = entitiesLocal[index];
 	if (ID != e.entity->info.ID)
 		return ErrorCodeRemove::IDDoesNotMatchFoundID;
-	//this should never happen, the version we store and the version in the ID has diverged
+	//this should never happen, the version we store and the version in the ID has diverged somehow
 	if (version != e.version)
 		std::abort();
 
@@ -381,15 +381,17 @@ void Scenetree::update(float dt)
 		{
 			entitiesLocal[index].version++;
 			entitiesLocal[index].entity = nullptr;
+			freeIndicesLocal.push(index);
 		}
 		else
 		{
 			entitiesNetworked[index].version++;
 			entitiesNetworked[index].entity = nullptr;
+			freeIndicesNetworked.push(index);
 		}
 	}
 
-	for (int i = 0; i < entitiesParentless.size(); ++i)
+	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
 	{
 		update(dt, entitiesParentless[i]);
 	}
@@ -397,7 +399,7 @@ void Scenetree::update(float dt)
 
 void Scenetree::draw(Renderer* renderer)
 {
-	for (int i = 0; i < entitiesParentless.size(); ++i)
+	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
 	{
 		draw(renderer, entitiesParentless[i]);
 	}
@@ -416,7 +418,7 @@ void Scenetree::deleteEntity(EntityID ID)
 		return;
 	}
 
-	if (e->info.ID < 0)
+	if (localFromID(e->info.ID))
 	{
 		e->remove = true;
 	}

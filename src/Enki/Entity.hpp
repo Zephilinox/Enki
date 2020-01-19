@@ -1,6 +1,7 @@
 #pragma once
 
 //STD
+#include <charconv>
 #include <sstream>
 
 //LIBS
@@ -22,6 +23,89 @@
 namespace enki
 {
 using EntityID = std::int64_t;
+
+constexpr EntityID generateEntityID(bool local, std::uint32_t version, std::uint32_t index)
+{
+	//technically there's a small issue with index when it goes over 31 bits (2,147,483,647)
+	//since it's just ignored, it esentially rolls over back to zero, so that's a check we should make
+	//however if every entity is 100 bytes, then 2,147,483,647 entities is 215 gigabytes. I think we're safe for now.
+
+	//local, version, index
+	return static_cast<EntityID>(local) << 63 |
+		   static_cast<EntityID>(version) << 31 |
+		   ((static_cast<EntityID>(index) & 0x0000'0000'7FFF'FFFFLL) + 1);	//mask out top bit, which is bottom bit of version
+																			//+1 because an ID of 0 is !local, version 0, index 0, and ID 0 needs to be invalid, so force index to start at 1
+}
+
+inline EntityID generateEntityIDFromPrettyID(std::string_view prettyID)
+{
+	if (prettyID == "none")
+		return 0;
+
+	//todo: error checking and shit
+	auto posL = prettyID.find_first_of('L');
+	auto posV = prettyID.find_first_of('V');
+	auto posI = prettyID.find_first_of('I');
+	auto subL = prettyID.substr(posL + 1, posV - posL);
+	auto subV = prettyID.substr(posV + 1, posI - posV);
+	auto subI = prettyID.substr(posI + 1);
+
+	int local;
+	std::uint32_t version;
+	std::uint32_t index;
+	auto success = std::from_chars(subL.data(), subL.data() + subL.size(), local);
+	success = std::from_chars(subV.data(), subV.data() + subV.size(), version);
+	success = std::from_chars(subI.data(), subI.data() + subI.size(), index);
+
+	return generateEntityID(static_cast<bool>(local), version, index);
+};
+
+struct IDComponentLocalVersionIndex
+{
+	bool local;
+	std::uint32_t version;
+	std::uint32_t index;
+};
+
+constexpr IDComponentLocalVersionIndex splitID(EntityID ID)
+{
+	//todo: why did I switch the order here?
+	//local, version, index
+	return {
+		static_cast<bool>(ID >> 63),
+		static_cast<std::uint32_t>(ID >> 31),
+		static_cast<std::uint32_t>(ID & 0x0000'0000'7FFF'FFFFLL) - 1, //mask out top bit, which is bottom bit of version
+																			//subtract 1 for the same reason as above, just reversed, so we get the correct index
+	};
+}
+
+constexpr bool localFromID(EntityID ID)
+{
+	return static_cast<bool>(ID >> 63);
+}
+
+constexpr std::uint32_t versionFromID(EntityID ID)
+{
+	return static_cast<std::uint32_t>(ID >> 31);
+}
+
+constexpr std::uint32_t indexFromID(EntityID ID)
+{
+	return static_cast<std::uint32_t>(ID & 0x0000'0000'7FFF'FFFFLL) - 1;	//mask out top bit, which is bottom bit of version
+																			//subtract 1 for the same reason as above, just reversed, so we get the correct index
+}
+
+inline std::string prettyID(EntityID ID)
+{
+	if (ID == 0)
+		return "none";
+
+	//todo: look in to compile time formatting using MPark.Format
+	return fmt::format("L{}V{}I{}",
+		static_cast<int>(localFromID(ID)),
+		versionFromID(ID),
+		indexFromID(ID));
+}
 
 struct EntityInfo
 {
@@ -54,26 +138,27 @@ inline std::ostream& operator<<(std::ostream& os, const EntityInfo& info)
 {
 	std::stringstream ss;
 
+#if !defined(ENKI_RUNTIME_HASH_FAST) || defined(ENKI_HASH_DEBUG)
+	ss << "Type: " << hashToString(info.type)
+#else
 	ss << "Type: " << info.type
+#endif
 	   << ", Name: " << info.name
-	   << ", ID: " << info.ID
+	   << ", ID: " << prettyID(info.ID)
 	   << ", ownerID: " << info.ownerID
-	   << ", parentID: " << info.parentID
-	   << ", children = {";
-
-	for (auto id : info.childIDs)
+	   << ", parentID: " << prettyID(info.parentID);
+	
+	if (!info.childIDs.empty())
 	{
-		ss << "\n"
-		   << id;
-	}
+		ss << ", children = {";
 
-	if (info.childIDs.empty())
-	{
+		for (auto id : info.childIDs)
+		{
+			ss << "\n"
+			   << prettyID(id);
+		}
+
 		ss << "}";
-	}
-	else
-	{
-		ss << "\n}";
 	}
 
 	return os << ss.str();
@@ -92,18 +177,15 @@ inline Packet& operator<<(Packet& p, EntityInfo& e)
 
 inline Packet& operator>>(Packet& p, EntityInfo& e)
 {
-	p >> e.ID
-	  >> e.ownerID
-	  >> e.type
-	  >> e.name
-	  >> e.parentID
-	  >> e.childIDs;
+	p >> e.ID >> e.ownerID >> e.type >> e.name >> e.parentID >> e.childIDs;
 	return p;
 }
 
 class Entity
 {
 public:
+	static constexpr EntityID InvalidID = 0;
+
 	//Each derived entity will have info and game_data
 	//passed to it by the scenetree when it is created
 	Entity(EntityInfo info, GameData* game_data)
@@ -182,4 +264,4 @@ public:
 		This relies on the network_send_rate not being modified after the network_tick_rate is set*/
 	std::uint32_t network_tick_rate = 0;
 };
-}	// namespace enki
+}	 // namespace enki

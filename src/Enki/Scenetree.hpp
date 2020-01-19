@@ -1,14 +1,12 @@
 #pragma once
 
 //STD
-#include <bitset>
 #include <cstdint>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <queue>
 #include <set>
-#include <sstream>
 #include <vector>
 
 //LIBS
@@ -26,62 +24,6 @@
 namespace enki
 {
 using EntityType = HashedID;
-
-struct IDComponentLocalVersionIndex
-{
-	bool local;
-	std::uint32_t version;
-	std::uint32_t index;
-};
-
-constexpr EntityID generateEntityID(bool local, std::uint32_t version, std::uint32_t index)
-{
-	//technically there's a small issue with index when it goes over 31 bits (2,147,483,647)
-	//since it's just ignored, it esentially rolls over back to zero, so that's a check we should make
-	//however if every entity is 100 bytes, then 2,147,483,647 entities is 215 gigabytes. I think we're safe for now.
-
-	//local, index, version
-	return static_cast<EntityID>(local) << 63 |
-		   static_cast<EntityID>(index) << 31 |
-		   (static_cast<EntityID>(version) & 0x0000'0000'7FFF'FFFFLL) + 1;	//mask out top bit, which is bottom bit of version
-																			  //+1 because an ID of 0 is !local, version 0, index 0, and ID 0 needs to be invalid, so force index to start at 1
-}
-
-constexpr IDComponentLocalVersionIndex splitID(EntityID ID)
-{
-	//local, index, version
-	return {
-		static_cast<bool>(ID >> 63),
-		static_cast<std::uint32_t>(ID & 0x0000'0000'7FFF'FFFFLL) - 1,	//mask out top bit of version, which is bottom bit of index
-		static_cast<std::uint32_t>(ID >> 31),
-
-		//subtract 1 for the same reason as above, just reversed, so we get the correct index
-	};
-}
-
-constexpr bool localFromID(EntityID ID)
-{
-	return static_cast<bool>(ID >> 63);
-}
-
-constexpr std::uint32_t versionFromID(EntityID ID)
-{
-	return static_cast<std::uint32_t>(ID >> 31);
-}
-
-constexpr std::uint32_t indexFromID(EntityID ID)
-{
-	return static_cast<std::uint32_t>(ID & 0x0000'0000'7FFF'FFFFLL - 1);	//mask out top bit, which is bottom bit of version
-																			//subtract 1 for the same reasin as above, just reversed, so we get the correct index
-}
-
-inline std::string prettyID(EntityID ID)
-{
-	auto [local, version, index] = splitID(ID);
-	std::stringstream str;
-	str << "ID=" << ID << "{Local=" << std::boolalpha << local << ", Version=" << version << ", Index=" << index << "}";
-	return str.str();
-}
 
 class Scenetree;
 
@@ -390,6 +332,7 @@ inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 {
 	if (tree == nullptr)
 		return;
+
 	if (root == 0)
 	{
 		std::cout << "Scenetree:\n";
@@ -404,12 +347,27 @@ inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 		auto e = tree->findEntity(root);
 		if (e)
 		{
+			std::string prefix;
+			prefix.reserve(8 * (depth + 1));
+						
 			for (int i = 0; i < depth - 1; ++i)
 			{
-				std::cout << "|       ";
+				prefix += "|       ";
 			}
-			std::cout << "\\_______";
-			std::cout << e->info.type << " " << e->info.name << " " << prettyID(e->info.ID) << "\n";
+
+			prefix += "\\_______";
+
+			#if !defined(ENKI_RUNTIME_HASH_FAST) || defined(ENKI_HASH_DEBUG)
+				std::cout << prefix << fmt::format("{} {} {}\n",
+				hashToString(e->info.type),
+					e->info.name,
+					prettyID(e->info.ID));
+			#else
+				std::cout << prefix << fmt::format("{} {} {}\n",
+					e->info.type,
+					e->info.name,
+					prettyID(e->info.ID));
+			#endif
 
 			for (auto id : e->info.childIDs)
 			{
@@ -418,4 +376,4 @@ inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 		}
 	}
 }
-}	// namespace enki
+}	 // namespace enki
