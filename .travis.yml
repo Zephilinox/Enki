@@ -75,6 +75,7 @@ after_success:
     # Create lcov report
     # capture coverage info
     - cd ..
+    - ls -Rla
     - ls
     - pwd
     - cd bin
