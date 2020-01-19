@@ -9,7 +9,7 @@
 //
 #if !defined(SPDLOG_FMT_EXTERNAL)
 #ifndef FMT_HEADER_ONLY
-#define FMT_HEADER_ONLY
+#define FMT_HEADER_ONLY 1
 #endif
 #include "bundled/ostream.h"
 #include "fmt.h"

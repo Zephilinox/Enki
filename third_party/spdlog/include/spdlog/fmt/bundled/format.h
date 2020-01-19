@@ -3590,6 +3590,8 @@ FMT_END_NAMESPACE
 #  define fmt(s) FMT_STRING(s)
 #endif
 
+#define FMT_HEADER_ONLY 1
+
 #ifdef FMT_HEADER_ONLY
 #  define FMT_FUNC inline
 #  include "format-inl.h"
