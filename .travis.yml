@@ -90,6 +90,7 @@ after_success:
     - cd Debug
     - ls
     - ./Tests.exe
+    - ./Tests
     - lcov --capture --directory . --output-file coverage.info
     # filter out system and extra files.
     # To also not include test code in coverage add them with full path to the patterns: '*/tests/*'
