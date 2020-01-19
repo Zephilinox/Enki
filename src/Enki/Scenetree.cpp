@@ -28,8 +28,7 @@ void Scenetree::enableNetworking()
 		return;
 	}
 
-	if (!game_data->network_manager->server &&
-		!game_data->network_manager->client)
+	if (!game_data->network_manager->isNetworked())
 	{
 		console->error(
 			"Tried to enable networking for scenetree "
@@ -178,7 +177,7 @@ void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string 
 		return;
 	}
 
-	if (!net_man->client)
+	if (!net_man->isClient())
 	{
 		console->error(
 			"Tried to request a networked entity "
@@ -426,11 +425,11 @@ void Scenetree::deleteEntity(EntityID ID)
 		Packet p({ENTITY_DELETION});
 		p << ID;
 
-		if (game_data->network_manager->server)
+		if (game_data->network_manager->isServer())
 		{
 			game_data->network_manager->server->sendPacketToAllClients(0, &p);
 		}
-		else if (game_data->network_manager->client)
+		else if (game_data->network_manager->isClient())
 		{
 			game_data->network_manager->client->sendPacket(0, &p);
 		}
@@ -681,7 +680,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 void Scenetree::createEntitiesFromTreePacket(Packet p)
 {
-	if (!game_data->network_manager->client)
+	if (!game_data->network_manager->isClient())
 	{
 		throw;
 	}
@@ -822,13 +821,13 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 
 void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 {
-	if (!network_ready || !game_data->network_manager->server)
+	if (!network_ready || !game_data->network_manager->isServer())
 	{
 		console->error(
 			"Tried to send networked entities to clients "
 			" but failed. network_ready = {}, server = {}",
 			network_ready,
-			game_data->network_manager->server);
+			game_data->network_manager->isServer());
 	}
 
 	Packet p({PacketType::ENTITY_CREATION_ON_CONNECTION});
@@ -1270,6 +1269,7 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 		return;	//we're both the client and server so the server has already created this for us
 	}
 
+	//todo: we should send how many entities and use a for loop and then check at the end that there's nothing left in the packet
 	while (p.canDeserialize<EntityInfo, Packet>())
 	{
 		auto info = p.read<EntityInfo>();

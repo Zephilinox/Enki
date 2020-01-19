@@ -46,6 +46,14 @@ public:
 	//Must be called once per game loop to ensure packets are handled
 	void update();
 
+	bool isHost() const;
+	bool isServer() const;
+	bool isClient() const;
+	bool isClientOnly() const;
+	bool isServerOnly() const;
+	bool isNetworked() const;
+
+	//todo: this is a hacky thing that's needed IIRC, related to pushing packets to queue?
 	std::unique_ptr<Server> server;
 	std::unique_ptr<Client> client;
 

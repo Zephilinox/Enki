@@ -15,13 +15,13 @@ using ClientID = unsigned int;
 
 enum PacketType : std::uint8_t
 {
-	//Default type, unused by Enki
+	//Default type. Unused by Enki
 	NONE,
 
-	//unused by Enki
+	//unused by Enki. Can be used by the game
 	COMMAND,
 
-	//Server sends this to a client to inform them of their ID.
+	//Server sends this to a client to inform them of their ID
 	//This is sent before PacketType::CONNECTED
 	CLIENT_INITIALIZED,
 
@@ -47,6 +47,7 @@ enum PacketType : std::uint8_t
 	//Client sends this to request a new networked entity is created
 	ENTITY_CREATION_REQUEST,
 
+	//todo
 	ENTITY_CREATION_TREE,
 
 	//Used by the Scenetree
@@ -62,7 +63,11 @@ enum PacketType : std::uint8_t
 	//Used by the Scenetree
 	//Server sends this to a client to inform them that an entity has been deleted
 	//Client sends this to a server to inform it that an owned entity has been deleted
-	ENTITY_DELETION
+	ENTITY_DELETION,
+
+	//Any packet types >= this can be safely used by the game
+	//Alternatively the game can use COMMAND and then serialize its own packet differentiator
+	ENKI_PACKET_TYPE_COUNT,
 };
 
 //Contains the PacketType and the time the packet was sent
@@ -81,16 +86,23 @@ struct PacketInfo
 	std::uint32_t timeReceived = 0;
 };
 
+//todo: I feel like a packet/buffer generic class would be useful
+//then the packet header would be optional? I guess
+//but then if the user sends their own custom packet we have no way of knowing what kind of packet it is
+//so then again, maybe not. It would be better for users to have more control over what accesses packets before they have control of it
+//that way enki isn't affected and can be used just for sending/receivign arbitrary data
+
 class Packet
 {
 public:
 	Packet();
 	//Construct a packet from a packet header
 	explicit Packet(PacketHeader);
-	//Construct a packet from enet packet data
+	//Reconstruct a packet from enet packet data
 	explicit Packet(const unsigned char* data, std::size_t size);
-	//Construct a packet from Enki packet data
+	//Reconstruct a packet from Enki packet data
 	explicit Packet(std::byte* data, std::size_t size);
+	//todo: construct packet from std::string/std::vector/any container?
 
 	//Write the specified number of bits to the packet's buffer
 	//Bits written are based on those of data, modified by offset
@@ -167,6 +179,10 @@ public:
 	template <typename T>
 	T read();
 
+	//todo: Constructor constructs, no way of automatically deconstructing though
+	//we should have a function to get a pair of byte/size and/or char*/size
+	//also, maybe bytes shouldn't be public? class invariants could easily be violated
+
 	PacketInfo info;
 	std::vector<std::byte> bytes;
 
@@ -202,19 +218,24 @@ Packet& Packet::operator>>(T& data)
 	return *this;
 }
 
+//todo: serialized params should be const ref? how does that work with r-value refs?
 template <typename T>
 Packet& Packet::operator<<(std::vector<T> data)
 {
 	*this << data.size();
 
-	if (data.empty()) return *this;
+	//We still need to serialize 0, so when deserializing we know it was empty
+	if (data.empty())
+		return *this;
 
+	//If the data is super simple, we can serialize the entire contents of the container with one memcpy
 	if constexpr (std::is_trivially_copyable_v<T>)
 	{
 		serialize(data.data(), sizeof(T) * data.size());
 	}
 	else
 	{
+		//otherwise we have to serialize each element, at least one memcpy each (or more, depending on complexity of serialization)
 		for (auto& thing : data)
 		{
 			*this << thing;
@@ -227,11 +248,11 @@ Packet& Packet::operator<<(std::vector<T> data)
 template <typename T>
 Packet& Packet::operator>>(std::vector<T>& data)
 {
-	std::size_t size;
-	*this >> size;
-	data.resize(size);
+	const auto required_size = read<std::size_t>();
+	data.resize(required_size);
 
-	if (data.empty()) return *this;
+	if (data.empty())
+		return *this;
 
 	if constexpr (std::is_trivially_copyable_v<T>)
 	{
@@ -252,24 +273,49 @@ template <typename T, std::size_t size>
 Packet& Packet::operator<<(std::array<T, size> data)
 {
 	*this << size;
-	serialize(data.data(), sizeof(T) * size);
+
+	//We still need to serialize 0, so when deserializing we know it was empty
+	if (data.empty())
+		return *this;
+
+	//If the data is super simple, we can serialize the entire contents of the container with one memcpy
+	if constexpr (std::is_trivially_copyable_v<T>)
+	{
+		serialize(data.data(), sizeof(T) * data.size());
+	}
+	else
+	{
+		//otherwise we have to serialize each element, at least one memcpy each (or more, depending on complexity of serialization)
+		for (auto& thing : data)
+		{
+			*this << thing;
+		}
+	}
+
 	return *this;
 }
 
 template <typename T, std::size_t size>
 Packet& Packet::operator>>(std::array<T, size>& data)
 {
-	std::size_t size_of_stored_array;
-	*this >> size_of_stored_array;
+	const auto required_size = read<std::size_t>();
 
-	if (size_of_stored_array <= size)
-	{
-		deserialize(data.data(), size_of_stored_array);
-	}
-	else
+	if (required_size != size)
 	{
 		throw std::runtime_error(
 			"Failed to read std::array from packet, sizes don't match");
+	}
+
+	if constexpr (std::is_trivially_copyable_v<T>)
+	{
+		deserialize(data.data(), sizeof(T) * data.size());
+	}
+	else
+	{
+		for (auto& thing : data)
+		{
+			*this >> thing;
+		}
 	}
 
 	return *this;
@@ -294,7 +340,7 @@ void Packet::serialize(T* data, std::size_t size)
 	if (data == nullptr)
 	{
 		throw std::runtime_error(
-			"Failed to serialize data into packet, data is a nullptr");
+			"Failed to serialize data into packet, data is nullptr");
 	}
 
 	if (bytes_written + size > bytes.size())
@@ -323,7 +369,7 @@ void Packet::deserialize(T* data, std::size_t size)
 	if (data == nullptr)
 	{
 		throw std::runtime_error(
-			"Failed to deserialize data in packet, data is a nullptr");
+			"Failed to deserialize data in packet, data is nullptr");
 	}
 
 	memcpy(data, bytes.data() + bytes_read, size);
@@ -331,9 +377,32 @@ void Packet::deserialize(T* data, std::size_t size)
 	bits_read = 8;
 }
 
+//https://stackoverflow.com/questions/29603364/type-trait-to-check-that-all-types-in-a-parameter-pack-are-copy-constructible
+template <typename ...Args>
+using areTriviallyCopyable = typename std::conjunction<std::is_trivially_copyable<Args>...>::type;
+
+//todo: need to fix this, doesn't quite do what you'd expect
 template <typename... Args>
 bool Packet::canDeserialize()
 {
+	/*todo: requires C++20 for template lambda or some other technique here
+	 *constexpr auto size_of = [](auto t) -> std::size_t {
+		//todo: is copyable the best type trait here?
+		if constexpr (std::is_trivially_copyable_v<decltype(t)>)
+		{
+			return sizeof(t);
+		}
+		else
+		{
+			//todo: custom type trait to allow for this
+			//also todo: but this type trait wouldn't work for containers like vector
+			//that requires a run-time option
+		}
+	};*/
+
+	static_assert(areTriviallyCopyable<Args...>::value, 
+		"All arguments must be trivially copyable to ensure that their sizes represent their serialization");
+
 	//Use list intialization to fill array of n size
 	//with the size of each arg through parameter pack expansion
 	constexpr std::array<std::size_t, sizeof...(Args)> sizes = {sizeof(Args)...};
@@ -346,4 +415,4 @@ bool Packet::canDeserialize()
 
 	return true;
 }
-}	// namespace enki
+}	 // namespace enki

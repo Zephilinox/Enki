@@ -217,26 +217,28 @@ int Packet::readBits(int bits_to_read, int offset)
 
 void Packet::writeCompressedFloat(float data, float min, float max, float resolution)
 {
-	float delta = max - min;
-	float total_possible_values = delta / resolution;
-	int max_possible_values = static_cast<int>(std::ceil(total_possible_values));
-	int bits_required = static_cast<int>(std::ceil(std::log(max_possible_values) / std::log(2)));
+	//todo: how do I want to handle div by 0? resolution of 0 is invalid (should be 10, 1, 0.1, 0.01, etc)
 
-	float normalized_data = std::clamp((data - min) / delta, 0.0f, 1.0f);
-	int final_value = static_cast<int>(std::round(normalized_data * max_possible_values));
+	const float delta = max - min;
+	const float total_possible_values = delta / resolution;
+	const int max_possible_values = static_cast<int>(std::ceil(total_possible_values));
+	const int bits_required = static_cast<int>(std::ceil(std::log(max_possible_values) / std::log(2)));
+
+	const float normalized_data = std::clamp((data - min) / delta, 0.0f, 1.0f);
+	const int final_value = static_cast<int>(std::round(normalized_data * static_cast<float>(max_possible_values)));
 
 	writeBits(final_value, bits_required);
 }
 
 float Packet::readCompressedFloat(float min, float max, float resolution)
 {
-	float delta = max - min;
-	float total_possible_values = delta / resolution;
-	int max_possible_values = static_cast<int>(std::ceil(total_possible_values));
-	int bits_required = static_cast<int>(std::ceil(std::log(max_possible_values) / std::log(2)));
+	const float delta = max - min;
+	const float total_possible_values = delta / resolution;
+	const int max_possible_values = static_cast<int>(std::ceil(total_possible_values));
+	const int bits_required = static_cast<int>(std::ceil(std::log(max_possible_values) / std::log(2)));
 
-	int final_value = readBits(bits_required);
-	float normalized_data = static_cast<float>(final_value) / static_cast<float>(max_possible_values);
+	const int final_value = readBits(bits_required);
+	const float normalized_data = static_cast<float>(final_value) / static_cast<float>(max_possible_values);
 
 	return normalized_data * delta + min;
 }

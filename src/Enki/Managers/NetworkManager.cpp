@@ -18,7 +18,7 @@ using namespace std::chrono_literals;
 NetworkManager::NetworkManager()
 {
 	console = spdlog::get("Enki");
-	if (console == nullptr)
+	if (!console)
 	{
 		spdlog::stdout_color_mt("Enki");
 		console = spdlog::get("Enki");
@@ -44,27 +44,29 @@ NetworkManager::~NetworkManager()
 
 void NetworkManager::startHost()
 {
-	assert(!server);
-	assert(!client);
+	assert(!isServer());
+	assert(!isClient());
 
 	console->info("Starting Listen Server Hosting");
 	server = std::make_unique<ServerHost>(max_clients, channel_count, server_port);
 	client = std::make_unique<ClientHost>();
+
+	//the hackyness ermahgawd todo
 	static_cast<ServerHost*>(server.get())->client = client.get();
 	static_cast<ClientHost*>(client.get())->server = server.get();
 }
 
 void NetworkManager::startServer()
 {
-	assert(!server);
+	assert(!isServer());
 	console->info("Starting Server");
 	server = std::make_unique<ServerStandard>(max_clients, channel_count, server_port);
 }
 
 void NetworkManager::startClient()
 {
-	assert(!server);
-	assert(!client);
+	assert(!isServer());
+	assert(!isClient());
 
 	console->info("Starting Client");
 	client = std::make_unique<ClientStandard>(channel_count, server_ip, server_port);
@@ -73,7 +75,7 @@ void NetworkManager::startClient()
 void NetworkManager::stopServer()
 {
 	console->info("Stopping Server");
-	if (server)
+	if (isServer())
 	{
 		console->info("Server exists");
 		server.reset(nullptr);
@@ -84,7 +86,7 @@ void NetworkManager::stopServer()
 void NetworkManager::stopClient()
 {
 	console->info("Stopping Client");
-	if (client)
+	if (isClient())
 	{
 		console->info("Client exists");
 		client.reset(nullptr);
@@ -100,21 +102,22 @@ void NetworkManager::stopHost()
 
 void NetworkManager::update()
 {
-	if (server)
+	if (isServer())
 	{
 		server->update();
 	}
 
-	if (client)
+	if (isClient())
 	{
 		client->update();
 	}
 
 	if (network_process_timer.getElapsedTime() > 1.0f / float(network_send_rate))
 	{
-		//Only emit the signal when there's someone else connected
-		if ((server && (!server->getConnectedClients().empty() || client)) ||
-			!server && client && client->isConnected())
+		//Only emit the signal when there's someone connected
+		const bool serverAndConnectedClients = isServer() && (!server->getConnectedClients().empty() || isClient());
+		const bool clientAndConnected = isClientOnly() && client->isConnected();
+		if (serverAndConnectedClients || clientAndConnected)
 		{
 			network_process_timer.restart();
 			on_network_tick.emit();
@@ -122,17 +125,47 @@ void NetworkManager::update()
 	}
 }
 
+bool NetworkManager::isHost() const
+{
+	return server != nullptr && client != nullptr;
+}
+
+bool NetworkManager::isServer() const
+{
+	return server != nullptr;
+}
+
+bool NetworkManager::isClient() const
+{
+	return client != nullptr;
+}
+
+bool NetworkManager::isClientOnly() const
+{
+	return client != nullptr && server == nullptr;
+}
+
+bool NetworkManager::isServerOnly() const
+{
+	return server != nullptr && client == nullptr;
+}
+
+bool NetworkManager::isNetworked() const
+{
+	return server != nullptr || client != nullptr;
+}
+
 void NetworkManager::runThreadedNetwork()
 {
 	console->info("Network thread started");
 	while (!exit_thread)
 	{
-		if (server)
+		if (isServer())
 		{
 			server->processPackets();
 		}
 
-		if (client)
+		if (isClient())
 		{
 			client->processPackets();
 		}
