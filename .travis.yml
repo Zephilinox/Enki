@@ -73,7 +73,8 @@ script:
     - ./../bin/Tests/Tests
     - cd ../bin/Tests
     - ls -Rla
-    - cp Tests ../../build/
+    - cp Tests ../../../build/
+    - cd ..
     - cd ..
     - cd ..
     - cd build
