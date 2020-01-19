@@ -1,6 +1,9 @@
 language: cpp
 compiler: gcc
+os: linux
 dist: bionic
+
+env: COMPILER=g++-8 ENABLE_MEMCHECK=true
 
 addons:
   apt_packages:
@@ -12,6 +15,16 @@ addons:
     - libvorbis-dev
     - libgl1-mesa-dev
     - lcov
+  apt: {
+    packages:
+      [
+        "g++-8", "valgrind"
+      ],
+    sources:
+      [
+        "ubuntu-toolchain-r-test"
+      ]
+  }
 
 before_install:
     #- sudo apt-get update
