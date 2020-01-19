@@ -87,12 +87,21 @@ script:
     - ./../bin/Tests/Tests
     - cd ../bin/Tests
     - ls -Rla
+    - lcov --capture --directory . --output-file coverage.info
+    - cat coverage.info
     - cp Tests ../../build/
+    - cp Tests ../../build/src/
     - cd ..
     - cd ..
     - cd build
     - ls -Rla
     - ./Tests
+    - lcov --capture --directory . --output-file coverage.info
+    - cat coverage.info
+    - cd src
+    - ./Tests
+    - lcov --capture --directory . --output-file coverage.info
+    - cat coverage.info
     
 after_success:
     - ls -Rla
