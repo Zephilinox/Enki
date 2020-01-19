@@ -304,15 +304,18 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 		}});
 }
 
-void Console::input(sf::Event& e)
+void Console::input(Event& e)
 {
-	if (e.type == sf::Event::KeyPressed)
-	{
-		if (e.key.code == sf::Keyboard::Key::Quote)
+	auto visitor = overload{
+		[&](EventKey e)
 		{
-			opened = !opened;
-		}
-	}
+			if (e.down && e.key == Keyboard::Key::Quote)
+				opened = !opened;
+		},
+		[](auto&){}
+	};
+
+	std::visit(visitor, e);
 }
 
 void Console::update(float dt)

@@ -331,9 +331,9 @@ std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 	return ents;
 }
 
-void Scenetree::input(sf::Event& event)
+void Scenetree::input(Event& event)
 {
-	for (int i = 0; i < entitiesParentless.size(); ++i)
+	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
 	{
 		input(event, entitiesParentless[i]);
 	}
@@ -735,7 +735,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 	}
 }
 
-void Scenetree::input(sf::Event& event, EntityID ID)
+void Scenetree::input(Event& event, EntityID ID)
 {
 	auto e = findEntity(ID);
 	if (e)

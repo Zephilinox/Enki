@@ -37,7 +37,16 @@ set(Enki_HEADERS
 	"Enki/GUI/IMGUI/imstb_textedit.h"
 	
 	"Enki/GUI/Console.hpp"
-	
+
+	"Enki/Input/Keys.hpp"
+	"Enki/Input/Events.hpp"
+
+	"Enki/Window/Window.hpp"
+
+	#todo: detect SFML is available
+	"Enki/Input/SFML/KeyConversion.hpp"
+	"Enki/Window/WindowSFML.hpp"
+
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenetree.hpp"
@@ -79,7 +88,13 @@ set (Enki_SRC
 	"Enki/GUI/IMGUI/imgui_widgets.cpp"
 	
 	"Enki/GUI/Console.cpp"
-	
+
+	"Enki/Input/Keys.cpp"
+
+	#todo: detect SFML is available
+	"Enki/Input/SFML/KeyConversion.cpp"
+	"Enki/Window/WindowSFML.cpp"
+
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
 	"Enki/Scenetree.cpp"

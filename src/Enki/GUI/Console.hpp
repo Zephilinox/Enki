@@ -33,7 +33,7 @@ public:
 
 	Console(enki::EntityInfo info, enki::GameData* game_data);
 
-	void input(sf::Event& e) override;
+	void input(Event& e) override;
 	void update(float dt) override;
 
 	void addItem(Item item);

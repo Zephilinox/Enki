@@ -2,6 +2,7 @@
 
 //SELF
 #include "imgui.h"
+#include "Enki/Input/Events.hpp"
 
 namespace sf
 {
@@ -23,6 +24,7 @@ namespace ImGui
 
 		//returns true if the input should be consumed (and not passed onwards to the rest of the game)
         bool ProcessEvent(const sf::Event& event);
+        bool ProcessEvent(const enki::Event& event);
 
         void Update(sf::RenderWindow& window, float dt);
         void Update(sf::Window& window, sf::RenderTarget& target, float dt);

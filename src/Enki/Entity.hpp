@@ -13,6 +13,7 @@
 //SELF
 #include "Enki/GameData.hpp"
 #include "Enki/Hash.hpp"
+#include "Enki/Input/Events.hpp"
 #include "Enki/Managers/NetworkManager.hpp"
 #include "Enki/Networking/Client.hpp"
 #include "Enki/Networking/Packet.hpp"
@@ -120,7 +121,7 @@ public:
 	virtual void onDespawn(){};
 
 	//Called when an SFML event occurs
-	virtual void input([[maybe_unused]] sf::Event& e){};
+	virtual void input([[maybe_unused]] Event& e){};
 
 	//Called once each game loop
 	virtual void update([[maybe_unused]] float dt){};

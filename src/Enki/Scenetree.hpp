@@ -18,6 +18,7 @@
 #include "Enki/Entity.hpp"
 #include "Enki/GameData.hpp"
 #include "Enki/Hash.hpp"
+#include "Enki/Input/Events.hpp"
 #include "Enki/Networking/RPC.hpp"
 #include "Enki/Networking/RPCManager.hpp"
 #include "Enki/Renderer.hpp"
@@ -185,7 +186,7 @@ public:
 
 	std::vector<Entity*> getEntitiesFromRoot(EntityID ID = 0);
 
-	void input(sf::Event& e);
+	void input(Event& e);
 	void update(float dt);
 	void draw(Renderer* renderer);
 
@@ -239,7 +240,7 @@ private:
 	//Used by clients when receiving a packet containing a tree of entities that they need to reproduce on their machine
 	void createEntitiesFromTreePacket(Packet p);
 
-	void input(sf::Event& e, EntityID ID);
+	void input(Event& e, EntityID ID);
 	void update(float dt, EntityID ID);
 	void draw(Renderer* renderer, EntityID ID);
 
