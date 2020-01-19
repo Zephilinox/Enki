@@ -2,6 +2,8 @@
 
 project(Tests)
 
+include("${EnkiEngine_SOURCE_DIR}/cmake/PreTargetSettings.cmake")
+
 add_executable(Tests
 "main.cpp"
 
@@ -10,7 +12,7 @@ add_executable(Tests
 "RPCTest.hpp"
 )
 
-include("../cmake/Settings.cmake")
+include("${EnkiEngine_SOURCE_DIR}/cmake/PostTargetSettings.cmake")
 
 set_target_properties(
 	Tests PROPERTIES

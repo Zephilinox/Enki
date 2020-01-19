@@ -2,6 +2,8 @@
 
 project(Shooter)
 
+include("${EnkiEngine_SOURCE_DIR}/cmake/PreTargetSettings.cmake")
+
 add_executable(Shooter
 "main.cpp"
 
@@ -28,7 +30,7 @@ add_executable(Shooter
 "src/HealthSpawner.cpp"
 )
 
-include("${EnkiEngine_SOURCE_DIR}/cmake/Settings.cmake")
+include("${EnkiEngine_SOURCE_DIR}/cmake/PostTargetSettings.cmake")
 
 set_target_properties(
 	Shooter PROPERTIES

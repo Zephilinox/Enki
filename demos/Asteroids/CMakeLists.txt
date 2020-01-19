@@ -2,6 +2,8 @@
 
 project(Asteroids)
 
+include("${EnkiEngine_SOURCE_DIR}/cmake/PreTargetSettings.cmake")
+
 add_executable(Asteroids
 "main.cpp"
 
@@ -29,7 +31,7 @@ add_executable(Asteroids
 "src/PlayerText.cpp"
 )
 
-include("${EnkiEngine_SOURCE_DIR}/cmake/Settings.cmake")
+include("${EnkiEngine_SOURCE_DIR}/cmake/PostTargetSettings.cmake")
 
 set_target_properties(
 	Asteroids PROPERTIES

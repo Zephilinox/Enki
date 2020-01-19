@@ -90,12 +90,13 @@ set (Enki_SRC
 include("../cmake/FilesystemSourceGroup.cmake")
 SOURCE_GROUP_BY_FOLDER(Enki)
 
+include("../cmake/PreTargetSettings.cmake")
 add_library (Enki
 	${Enki_HEADERS}
 	${Enki_SRC}
 )
 
-include("../cmake/Settings.cmake")
+include("../cmake/PostTargetSettings.cmake")
 
 set_target_properties(
 	Enki PROPERTIES

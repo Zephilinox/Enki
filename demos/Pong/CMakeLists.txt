@@ -2,6 +2,8 @@
 
 project(Pong)
 
+include("${EnkiEngine_SOURCE_DIR}/cmake/PreTargetSettings.cmake")
+
 add_executable(Pong
 "main.cpp"
 
@@ -24,7 +26,7 @@ add_executable(Pong
 "src/Score.cpp"
 )
 
-include("${EnkiEngine_SOURCE_DIR}/cmake/Settings.cmake")
+include("${EnkiEngine_SOURCE_DIR}/cmake/PostTargetSettings.cmake")
 
 set_target_properties(
 	Pong PROPERTIES
