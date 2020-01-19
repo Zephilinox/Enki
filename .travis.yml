@@ -74,7 +74,9 @@ script:
 after_success:
     # Create lcov report
     # capture coverage info
+    - cd ..
     - ls
+    - pwd
     - cd bin
     - ls
     - cd Tests
