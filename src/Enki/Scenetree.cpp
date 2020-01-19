@@ -656,21 +656,26 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 		entitiesNetworked[index].entity = std::move(e);
 	}
 
+	p << entity->info;
+	p << spawnInfo;
+
+	//todo: both of these for loops have the same body
 	for (auto& child : registeredChildCreationInfo[info.type])
 	{
 		auto c = createEntityNetworkedFromRequestImpl(
-			{child.type, child.name, 0, info.ownerID, info.ID},
+			{child.type, child.name, Entity::InvalidID, info.ownerID, info.ID},
 			child.spawnInfo,
 			child.children,
 			p);
 		entity->info.childIDs.push_back(c->info.ID);
-		p << c->info << child.spawnInfo;
+		p << c->info;
+		p << child.spawnInfo;
 	}
 
 	for (auto& child : children)
 	{
 		auto c = createEntityNetworkedFromRequestImpl(
-			{child.type, child.name, 0, info.ownerID, info.ID},
+			{child.type, child.name, Entity::InvalidID, info.ownerID, info.ID},
 			child.spawnInfo,
 			child.children,
 			p);
@@ -888,9 +893,8 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 
 		p << info;
 		ent->serializeOnConnection(p);
-		game_data->network_manager->server->sendPacketToOneClient(client_id, 0, &p);
-		p.clear();
 	}
+	game_data->network_manager->server->sendPacketToOneClient(client_id, 0, &p);
 }
 
 void Scenetree::receivedPacketFromClient(Packet p)
@@ -1207,6 +1211,64 @@ void Scenetree::receivedPacketFromServer(Packet p)
 			//onSpawn doesn't get called here though, not sure if that's okay or not
 			//we would need to save the spawn info for every networked entity on the server and resend it when someone new connects if not
 			//also, what order is deserialization called? no clue, does it matter? no clue, but probably
+
+			//todo: this is prob. not correct/complete, just hacky
+			while (p.getBytesRead() < p.getBytesWritten())
+			{
+				//todo: check version/index can be used correctly
+				auto info = p.read<EntityInfo>();
+				auto [local, version, index] = splitID(info.ID);
+				
+				if (info.parentID == Entity::InvalidID)
+				{
+					entitiesParentless.push_back(info.ID);
+				}
+
+				auto e = registeredTypes[info.type](info, game_data);
+				auto entity = e.get();
+
+				if (index >= entitiesNetworked.size())	  //need to create a new one
+				{
+					console->info(
+						"Creating additional entities from a connection packet. {} {}\n{}",
+						index,
+						entitiesNetworked.size(),
+						info);
+
+					while (index != entitiesNetworked.size())	 //need to create empty ents to match required index
+					{
+						entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+					}
+
+					//now index == size, so last push back is the correct index
+					entitiesNetworked.emplace_back(VersionEntityPair{version, std::move(e)});
+				}
+				else
+				{
+					console->info(
+						"Creating exact entity from a connection packet. {} {}\n{}",
+						index,
+						entitiesNetworked.size(),
+						info);
+
+					if (entitiesNetworked[index].version != version)
+					{
+						console->error("packet connection version mismatch");
+						throw;
+					}
+					else if (entitiesNetworked[index].entity != nullptr)
+					{
+						console->error("packet connection entity already exists at index with same version");
+						throw;
+					}
+
+					entitiesNetworked[index] = {version, std::move(e)};
+				}
+
+				//todo: we pass the whole damn thing, they should only have access to their specific data, this is really really bad
+				entity->deserializeOnConnection(p);
+			}
+
 			break;
 		}
 
@@ -1298,11 +1360,12 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 	if (p.info.senderID == game_data->network_manager->client->getID())
 	{
 		//todo: handle this better, no need to even send the packet, etc
-		return;	//we're both the client and server so the server has already created this for us
+		return;	   //we're both the client and server so the server has already created this for us
 	}
 
 	//todo: we should send how many entities and use a for loop and then check at the end that there's nothing left in the packet
-	while (p.canDeserialize<EntityInfo, Packet>())
+	//while (p.canDeserialize<EntityInfo, Packet>())
+	while (p.getBytesRead() < p.getBytesWritten())
 	{
 		auto info = p.read<EntityInfo>();
 		auto spawnInfo = p.read<Packet>();
