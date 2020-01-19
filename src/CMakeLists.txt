@@ -137,7 +137,7 @@ if (UNIX)
 	set(UNIX_LIBS pthread)
 endif()
 
-target_link_libraries(Enki
+target_link_libraries(Enki PUBLIC
 	coverage_config
 	sfml-graphics
 	sfml-audio

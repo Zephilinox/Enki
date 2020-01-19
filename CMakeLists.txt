@@ -58,6 +58,7 @@ endif()
 #the enkinet library tests
 if (TESTS)
 	message(STATUS "Building Tests")
+	enable_testing()
 	add_subdirectory("tests")
 endif()
 

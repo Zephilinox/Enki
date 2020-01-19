@@ -19,6 +19,7 @@ int main(int argc, char** argv)
 	context.setOption("-ltc", true);
 	context.setOption("-lts", true);
 	context.setOption("-s", false);
+	context.setOption("-e", false);
 	context.setOption("-d", false);
 	int result = context.run();
 	if (context.shouldExit())
@@ -34,5 +35,5 @@ int main(int argc, char** argv)
 
 	//benchmark();
 
-	return 0;
+	return result;
 }
