@@ -18,7 +18,7 @@ addons:
   apt: {
     packages:
       [
-        "g++-8", "valgrind", "gcov-8"
+        "g++-8", "valgrind", "gcov"
       ],
     sources:
       [
