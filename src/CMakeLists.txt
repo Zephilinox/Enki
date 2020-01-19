@@ -48,6 +48,8 @@ set(Enki_HEADERS
 	"Enki/Hash.hpp"
 	"Enki/AnimatedSprite.hpp"
 	"Enki/TimerLog.hpp"
+	"Enki/NonCopyable.hpp"
+	"Enki/MustMove.hpp"
 )
 
 set (Enki_SRC
