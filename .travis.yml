@@ -73,7 +73,7 @@ before_script:
     - cd lcov-1.14
     - ls
     - sudo make install
-    - ls
+    - ls -Rla
     - lcov -v
     - cd ..
     - lcov -v
@@ -98,31 +98,26 @@ script:
     - cppcheck --project=compile_commands.json -j2 -q --report-progress
     - cd ../bin/Tests
     - ls -Rla
-    - lcov --capture --directory . --output-file coverage.info
-    - cat coverage.info
     - cp Tests ../../build/
-    - cp Tests ../../build/src/
     - cd ..
     - cd ..
     - cd build
     - ls -Rla
     - ./Tests
-    - lcov --capture --directory . --output-file coverage.info
-    - cat coverage.info
-    - lcov --capture --directory . --output-file coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --capture --directory . --output-file coverage.info
     - cat coverage.info
     
 after_success:
     - ls -Rla
     # Create lcov report
     # capture coverage info
-    - lcov --capture --directory . --output-file coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --capture --directory . --output-file coverage.info
     - cat coverage.info
     # filter out system and extra files.
     # To also not include test code in coverage add them with full path to the patterns: '*/tests/*'
-    - lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
     # output coverage data for debugging (optional)
-    - lcov --list coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --list coverage.info
     # Uploading to CodeCov
     # '-f' specifies file(s) to use and disables manual coverage gathering and file search which has already been done above
     - bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
@@ -134,12 +129,12 @@ after_failure:
     - ls -Rla
     # Create lcov report
     # capture coverage info
-    - lcov --capture --directory . --output-file coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --capture --directory . --output-file coverage.info
     # filter out system and extra files.
     # To also not include test code in coverage add them with full path to the patterns: '*/tests/*'
-    - lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' --output-file coverage.info
     # output coverage data for debugging (optional)
-    - lcov --list coverage.info
+    - ../lcov/lcov-1.14/bin/lcov --list coverage.info
     # Uploading to CodeCov
     # '-f' specifies file(s) to use and disables manual coverage gathering and file search which has already been done above
     - bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
