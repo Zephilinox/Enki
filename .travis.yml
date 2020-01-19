@@ -69,6 +69,14 @@ before_script:
       cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
     - cmake --build . --target install
     - cd ../..
+    - lcov -v
+    - wget -c http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O - | tar -xz -C lcov/
+    - cd lcov
+    - make install
+    - ls
+    - lcov -v
+    - cd ..
+    - lcov -v
 
 script: 
   #- g++ main.cpp -std=c++17 -o travis_gcc_cpp17
