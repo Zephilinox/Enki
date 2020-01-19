@@ -38,7 +38,7 @@ public:
 	template <typename T>
 	Connection addListener(typename Signal<T>::FunctionType&& function)
 	{
-		using derived = std::remove_reference<T>::type;
+		using derived = typename std::remove_reference<T>::type;
 		static_assert(std::is_base_of_v<Message, derived>);
 
 		auto lambda = [function](Message* msg) -> void {
