@@ -66,6 +66,7 @@ install:
 
 before_script:
     - lcov -v
+    - mkdir lcov
     - wget -c https://github.com/linux-test-project/lcov/releases/download/v1.14/lcov-1.14.tar.gz -O - | tar -xz -C lcov/
     - cd lcov
     - make install
