@@ -55,10 +55,14 @@ install:
   - if [[ "${COMPILER}" != "" ]]; then export CXX=${COMPILER}; fi
   - ${CXX} --version
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 90
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/g++-8 90
   - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-8 90
+  - sudo ln -sf /usr/bin/g++-8 /usr/bin/g++
+  - sudo ln -sf /usr/bin/gcc-8 /usr/bin/gcc
+  - sudo ln -sf /usr/bin/gcov-8 /usr/bin/gcov
   - gcov -v
   - g++ -v
-  - sudo ln -sf /usr/bin/gcov-8 /usr/bin/gcov
+  - gcc -v
 
 before_script:
     - git clone https://github.com/sfml/sfml && cd sfml && mkdir build && cd build &&
