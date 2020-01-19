@@ -65,18 +65,18 @@ install:
   - gcc -v
 
 before_script:
-    - git clone https://github.com/sfml/sfml && cd sfml && mkdir build && cd build &&
-      cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
-    - cmake --build . --target install
-    - cd ../..
     - lcov -v
-    - wget -c http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O - | tar -xz -C lcov/
+    - wget -c https://github.com/linux-test-project/lcov/releases/download/v1.14/lcov-1.14.tar.gz -O - | tar -xz -C lcov/
     - cd lcov
     - make install
     - ls
     - lcov -v
     - cd ..
     - lcov -v
+    - git clone https://github.com/sfml/sfml && cd sfml && mkdir build && cd build &&
+      cmake .. $CMAKE_FLAGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install
+    - cmake --build . --target install
+    - cd ../..
 
 script: 
   #- g++ main.cpp -std=c++17 -o travis_gcc_cpp17
