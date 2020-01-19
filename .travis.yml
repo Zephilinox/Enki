@@ -69,6 +69,7 @@ script:
   #- ./travis_gcc_cpp17
   # cppcheck
   #- cppcheck --quiet --error-exitcode=1 . 
+    - gcov -v
     - rm -rf build
     - mkdir build
     - cd build
