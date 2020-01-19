@@ -186,86 +186,65 @@ void Init(sf::Window& window, const sf::Vector2f& displaySize, bool loadDefaultF
     s_windowHasFocus = window.hasFocus();
 }
 
-bool ProcessEvent(const sf::Event& event) {
-    if (s_windowHasFocus && ImGui::IsAnyWindowFocused()) {
-        ImGuiIO& io = ImGui::GetIO();
+bool ProcessEvent(const enki::Event& event)
+{
+	bool focused = s_windowHasFocus && ImGui::IsAnyWindowFocused();
 
-        switch (event.type) {
-            case sf::Event::MouseMoved:
-                s_mouseMoved = true;
-                break;
-            case sf::Event::MouseButtonPressed:  // fall-through
-            case sf::Event::MouseButtonReleased: {
-                int button = event.mouseButton.button;
-                if (event.type == sf::Event::MouseButtonPressed &&
-                    button >= 0 && button < 3) {
-                    s_mousePressed[event.mouseButton.button] = true;
-					return true;
-                }
-            } break;
-            case sf::Event::TouchBegan:  // fall-through
-            case sf::Event::TouchEnded: {
-                s_mouseMoved = false;
-                int button = event.touch.finger;
-                if (event.type == sf::Event::TouchBegan && button >= 0 &&
-                    button < 3) {
-                    s_touchDown[event.touch.finger] = true;
-					return true;
-                }
-            } break;
-            case sf::Event::MouseWheelScrolled:
-                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel ||
-                    (event.mouseWheelScroll.wheel == sf::Mouse::HorizontalWheel &&
-                    io.KeyShift)) {
-                    io.MouseWheel += event.mouseWheelScroll.delta;
-                } else if (event.mouseWheelScroll.wheel == sf::Mouse::HorizontalWheel) {
-                    io.MouseWheelH += event.mouseWheelScroll.delta;
-                }
-				return true;
-                break;
-            case sf::Event::KeyPressed:  // fall-through
-            case sf::Event::KeyReleased:
-                io.KeysDown[event.key.code] =
-                    (event.type == sf::Event::KeyPressed);
-				return true;
-                break;
-            case sf::Event::TextEntered:
-                // Don't handle the event for unprintable characters
-                if (event.text.unicode < ' ' || event.text.unicode == 127) {
-                    break;
-                }
-                io.AddInputCharacter(event.text.unicode);
-				return true;
-                break;
-            case sf::Event::JoystickConnected:
-                if (s_joystickId == NULL_JOYSTICK_ID) {
-                    s_joystickId = event.joystickConnect.joystickId;
-                }
-                break;
-            case sf::Event::JoystickDisconnected:
-                if (s_joystickId ==
-                    event.joystickConnect
-                        .joystickId) {  // used gamepad was disconnected
-                    s_joystickId = getConnectedJoystickId();
-                }
-                break;
-            default:
-                break;
-        }
-    }
+	if (!focused)
+	{
+		auto visitor = enki::overload{
+			[&](enki::EventFocus e) {
+				s_windowHasFocus = e.focused;
+			},
+			[](auto&) {}
+		};
+		std::visit(visitor, event);
+		return false;
+	}
 
-    switch (event.type) {
-        case sf::Event::LostFocus:
-            s_windowHasFocus = false;
-            break;
-        case sf::Event::GainedFocus:
-            s_windowHasFocus = true;
-            break;
-        default:
-            break;
-    }
+	ImGuiIO& io = ImGui::GetIO();
 
-	return false;
+	bool ret = false;
+
+	auto visitor = enki::overload{
+		[&](enki::EventKey e) {
+			//only works with an SFML window
+			io.KeysDown[static_cast<int>(e.native_key)] = e.down;
+			ret = true;
+		},
+		[&](enki::EventMouseButton e) {
+			//enki button and sfml buttons match so that's nice
+			int button = static_cast<int>(e.button);
+			if (e.down &&
+				button >= 0 && button < 3)
+			{
+				s_mousePressed[button] = true;
+				ret = true;
+			}
+		},
+		[&](enki::EventMouseMove) {
+			s_mouseMoved = true;
+		},
+		[&](enki::EventMouseWheel e) {
+			io.MouseWheel += e.vertical;
+			io.MouseWheelH += e.horizontal;
+			ret = true;
+		},
+		[&](enki::EventCharacter e) {
+			// Don't handle the event for unprintable characters
+			if (e.character < ' ' || e.character == 127)
+			{
+				return;
+			}
+			io.AddInputCharacter(e.character);
+			ret = true;
+		},
+		[](auto&) {
+		}};
+
+	std::visit(visitor, event);
+
+	return ret;
 }
 
 void Update(sf::RenderWindow& window, float dt) {
