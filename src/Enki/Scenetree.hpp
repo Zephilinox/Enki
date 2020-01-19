@@ -35,7 +35,7 @@ struct VersionEntityPair
 
 struct EntityChildCreationInfo
 {
-	EntityType type;
+	EntityType type{};
 	std::string name;
 	Packet spawnInfo;
 	std::vector<EntityChildCreationInfo> children{};

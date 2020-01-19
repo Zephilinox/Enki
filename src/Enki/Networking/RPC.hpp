@@ -70,7 +70,7 @@ public:
 	struct ClassRPC
 	{
 		using FunctionType = std::function<void(Packet, Wrapee*)>;
-		RPCType rpctype;
+		RPCType rpctype = RPCType::ALL; //todo: create a default None?
 		FunctionType function;
 	};
 

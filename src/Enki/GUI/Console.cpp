@@ -334,7 +334,7 @@ void Console::input(Event& e)
 	std::visit(visitor, e);
 }
 
-void Console::update(float dt)
+void Console::update(float)
 {
 	if (opened)
 	{
@@ -435,7 +435,7 @@ void Console::update(float dt)
 
 				if (prev_history_index != console->history_index)
 				{
-					std::string history_str = "";
+					std::string history_str;
 					if (console->history_index >= 0 &&
 						console->history_index < console->history.size())
 					{
@@ -490,7 +490,7 @@ void Console::addInput(std::string input)
 	history_index = -1;
 
 	std::string trimmed_input;
-	for (int i = 0; i < user_input.size(); ++i)
+	for (unsigned i = 0; i < user_input.size(); ++i)
 	{
 		if (!user_input[i])
 		{

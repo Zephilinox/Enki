@@ -20,8 +20,7 @@ NetworkManager::NetworkManager()
 	console = spdlog::get("Enki");
 	if (!console)
 	{
-		spdlog::stdout_color_mt("Enki");
-		console = spdlog::get("Enki");
+		console = spdlog::stdout_color_mt("Enki");
 	}
 
 	console->info("Initializing enet global state");

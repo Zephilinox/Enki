@@ -69,7 +69,6 @@ struct IDComponentLocalVersionIndex
 
 constexpr IDComponentLocalVersionIndex splitID(EntityID ID)
 {
-	//todo: why did I switch the order here?
 	//local, version, index
 	return {
 		static_cast<bool>(ID >> 63),
@@ -220,6 +219,12 @@ public:
 	virtual void serializeOnTick([[maybe_unused]] Packet& p) {}
 	//Called when receiving an entity update from a network tick
 	virtual void deserializeOnTick([[maybe_unused]] Packet& p) {}
+
+	[[nodiscard]] inline bool isNetworked() const
+	{
+		//todo: better than localFromID?
+		return info.ID > 0;
+	}
 
 	[[nodiscard]] inline bool isLocal() const
 	{

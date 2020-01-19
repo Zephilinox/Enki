@@ -304,7 +304,7 @@ bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildC
 			return false;
 		}
 
-		registeredChildCreationInfo[type] = children;	//do we need to do this beforehand?
+		registeredChildCreationInfo[type] = children;	 //do we need to do this beforehand?
 	}
 
 	return true;
@@ -568,6 +568,8 @@ void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 		"Creating networked entity as the server "
 		"to all clients. Sending tree\n\t{}",
 		e->info);
+	//Don't forward to ourselves in case we're hosting
+	//todo: maybe think about having a different ID even when hosting, i.e. 0 is invalid, 1 is this server, 2 is our client, 3+ is everyone else
 	game_data->network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
 }
 
@@ -612,11 +614,12 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 		throw;
 	}
 
-	if (info.parentID != 0 && findEntity(info.parentID) == nullptr)
+	if (info.parentID != Entity::InvalidID && !findEntity(info.parentID))
 	{
 		console->error(
 			"Tried to create networked entity that has "
-			"a non-existent parent.\n\t{}",
+			"the non-existent parent {} specified.\n\t{}",
+			prettyID(info.parentID),
 			info);
 		throw;
 	}
@@ -639,7 +642,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 	info.ID = generateEntityID(false, version, index);
 
-	if (info.parentID == 0)
+	if (info.parentID == Entity::InvalidID)
 	{
 		entitiesParentless.push_back(info.ID);
 	}
@@ -682,8 +685,11 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 void Scenetree::createEntitiesFromTreePacket(Packet p)
 {
+	console->info("got tree packet {}", p.getBytesWritten());
+
 	if (!game_data->network_manager->isClient())
 	{
+		console->error("packet tree we are the server");
 		throw;
 	}
 
@@ -695,7 +701,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 		auto [local, version, index] = splitID(info.ID);
 		auto type = info.type;
 
-		if (info.parentID == 0)
+		if (info.parentID == Entity::InvalidID)
 		{
 			entitiesParentless.push_back(info.ID);
 		}
@@ -703,9 +709,15 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 		auto e = registeredTypes[type](std::move(info), game_data);
 		auto entity = e.get();
 
-		if (index >= entitiesNetworked.size())	//need to create a new one
+		if (index >= entitiesNetworked.size())	  //need to create a new one
 		{
-			while (index != entitiesNetworked.size())	//need to create empty ents to match required index
+			console->info(
+				"Creating additional entities from a tree packet. {} {}\n{}",
+				index,
+				entitiesNetworked.size(),
+				entity->info);
+
+			while (index != entitiesNetworked.size())	 //need to create empty ents to match required index
 			{
 				entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
 			}
@@ -715,12 +727,20 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 		}
 		else
 		{
+			console->info(
+				"Creating exact entity from a tree packet. {} {}\n{}",
+				index,
+				entitiesNetworked.size(),
+				entity->info);
+
 			if (entitiesNetworked[index].version != version)
 			{
+				console->error("packet tree version mismatch");
 				throw;
 			}
 			else if (entitiesNetworked[index].entity != nullptr)
 			{
+				console->error("packet tree entity already exists at index with same version");
 				throw;
 			}
 
@@ -732,6 +752,8 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 	}
 	catch (...)
 	{
+		console->info(
+			"Failed to create entities from a tree packet");
 		//todo: this is a shit way of handling this problem
 	}
 }
@@ -834,13 +856,18 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 
 	Packet p({PacketType::ENTITY_CREATION_ON_CONNECTION});
 
+	//flat tree structure
 	auto ents = getEntitiesFromRoot();
 
 	for (auto ent : ents)
 	{
 		auto& info = ent->info;
 		if (info.ID <= 0)
+		{
+			//todo: a local entity could have networked children, which is a bit odd I feel like, yet kinda makes sense in terms of local groupings/states
+			//these children will have an incorrect parent ID, as it will be local to the specific instance. dunno if there's a good solution for this.
 			continue;
+		}
 
 		if (info.name.empty() || info.type == 0)
 		{
@@ -904,10 +931,13 @@ void Scenetree::receivedPacketFromClient(Packet p)
 
 		case ENTITY_CREATION_REQUEST:
 		{
-			//todo: let user plug in a predicate for if we accept the request
+			//todo: let user plug in a predicate for if we should accept the request
+			// e.g. disable certain clients from creating certain entities
 
 			//todo: create ENTITY_CREATION_REQUEST_SERVEROWNER
 			//one less bit of data to send since we reuse the packet type instead
+
+			//todo: we should create structs to represent the data we'd expect in all of our packet types
 			auto type = p.read<EntityType>();
 			auto name = p.read<std::string>();
 			auto parentID = p.read<EntityID>();
@@ -1281,9 +1311,9 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 		auto type = info.type;
 		auto e = registeredTypes[type](std::move(info), game_data);
 
-		if (index >= entitiesNetworked.size())	//need to create a new one
+		if (index >= entitiesNetworked.size())	  //need to create a new one
 		{
-			while (index != entitiesNetworked.size())	//need to create empty ents to match required index
+			while (index != entitiesNetworked.size())	 //need to create empty ents to match required index
 			{
 				entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
 			}
@@ -1320,17 +1350,21 @@ void Scenetree::onNetworkTick()
 	//would be useful everywhere we call an entities non-const function inside a loop
 	//in this case we grab the entities first, so subsequent changes won't matter
 	//except for deletion, but that occurs next frame so probably okay
+	//although let's say a relationship changes, e.g. a child becomes a sibling. depending on when this happens could cause odd behaviour
+	//e.g. A->B becomes A|B, but this happened while processing A so it's okay. if there's B->C, sibling A, and we make C a child of A when we run update on B, then an update on C will not run that frame
+	//I dunno, maybe that makes sense
 
 	for (auto ent : entities)
 	{
 		//Serialize our entities based on their specific tick rates
 		if (ent->isOwner() &&
-			!ent->isLocal() &&
+			ent->isNetworked() &&
 			ent->network_tick_rate > 0 &&
 			total_network_ticks % ent->network_tick_rate == 0)
 		{
 			p.clear();
 			p << ent->info;
+			//todo: this is why we need a generic buffer, because sometimes we need to serialise a packet within a packet and that means redundant packet header overhead
 			ent->serializeOnTick(p);
 			//todo: send lots of little packets, or one big packet?
 			game_data->network_manager->client->sendPacket(0, &p);
@@ -1338,4 +1372,4 @@ void Scenetree::onNetworkTick()
 	}
 }
 
-}	// namespace enki
+}	 // namespace enki

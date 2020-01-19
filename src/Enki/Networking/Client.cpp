@@ -28,4 +28,4 @@ void Client::pushPacket(Packet&& p)
 	std::lock_guard<std::mutex> lock(mutex);
 	packets.push(std::move(p));
 }
-}	// namespace enki
+}	 // namespace enki
