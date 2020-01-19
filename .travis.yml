@@ -96,6 +96,8 @@ script:
     
 after_success:
     - ls -Rla
+    - cat coverage.info
+    - more coverage.info
     # Create lcov report
     # capture coverage info
     - lcov --capture --directory . --output-file coverage.info
