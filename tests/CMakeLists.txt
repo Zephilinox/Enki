@@ -19,9 +19,9 @@ set_target_properties(
 	#This is visual studio specific, can't remember what it does
 	VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	#the .exe goes in this folder
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Tests/${CONFIGURATION}"
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Tests/${CONFIGURATION}/"
 	#not sure, library files don't seem to go here'
-	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Tests/${CONFIGURATION}"
+	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Tests/${CONFIGURATION}/"
 )
 
 target_link_libraries(Tests Enki)

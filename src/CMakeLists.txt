@@ -118,17 +118,17 @@ include("../cmake/PostTargetSettings.cmake")
 set_target_properties(
 	Enki PROPERTIES
 	#This is visual studio specific, can't remember what it does
-	VS_DEBUGGER_WORKING_DIRECTORY		"${CMAKE_SOURCE_DIR}"
+	VS_DEBUGGER_WORKING_DIRECTORY		"${CMAKE_SOURCE_DIR}/"
 	#the .exe goes in this folder
-	RUNTIME_OUTPUT_DIRECTORY			"${CMAKE_SOURCE_DIR}/bin/Enki/${CONFIGURATION}"
+	RUNTIME_OUTPUT_DIRECTORY			"${CMAKE_SOURCE_DIR}/bin/Enki/${CONFIGURATION}/"
 	#for shared libraries, should this be different to static?
-	LIBRARY_OUTPUT_DIRECTORY			"${CMAKE_SOURCE_DIR}/bin/Enki/lib"
-	LIBRARY_OUTPUT_DIRECTORY_DEBUG		"${CMAKE_SOURCE_DIR}/bin/Enki/lib"
-	LIBRARY_OUTPUT_DIRECTORY_RELEASE	"${CMAKE_SOURCE_DIR}/bin/Enki/lib"
+	LIBRARY_OUTPUT_DIRECTORY			"${CMAKE_SOURCE_DIR}/bin/Enki/lib/"
+	LIBRARY_OUTPUT_DIRECTORY_DEBUG		"${CMAKE_SOURCE_DIR}/bin/Enki/lib/"
+	LIBRARY_OUTPUT_DIRECTORY_RELEASE	"${CMAKE_SOURCE_DIR}/bin/Enki/lib/"
 	#for static libraries
-	ARCHIVE_OUTPUT_DIRECTORY			"${CMAKE_SOURCE_DIR}/bin/Enki/lib"
-	ARCHIVE_OUTPUT_DIRECTORY_DEBUG		"${CMAKE_SOURCE_DIR}/bin/Enki/lib"
-	ARCHIVE_OUTPUT_DIRECTORY_RELEASE	"${CMAKE_SOURCE_DIR}/bin/Enki/lib"
+	ARCHIVE_OUTPUT_DIRECTORY			"${CMAKE_SOURCE_DIR}/bin/Enki/lib/"
+	ARCHIVE_OUTPUT_DIRECTORY_DEBUG		"${CMAKE_SOURCE_DIR}/bin/Enki/lib/"
+	ARCHIVE_OUTPUT_DIRECTORY_RELEASE	"${CMAKE_SOURCE_DIR}/bin/Enki/lib/"
 	#for debug lib suffix
 	DEBUG_POSTFIX						"-d"
 )
@@ -152,10 +152,10 @@ target_include_directories(Enki PUBLIC
 
 #couldn't figure out a better way to do this, don't really want to use install targets
 #remove old headers
-file(REMOVE_RECURSE "${CMAKE_SOURCE_DIR}/bin/Enki/include")
+file(REMOVE_RECURSE "${CMAKE_SOURCE_DIR}/bin/Enki/include/")
 
 #copy current ones
-file(COPY "${CMAKE_SOURCE_DIR}/src/Enki"
-    DESTINATION "${CMAKE_SOURCE_DIR}/bin/Enki/include"
+file(COPY "${CMAKE_SOURCE_DIR}/src/Enki/"
+    DESTINATION "${CMAKE_SOURCE_DIR}/bin/Enki/include/"
     FILES_MATCHING PATTERN "*.hpp"
 )
