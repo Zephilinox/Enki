@@ -72,8 +72,10 @@ script:
     - cppcheck --project=compile_commands.json -j2 -q --report-progress
     - ./../bin/Tests/Tests
     - cd ../bin/Tests
+    - ls -Rla
     - cp Tests ../../../build
     - cd ../../../build
+    - ls -Rla
     - ./Tests
     
 after_success:
