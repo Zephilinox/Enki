@@ -2,8 +2,8 @@
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(DEMOS "Build all demos" ON)
-option(TESTS "Build tests" ON)
+option(DEMOS "Build all demos" OFF)
+option(TESTS "Build tests" OFF)
 
 set (CMAKE_MODULE_PATH "${EnkiEngine_SOURCE_DIR}/cmake")
 
@@ -12,15 +12,15 @@ project ("EnkiEngine")
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/MP>")
 
-find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
-
 if (WIN32)
-message(STATUS "SFML - Static Libraries")
+	message(STATUS "SFML - Static Libraries")
 	set(SFML_STATIC_LIBRARIES TRUE)
 else()
 	message(STATUS "SFML - Dynamic Libraries")
 	set(SFML_STATIC_LIBRARIES FALSE)
 endif()
+
+find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
 add_subdirectory ("src")
 set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT Enki)
