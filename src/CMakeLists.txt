@@ -146,7 +146,7 @@ target_link_libraries(Enki
 )
 
 target_include_directories(Enki PUBLIC
-	"${CMAKE_SOURCE_DIR}/src/"
+	"${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 #couldn't figure out a better way to do this, don't really want to use install targets
