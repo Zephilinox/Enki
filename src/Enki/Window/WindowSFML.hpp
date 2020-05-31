@@ -21,17 +21,18 @@ public:
 	virtual ~WindowSFML() noexcept = default;
 
 	bool poll(Event& e) final;
-	bool isOpen() final;
-	bool isVerticalSyncEnabled() final;
+	[[nodiscard]] bool isOpen() final;
+	[[nodiscard]] bool isVerticalSyncEnabled() final;
 
 	void close() final;
 	void clear(int r, int g, int b) final;
 	void display() final;
 
 	void setVerticalSyncEnabled(bool enabled) final;
-	HashedID getType() const final;
 
 	sf::RenderWindow* getRawWindow();
+
+	static constexpr HashedID type = hash_constexpr("SFML");
 
 private:
 	sf::RenderWindow window;

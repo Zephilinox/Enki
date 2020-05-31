@@ -182,11 +182,6 @@ void WindowSFML::setVerticalSyncEnabled(bool enabled)
 	window.setVerticalSyncEnabled(enabled);
 };
 
-HashedID WindowSFML::getType() const
-{
-	return hash("SFML");
-}
-
 sf::RenderWindow* WindowSFML::getRawWindow()
 {
 	return &window;
