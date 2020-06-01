@@ -12,7 +12,20 @@
 // Templating it doesn't work either
 // todo: c++20 check again if MSVC is better at it
 
+//todo: configure this through cmake compile definition
+#define ENKI_HASH_BITS 64
+
+#if ENKI_HASH_BITS == 32
 using HashedID = uint32_t;
+static constexpr auto fnv1a_prime = 16777619; //0x01000193
+static constexpr auto fnv1a_offset = 2166136261; //0x811c9dc5
+#elif ENKI_HASH_BITS == 64
+using HashedID = uint64_t;
+static constexpr auto fnv1a_prime = 1099511628211;
+static constexpr auto fnv1a_offset = 14695981039346656037;
+#else
+static_assert(false, "ENKI_HASH_BITS are neither 32 nor 64");
+#endif
 
 inline std::map<HashedID, std::string> hashes_;
 
@@ -59,8 +72,8 @@ void forEachHash(Callable c)
 
 inline HashedID hash(const std::string& s)
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	for (const auto& c : s)
 	{
@@ -78,8 +91,8 @@ inline HashedID hash(const std::string& s)
 template <std::size_t N>
 constexpr HashedID hash_constexpr(const char (&input)[N])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	for (std::size_t i = 0; i < N; ++i)
 	{
@@ -90,11 +103,29 @@ constexpr HashedID hash_constexpr(const char (&input)[N])
 	return hash;
 }
 
+//known collisions (32-bit FNV-1a)
+//32bit https://softwareengineering.stackexchange.com/questions/49550/which-hashing-algorithm-is-best-for-uniqueness-and-speed/145633#145633
+//64bit https://github.com/pstibrany/fnv-1a-64bit-collisions
+#if ENKI_HASH_BITS == 32
+static_assert(hash_constexpr("liquid") == hash_constexpr("costarring"));
+static_assert(hash_constexpr("declinate") == hash_constexpr("macallums"));
+static_assert(hash_constexpr("altarage") == hash_constexpr("zinke"));
+static_assert(hash_constexpr("altarages") == hash_constexpr("zinkes"));
+#elif ENKI_HASH_BITS == 64	   
+static_assert(hash_constexpr("8yn0iYCKYHlIj4-BwPqk") == hash_constexpr("GReLUrM4wMqfg9yzV3KQ"));
+static_assert(hash_constexpr("gMPflVXtwGDXbIhP73TX") == hash_constexpr("LtHf1prlU1bCeYZEdqWf"));
+static_assert(hash_constexpr("pFuM83THhM-Qw8FI5FKo") == hash_constexpr(".jPx7rOtTDteKAwvfOEo"));
+static_assert(hash_constexpr("7mohtcOFVz") == hash_constexpr("c1E51sSEyx"));
+static_assert(hash_constexpr("6a5x-VbtXk") == hash_constexpr("f_2k7GG-4v"));
+static_assert(hash_constexpr("_\xffypfajYg2lsv") == hash_constexpr("_\xffKiqbryhzUpn"));
+//static_assert(hash_constexpr("A\xffK6sjsNNczPl") == hash_constexpr("A\xffcswpLMIZpwt")); //todo: bug?
+#endif
+
 #if defined(ENKI_HASH_DEBUG) || !defined(NDEBUG)
 inline HashedID hash(const char* input)
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	const char* c = input;
 	while (*c)
@@ -116,8 +147,8 @@ constexpr HashedID hash([[maybe_unused]] const char (&input)[1])
 
 constexpr HashedID hash(const char (&input)[2])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -126,8 +157,8 @@ constexpr HashedID hash(const char (&input)[2])
 
 constexpr HashedID hash(const char (&input)[3])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -138,8 +169,8 @@ constexpr HashedID hash(const char (&input)[3])
 
 constexpr HashedID hash(const char (&input)[4])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -152,8 +183,8 @@ constexpr HashedID hash(const char (&input)[4])
 
 constexpr HashedID hash(const char (&input)[5])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -168,8 +199,8 @@ constexpr HashedID hash(const char (&input)[5])
 
 constexpr HashedID hash(const char (&input)[6])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -186,8 +217,8 @@ constexpr HashedID hash(const char (&input)[6])
 
 constexpr HashedID hash(const char (&input)[7])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -206,8 +237,8 @@ constexpr HashedID hash(const char (&input)[7])
 
 constexpr HashedID hash(const char (&input)[8])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -228,8 +259,8 @@ constexpr HashedID hash(const char (&input)[8])
 
 constexpr HashedID hash(const char (&input)[9])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -252,8 +283,8 @@ constexpr HashedID hash(const char (&input)[9])
 
 constexpr HashedID hash(const char (&input)[10])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -278,8 +309,8 @@ constexpr HashedID hash(const char (&input)[10])
 
 constexpr HashedID hash(const char (&input)[11])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -306,8 +337,8 @@ constexpr HashedID hash(const char (&input)[11])
 
 constexpr HashedID hash(const char (&input)[12])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -336,8 +367,8 @@ constexpr HashedID hash(const char (&input)[12])
 
 constexpr HashedID hash(const char (&input)[13])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -368,8 +399,8 @@ constexpr HashedID hash(const char (&input)[13])
 
 constexpr HashedID hash(const char (&input)[14])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -402,8 +433,8 @@ constexpr HashedID hash(const char (&input)[14])
 
 constexpr HashedID hash(const char (&input)[15])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -438,8 +469,8 @@ constexpr HashedID hash(const char (&input)[15])
 
 constexpr HashedID hash(const char (&input)[16])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -476,8 +507,8 @@ constexpr HashedID hash(const char (&input)[16])
 
 constexpr HashedID hash(const char (&input)[17])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -516,8 +547,8 @@ constexpr HashedID hash(const char (&input)[17])
 
 constexpr HashedID hash(const char (&input)[18])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -558,8 +589,8 @@ constexpr HashedID hash(const char (&input)[18])
 
 constexpr HashedID hash(const char (&input)[19])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -602,8 +633,8 @@ constexpr HashedID hash(const char (&input)[19])
 
 constexpr HashedID hash(const char (&input)[20])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -648,8 +679,8 @@ constexpr HashedID hash(const char (&input)[20])
 
 constexpr HashedID hash(const char (&input)[21])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -696,8 +727,8 @@ constexpr HashedID hash(const char (&input)[21])
 
 constexpr HashedID hash(const char (&input)[22])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -746,8 +777,8 @@ constexpr HashedID hash(const char (&input)[22])
 
 constexpr HashedID hash(const char (&input)[23])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -798,8 +829,8 @@ constexpr HashedID hash(const char (&input)[23])
 
 constexpr HashedID hash(const char (&input)[24])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -852,8 +883,8 @@ constexpr HashedID hash(const char (&input)[24])
 
 constexpr HashedID hash(const char (&input)[25])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -908,8 +939,8 @@ constexpr HashedID hash(const char (&input)[25])
 
 constexpr HashedID hash(const char (&input)[26])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -966,8 +997,8 @@ constexpr HashedID hash(const char (&input)[26])
 
 constexpr HashedID hash(const char (&input)[27])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1026,8 +1057,8 @@ constexpr HashedID hash(const char (&input)[27])
 
 constexpr HashedID hash(const char (&input)[28])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1088,8 +1119,8 @@ constexpr HashedID hash(const char (&input)[28])
 
 constexpr HashedID hash(const char (&input)[29])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1152,8 +1183,8 @@ constexpr HashedID hash(const char (&input)[29])
 
 constexpr HashedID hash(const char (&input)[30])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1218,8 +1249,8 @@ constexpr HashedID hash(const char (&input)[30])
 
 constexpr HashedID hash(const char (&input)[31])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1286,8 +1317,8 @@ constexpr HashedID hash(const char (&input)[31])
 
 constexpr HashedID hash(const char (&input)[32])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1356,8 +1387,8 @@ constexpr HashedID hash(const char (&input)[32])
 
 constexpr HashedID hash(const char (&input)[33])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1428,8 +1459,8 @@ constexpr HashedID hash(const char (&input)[33])
 
 constexpr HashedID hash(const char (&input)[34])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1502,8 +1533,8 @@ constexpr HashedID hash(const char (&input)[34])
 
 constexpr HashedID hash(const char (&input)[35])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1578,8 +1609,8 @@ constexpr HashedID hash(const char (&input)[35])
 
 constexpr HashedID hash(const char (&input)[36])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1656,8 +1687,8 @@ constexpr HashedID hash(const char (&input)[36])
 
 constexpr HashedID hash(const char (&input)[37])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1736,8 +1767,8 @@ constexpr HashedID hash(const char (&input)[37])
 
 constexpr HashedID hash(const char (&input)[38])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1818,8 +1849,8 @@ constexpr HashedID hash(const char (&input)[38])
 
 constexpr HashedID hash(const char (&input)[39])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1902,8 +1933,8 @@ constexpr HashedID hash(const char (&input)[39])
 
 constexpr HashedID hash(const char (&input)[40])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -1988,8 +2019,8 @@ constexpr HashedID hash(const char (&input)[40])
 
 constexpr HashedID hash(const char (&input)[41])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2076,8 +2107,8 @@ constexpr HashedID hash(const char (&input)[41])
 
 constexpr HashedID hash(const char (&input)[42])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2166,8 +2197,8 @@ constexpr HashedID hash(const char (&input)[42])
 
 constexpr HashedID hash(const char (&input)[43])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2258,8 +2289,8 @@ constexpr HashedID hash(const char (&input)[43])
 
 constexpr HashedID hash(const char (&input)[44])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2352,8 +2383,8 @@ constexpr HashedID hash(const char (&input)[44])
 
 constexpr HashedID hash(const char (&input)[45])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2448,8 +2479,8 @@ constexpr HashedID hash(const char (&input)[45])
 
 constexpr HashedID hash(const char (&input)[46])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2546,8 +2577,8 @@ constexpr HashedID hash(const char (&input)[46])
 
 constexpr HashedID hash(const char (&input)[47])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2646,8 +2677,8 @@ constexpr HashedID hash(const char (&input)[47])
 
 constexpr HashedID hash(const char (&input)[48])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2748,8 +2779,8 @@ constexpr HashedID hash(const char (&input)[48])
 
 constexpr HashedID hash(const char (&input)[49])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2852,8 +2883,8 @@ constexpr HashedID hash(const char (&input)[49])
 
 constexpr HashedID hash(const char (&input)[50])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -2958,8 +2989,8 @@ constexpr HashedID hash(const char (&input)[50])
 
 constexpr HashedID hash(const char (&input)[51])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3066,8 +3097,8 @@ constexpr HashedID hash(const char (&input)[51])
 
 constexpr HashedID hash(const char (&input)[52])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3176,8 +3207,8 @@ constexpr HashedID hash(const char (&input)[52])
 
 constexpr HashedID hash(const char (&input)[53])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3288,8 +3319,8 @@ constexpr HashedID hash(const char (&input)[53])
 
 constexpr HashedID hash(const char (&input)[54])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3402,8 +3433,8 @@ constexpr HashedID hash(const char (&input)[54])
 
 constexpr HashedID hash(const char (&input)[55])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3518,8 +3549,8 @@ constexpr HashedID hash(const char (&input)[55])
 
 constexpr HashedID hash(const char (&input)[56])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3636,8 +3667,8 @@ constexpr HashedID hash(const char (&input)[56])
 
 constexpr HashedID hash(const char (&input)[57])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3756,8 +3787,8 @@ constexpr HashedID hash(const char (&input)[57])
 
 constexpr HashedID hash(const char (&input)[58])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -3878,8 +3909,8 @@ constexpr HashedID hash(const char (&input)[58])
 
 constexpr HashedID hash(const char (&input)[59])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4002,8 +4033,8 @@ constexpr HashedID hash(const char (&input)[59])
 
 constexpr HashedID hash(const char (&input)[60])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4128,8 +4159,8 @@ constexpr HashedID hash(const char (&input)[60])
 
 constexpr HashedID hash(const char (&input)[61])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4256,8 +4287,8 @@ constexpr HashedID hash(const char (&input)[61])
 
 constexpr HashedID hash(const char (&input)[62])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4386,8 +4417,8 @@ constexpr HashedID hash(const char (&input)[62])
 
 constexpr HashedID hash(const char (&input)[63])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4518,8 +4549,8 @@ constexpr HashedID hash(const char (&input)[63])
 
 constexpr HashedID hash(const char (&input)[64])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4652,8 +4683,8 @@ constexpr HashedID hash(const char (&input)[64])
 
 constexpr HashedID hash(const char (&input)[65])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4788,8 +4819,8 @@ constexpr HashedID hash(const char (&input)[65])
 
 constexpr HashedID hash(const char (&input)[66])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -4926,8 +4957,8 @@ constexpr HashedID hash(const char (&input)[66])
 
 constexpr HashedID hash(const char (&input)[67])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5066,8 +5097,8 @@ constexpr HashedID hash(const char (&input)[67])
 
 constexpr HashedID hash(const char (&input)[68])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5208,8 +5239,8 @@ constexpr HashedID hash(const char (&input)[68])
 
 constexpr HashedID hash(const char (&input)[69])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5352,8 +5383,8 @@ constexpr HashedID hash(const char (&input)[69])
 
 constexpr HashedID hash(const char (&input)[70])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5498,8 +5529,8 @@ constexpr HashedID hash(const char (&input)[70])
 
 constexpr HashedID hash(const char (&input)[71])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5646,8 +5677,8 @@ constexpr HashedID hash(const char (&input)[71])
 
 constexpr HashedID hash(const char (&input)[72])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5796,8 +5827,8 @@ constexpr HashedID hash(const char (&input)[72])
 
 constexpr HashedID hash(const char (&input)[73])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -5948,8 +5979,8 @@ constexpr HashedID hash(const char (&input)[73])
 
 constexpr HashedID hash(const char (&input)[74])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -6102,8 +6133,8 @@ constexpr HashedID hash(const char (&input)[74])
 
 constexpr HashedID hash(const char (&input)[75])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -6258,8 +6289,8 @@ constexpr HashedID hash(const char (&input)[75])
 
 constexpr HashedID hash(const char (&input)[76])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -6416,8 +6447,8 @@ constexpr HashedID hash(const char (&input)[76])
 
 constexpr HashedID hash(const char (&input)[77])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -6576,8 +6607,8 @@ constexpr HashedID hash(const char (&input)[77])
 
 constexpr HashedID hash(const char (&input)[78])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -6738,8 +6769,8 @@ constexpr HashedID hash(const char (&input)[78])
 
 constexpr HashedID hash(const char (&input)[79])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -6902,8 +6933,8 @@ constexpr HashedID hash(const char (&input)[79])
 
 constexpr HashedID hash(const char (&input)[80])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -7068,8 +7099,8 @@ constexpr HashedID hash(const char (&input)[80])
 
 constexpr HashedID hash(const char (&input)[81])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -7236,8 +7267,8 @@ constexpr HashedID hash(const char (&input)[81])
 
 constexpr HashedID hash(const char (&input)[82])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -7406,8 +7437,8 @@ constexpr HashedID hash(const char (&input)[82])
 
 constexpr HashedID hash(const char (&input)[83])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -7578,8 +7609,8 @@ constexpr HashedID hash(const char (&input)[83])
 
 constexpr HashedID hash(const char (&input)[84])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -7752,8 +7783,8 @@ constexpr HashedID hash(const char (&input)[84])
 
 constexpr HashedID hash(const char (&input)[85])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -7928,8 +7959,8 @@ constexpr HashedID hash(const char (&input)[85])
 
 constexpr HashedID hash(const char (&input)[86])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -8106,8 +8137,8 @@ constexpr HashedID hash(const char (&input)[86])
 
 constexpr HashedID hash(const char (&input)[87])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -8286,8 +8317,8 @@ constexpr HashedID hash(const char (&input)[87])
 
 constexpr HashedID hash(const char (&input)[88])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -8468,8 +8499,8 @@ constexpr HashedID hash(const char (&input)[88])
 
 constexpr HashedID hash(const char (&input)[89])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -8652,8 +8683,8 @@ constexpr HashedID hash(const char (&input)[89])
 
 constexpr HashedID hash(const char (&input)[90])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -8838,8 +8869,8 @@ constexpr HashedID hash(const char (&input)[90])
 
 constexpr HashedID hash(const char (&input)[91])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -9026,8 +9057,8 @@ constexpr HashedID hash(const char (&input)[91])
 
 constexpr HashedID hash(const char (&input)[92])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -9216,8 +9247,8 @@ constexpr HashedID hash(const char (&input)[92])
 
 constexpr HashedID hash(const char (&input)[93])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -9408,8 +9439,8 @@ constexpr HashedID hash(const char (&input)[93])
 
 constexpr HashedID hash(const char (&input)[94])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -9602,8 +9633,8 @@ constexpr HashedID hash(const char (&input)[94])
 
 constexpr HashedID hash(const char (&input)[95])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -9798,8 +9829,8 @@ constexpr HashedID hash(const char (&input)[95])
 
 constexpr HashedID hash(const char (&input)[96])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -9996,8 +10027,8 @@ constexpr HashedID hash(const char (&input)[96])
 
 constexpr HashedID hash(const char (&input)[97])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -10196,8 +10227,8 @@ constexpr HashedID hash(const char (&input)[97])
 
 constexpr HashedID hash(const char (&input)[98])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
@@ -10398,8 +10429,8 @@ constexpr HashedID hash(const char (&input)[98])
 
 constexpr HashedID hash(const char (&input)[99])
 {
-	HashedID hash = 0x811c9dc5;
-	const HashedID prime = 0x01000193;
+	HashedID hash = fnv1a_offset;
+	const HashedID prime = fnv1a_prime;
 
 	hash ^= static_cast<HashedID>(input[0]);
 	hash *= prime;
