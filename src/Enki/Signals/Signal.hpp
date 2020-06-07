@@ -1,7 +1,7 @@
 #pragma once
 
 //STD
-#include <experimental/vector>
+#include <vector>
 
 //SELF
 #include "Enki/Signals/Connection.hpp"
@@ -89,7 +89,7 @@ public:
 		//Can be replaced with the C++11 equivalent if required
 		//This is the only C++17 code used for Signals & Slots
 		//auto in lambda's is a C++14 feature
-		std::experimental::erase_if(slots, [&](const auto& slot) {
+		std::erase_if(slots, [&](const auto& slot) {
 			if (connection == slot.connection)
 			{
 				connection = Connection();

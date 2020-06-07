@@ -347,7 +347,7 @@ inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 		if (e)
 		{
 			std::string prefix;
-			prefix.reserve(8 * (depth + 1));
+			prefix.reserve(8ULL * (static_cast<std::size_t>(depth) + 1ULL));
 						
 			for (int i = 0; i < depth - 1; ++i)
 			{

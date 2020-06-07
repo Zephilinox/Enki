@@ -1,14 +1,14 @@
 #include "SoundManager.hpp"
 
 //STD
-#include <experimental/vector>
+#include <vector>
 
 namespace enki
 {
 sf::Sound* SoundManager::playSound(const std::string& path, bool loop)
 {
 	//remove any old sounds
-	std::experimental::erase_if(sounds,
+	std::erase_if(sounds,
 		[&](auto& sound) {
 			return sound->getStatus() == sf::Sound::Stopped;
 		});

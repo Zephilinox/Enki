@@ -64,7 +64,7 @@ public:
 
 protected:
 	Properties properties;
-	HashedID type;
+	HashedID type = hash("Window");
 };
 
 // Create a static instance globally for a typical ServiceLocator (e.g. window_locator.get())

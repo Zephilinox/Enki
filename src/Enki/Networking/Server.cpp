@@ -4,7 +4,7 @@ namespace enki
 {
 void Server::update()
 {
-	packetsReceived += packets.size();
+	packetsReceived += static_cast<std::uint32_t>(packets.size());
 
 	if (packetsTimer.getElapsedTime() > 10)
 	{

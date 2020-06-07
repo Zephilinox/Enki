@@ -11,12 +11,15 @@
 
 namespace enki
 {
-enum InputState
+namespace InputState
 {
-	Released,
-	Pressed,
-	Down,
-	Up,
+	enum
+	{
+		JustReleased,
+		JustPressed,
+		HeldDown,
+		Unheld,
+	};
 };
 
 class InputManager
@@ -27,25 +30,17 @@ public:
 	void update();
 
 	[[nodiscard]] bool isKeyUp(int key);
-
 	[[nodiscard]] bool isKeyReleased(int key);
-
 	[[nodiscard]] bool isKeyPressed(int key);
-
 	[[nodiscard]] bool isKeyDown(int key);
-
+	
 	[[nodiscard]] bool isMouseButtonUp(int button);
-
 	[[nodiscard]] bool isMouseButtonPressed(int button);
-
 	[[nodiscard]] bool isMouseButtonReleased(int button);
-
 	[[nodiscard]] bool isMouseButtonDown(int button);
-
+	
 	[[nodiscard]] sf::Vector2f getMouseDesktopPos() const;
-
 	[[nodiscard]] sf::Vector2f getMouseScreenPos() const;
-
 	[[nodiscard]] sf::Vector2f getMouseWorldPos() const;
 
 	sf::RenderWindow* window = nullptr;

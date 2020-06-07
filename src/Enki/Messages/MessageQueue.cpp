@@ -40,7 +40,7 @@ bool MessageQueue::removeListener(Connection c)
 
 std::size_t MessageQueue::processPriorityMessages()
 {
-	int msg_count = priority_messages.size();
+	auto msg_count = priority_messages.size();
 
 	for (const auto& msg : priority_messages)
 	{

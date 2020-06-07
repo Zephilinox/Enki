@@ -109,7 +109,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 		EntityInfo info;
 		info.type = type;
 		info.name = std::move(name);
-		info.ID = generateEntityID(true, 0, entitiesLocal.size());
+		info.ID = generateEntityID(true, 0, static_cast<std::uint32_t>(entitiesLocal.size()));
 		info.parentID = parentID;
 
 		if (parentID == Entity::InvalidID)
@@ -371,7 +371,7 @@ void Scenetree::update(float dt)
 		auto e = *it;
 		auto [local, version, index] = splitID(e->info.ID);
 
-		std::experimental::erase_if(entitiesParentless, [removedID = e->info.ID](EntityID id) {
+		std::erase_if(entitiesParentless, [removedID = e->info.ID](EntityID id) {
 			return id == removedID;
 		});
 
@@ -627,7 +627,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 	if (freeIndicesNetworked.empty())
 	{
-		index = entitiesNetworked.size();
+		index = static_cast<std::uint32_t>(entitiesNetworked.size());
 		version = 0;
 		entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
 	}

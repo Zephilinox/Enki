@@ -6,7 +6,7 @@ void Client::update()
 {
 	std::lock_guard<std::mutex> guard(mutex);
 
-	packetsReceived += packets.size();
+	packetsReceived += static_cast<std::uint32_t>(packets.size());
 
 	if (packetsTimer.getElapsedTime() > 10)
 	{
