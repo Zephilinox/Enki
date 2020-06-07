@@ -9,8 +9,9 @@
 
 namespace enki
 {
-Console::Console(enki::EntityInfo info, enki::GameData* game_data)
-	: Entity(info, game_data)
+Console::Console(EntityInfo info, Scenetree* scenetree)
+	: Entity(info)
+	, scenetree(scenetree)
 {
 	user_input.resize(256);
 
@@ -67,7 +68,7 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 		"print all entities",
 		[this](std::vector<std::string> tokens) {
 			std::string entity_strings;
-			this->game_data->scenetree->forEachEntity([&](const Entity& ent) {
+			this->scenetree->forEachEntity([&](const Entity& ent) {
 				entity_strings += fmt::format("{}\n", ent.info);
 			});
 
@@ -78,7 +79,7 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				Item::Type::CommandOutput,
 			});
 
-			printTree(this->game_data->scenetree);
+			printTree(this->scenetree);
 		}});
 
 	commands.emplace_back(Command{
@@ -114,7 +115,7 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				return;
 			}
 
-			auto e = this->game_data->scenetree->findEntity(id);
+			auto e = this->scenetree->findEntity(id);
 
 			if (!e)
 			{
@@ -134,7 +135,7 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 				Item::Type::CommandOutput,
 			});
 
-			this->game_data->scenetree->deleteEntity(id);
+			this->scenetree->deleteEntity(id);
 		}});
 
 	commands.emplace_back(Command{
@@ -158,14 +159,14 @@ Console::Console(enki::EntityInfo info, enki::GameData* game_data)
 
 			if (tokens.size() == 2)
 			{
-				ent = this->game_data->scenetree->createEntityLocal(
+				ent = this->scenetree->createEntityLocal(
 					entity_type,
 					tokens[1]
 				);
 			}
 			else if (tokens.size() == 3)
 			{
-				ent = this->game_data->scenetree->createEntityLocal(
+				ent = this->scenetree->createEntityLocal(
 					entity_type,
 					tokens[1],
 					std::stoi(tokens[2])

@@ -12,7 +12,6 @@
 #include <SFML/Graphics.hpp>
 
 //SELF
-#include "Enki/GameData.hpp"
 #include "Enki/Hash.hpp"
 #include "Enki/Input/Events.hpp"
 #include "Enki/Managers/NetworkManager.hpp"
@@ -185,11 +184,10 @@ class Entity
 public:
 	static constexpr EntityID InvalidID = 0;
 
-	//Each derived entity will have info and game_data
+	//Each derived entity will have info
 	//passed to it by the scenetree when it is created
-	Entity(EntityInfo info, GameData* game_data)
+	Entity(EntityInfo info)
 		: info(std::move(info))
-		, game_data(game_data)
 	{
 	}
 
@@ -234,25 +232,20 @@ public:
 
 	//Determines if we have control over the entity
 	//Always true for local entities
-	[[nodiscard]] inline bool isOwner() const
+	//If nullptr is passed and it's not local, it will always be false
+	[[nodiscard]] inline bool isOwner(NetworkManager* network_manager) const
 	{
 		if (isLocal())
-		{
 			return true;
-		}
+		else if (network_manager)
+			return network_manager->client->getID() == info.ownerID;
 		else
-		{
-			//If the owner ID matches our ID then we own it
-			return game_data->network_manager->client->getID() == info.ownerID;
-		}
+			return false;
 	}
 
 	//Should not be modified directly in most cases
 	//todo: fix access
 	EntityInfo info;
-
-	//Provides access to scenetree and network manager for all entities
-	GameData* game_data;
 
 	//Used by the Scenetree to mark entities for removal
 	//todo: move out of entity, it's not safe to change it manually if networked

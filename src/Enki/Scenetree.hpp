@@ -14,7 +14,6 @@
 
 //SELF
 #include "Enki/Entity.hpp"
-#include "Enki/GameData.hpp"
 #include "Enki/Hash.hpp"
 #include "Enki/Input/Events.hpp"
 #include "Enki/Networking/RPC.hpp"
@@ -81,9 +80,9 @@ public:
 		}
 	};
 
-	using BuilderFunction = std::function<std::unique_ptr<Entity>(EntityInfo, GameData*)>;
+	using BuilderFunction = std::function<std::unique_ptr<Entity>(EntityInfo)>;
 
-	Scenetree(GameData* game_data);
+	Scenetree(NetworkManager* network_manager);
 	void enableNetworking();
 
 	template <typename T>
@@ -206,7 +205,6 @@ private:
 
 	//////////////////
 
-	GameData* game_data;
 	std::shared_ptr<spdlog::logger> console;
 
 	std::vector<VersionEntityPair> entitiesLocal;
@@ -218,6 +216,7 @@ private:
 	std::vector<EntityID> entitiesParentless;
 
 	//Networking
+	NetworkManager* network_manager;
 	ManagedConnection mc1;
 	ManagedConnection mc2;
 	ManagedConnection mc3;
@@ -231,8 +230,8 @@ private:
 template <typename T>
 bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCreationInfo> children)
 {
-	registeredTypes[type] = [](EntityInfo info, GameData* data) -> std::unique_ptr<Entity> {
-		return std::make_unique<T>(std::move(info), data);
+	registeredTypes[type] = [](EntityInfo info) -> std::unique_ptr<Entity> {
+		return std::make_unique<T>(std::move(info));
 	};
 
 	bool valid = registerChildren(type, std::move(children));
@@ -248,8 +247,8 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 template <typename T, typename... Args>
 bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCreationInfo> children, Args... args)
 {
-	registeredTypes[type] = [args...](EntityInfo info, GameData* data) -> std::unique_ptr<Entity> {
-		return std::make_unique<T>(std::move(info), data, args...);
+	registeredTypes[type] = [args...](EntityInfo info) -> std::unique_ptr<Entity> {
+		return std::make_unique<T>(std::move(info), args...);
 	};
 
 	bool valid = registerChildren(type, std::move(children));

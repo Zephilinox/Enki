@@ -51,7 +51,6 @@ set(Enki_HEADERS
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenetree.hpp"
 	"Enki/Entity.hpp"
-	"Enki/GameData.hpp"
 	"Enki/Renderer.hpp"
 	"Enki/RNG.hpp"
 	"Enki/Hash.hpp"

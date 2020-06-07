@@ -2,14 +2,12 @@
 
 namespace enki
 {
-Scenetree::Scenetree(GameData* game_data)
-	: rpc_man(game_data->network_manager)
-	, game_data(game_data)
+Scenetree::Scenetree(NetworkManager* network_manager)
+	: rpc_man(network_manager)
+	, network_manager(network_manager)
 {
-	if (game_data == nullptr)
-	{
+	if (network_manager == nullptr)
 		throw;
-	}
 
 	console = spdlog::get("Enki");
 	if (console == nullptr)
@@ -28,7 +26,7 @@ void Scenetree::enableNetworking()
 		return;
 	}
 
-	if (!game_data->network_manager->isNetworked())
+	if (!network_manager->isNetworked())
 	{
 		console->error(
 			"Tried to enable networking for scenetree "
@@ -38,18 +36,18 @@ void Scenetree::enableNetworking()
 
 	network_ready = true;
 
-	if (game_data->network_manager->server)
+	if (network_manager->server)
 	{
-		mc1 = game_data->network_manager->server->on_packet_received.connect(
+		mc1 = network_manager->server->on_packet_received.connect(
 			this, &Scenetree::receivedPacketFromClient);
 	}
 
-	if (game_data->network_manager->client)
+	if (network_manager->client)
 	{
-		mc2 = game_data->network_manager->client->on_packet_received.connect(
+		mc2 = network_manager->client->on_packet_received.connect(
 			this, &Scenetree::receivedPacketFromServer);
 
-		mc3 = game_data->network_manager->on_network_tick.connect(
+		mc3 = network_manager->on_network_tick.connect(
 			this, &Scenetree::onNetworkTick);
 	}
 }
@@ -119,7 +117,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 			entitiesParentless.push_back(info.ID);
 		}
 
-		auto e = registeredTypes[type](std::move(info), game_data);
+		auto e = registeredTypes[type](std::move(info));
 		entity = e.get();
 
 		entitiesLocal.emplace_back(VersionEntityPair{0, std::move(e)});
@@ -141,7 +139,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 			entitiesParentless.push_back(info.ID);
 		}
 
-		auto e = registeredTypes[type](std::move(info), game_data);
+		auto e = registeredTypes[type](std::move(info));
 		entity = e.get();
 
 		entitiesLocal[index].entity = std::move(e);
@@ -168,7 +166,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 
 void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string name, const EntityID parentID, Packet spawnInfo, const std::vector<EntityChildCreationInfo>& children)
 {
-	auto net_man = game_data->network_manager;
+	auto net_man = network_manager;
 	if (!network_ready)
 	{
 		console->error(
@@ -427,13 +425,13 @@ void Scenetree::deleteEntity(EntityID ID)
 		Packet p({ENTITY_DELETION});
 		p << ID;
 
-		if (game_data->network_manager->isServer())
+		if (network_manager->isServer())
 		{
-			game_data->network_manager->server->sendPacketToAllClients(0, &p);
+			network_manager->server->sendPacketToAllClients(0, &p);
 		}
-		else if (game_data->network_manager->isClient())
+		else if (network_manager->isClient())
 		{
-			game_data->network_manager->client->sendPacket(0, &p);
+			network_manager->client->sendPacket(0, &p);
 		}
 	}
 }
@@ -570,7 +568,7 @@ void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 		e->info);
 	//Don't forward to ourselves in case we're hosting
 	//todo: maybe think about having a different ID even when hosting, i.e. 0 is invalid, 1 is this server, 2 is our client, 3+ is everyone else
-	game_data->network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
+	network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
 }
 
 Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
@@ -650,7 +648,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	Entity* entity;
 
 	{
-		auto e = registeredTypes[info.type](info, game_data);
+		auto e = registeredTypes[info.type](info);
 		entity = e.get();
 		entitiesNetworked[index].version = version;
 		entitiesNetworked[index].entity = std::move(e);
@@ -692,7 +690,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 {
 	console->info("got tree packet {}", p.getBytesWritten());
 
-	if (!game_data->network_manager->isClient())
+	if (!network_manager->isClient())
 	{
 		console->error("packet tree we are the server");
 		throw;
@@ -711,7 +709,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 			entitiesParentless.push_back(info.ID);
 		}
 
-		auto e = registeredTypes[type](std::move(info), game_data);
+		auto e = registeredTypes[type](std::move(info));
 		auto entity = e.get();
 
 		if (index >= entitiesNetworked.size())	  //need to create a new one
@@ -850,13 +848,13 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 
 void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 {
-	if (!network_ready || !game_data->network_manager->isServer())
+	if (!network_ready || !network_manager->isServer())
 	{
 		console->error(
 			"Tried to send networked entities to clients "
 			" but failed. network_ready = {}, server = {}",
 			network_ready,
-			game_data->network_manager->isServer());
+			network_manager->isServer());
 	}
 
 	Packet p({PacketType::ENTITY_CREATION_ON_CONNECTION});
@@ -894,7 +892,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 		p << info;
 		ent->serializeOnConnection(p);
 	}
-	game_data->network_manager->server->sendPacketToOneClient(client_id, 0, &p);
+	network_manager->server->sendPacketToOneClient(client_id, 0, &p);
 }
 
 void Scenetree::receivedPacketFromClient(Packet p)
@@ -966,7 +964,7 @@ void Scenetree::receivedPacketFromClient(Packet p)
 		case ENTITY_UPDATE:
 		{
 			//Don't send entity updates back to the sender
-			game_data->network_manager->server->sendPacketToAllExceptOneClient(
+			network_manager->server->sendPacketToAllExceptOneClient(
 				p.info.senderID, 0, &p);
 			//game_data->network_manager->server->sendPacketToAllClients(
 			//	p.info.senderID, &p);
@@ -1046,7 +1044,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 			else
 			{
 				//only send packet to owner
-				game_data->network_manager->server->sendPacketToOneClient(
+				network_manager->server->sendPacketToOneClient(
 					info.ownerID, 0, &p);
 			}
 			break;
@@ -1058,7 +1056,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 			if (info.ownerID == p.info.senderID)
 			{
 				//only send packets to non-owners, which must be all except sender
-				game_data->network_manager->server->sendPacketToAllExceptOneClient(
+				network_manager->server->sendPacketToAllExceptOneClient(
 					p.info.senderID, 0, &p);
 			}
 			else
@@ -1080,7 +1078,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 		case ALL:
 		{
 			//send to everyone else
-			game_data->network_manager->server->sendPacketToAllExceptOneClient(
+			network_manager->server->sendPacketToAllExceptOneClient(
 				p.info.senderID, 0, &p);
 			break;
 		}
@@ -1120,7 +1118,7 @@ void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 		return;
 	}
 
-	game_data->network_manager->server->sendPacketToAllClients(0, &p);
+	network_manager->server->sendPacketToAllClients(0, &p);
 }
 
 void Scenetree::receivedPacketFromServer(Packet p)
@@ -1224,7 +1222,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 					entitiesParentless.push_back(info.ID);
 				}
 
-				auto e = registeredTypes[info.type](info, game_data);
+				auto e = registeredTypes[info.type](info);
 				auto entity = e.get();
 
 				if (index >= entitiesNetworked.size())	  //need to create a new one
@@ -1313,7 +1311,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 					info,
 					ent->info,
 					p.info.senderID,
-					game_data->network_manager->client->getID());
+					network_manager->client->getID());
 				return;
 			}
 
@@ -1357,7 +1355,7 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 	//so now we do not instantiate any children for these entities
 	//they will be sent to us specifically
 
-	if (p.info.senderID == game_data->network_manager->client->getID())
+	if (p.info.senderID == network_manager->client->getID())
 	{
 		//todo: handle this better, no need to even send the packet, etc
 		return;	   //we're both the client and server so the server has already created this for us
@@ -1372,7 +1370,7 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 
 		auto [local, version, index] = splitID(info.ID);
 		auto type = info.type;
-		auto e = registeredTypes[type](std::move(info), game_data);
+		auto e = registeredTypes[type](std::move(info));
 
 		if (index >= entitiesNetworked.size())	  //need to create a new one
 		{
@@ -1420,7 +1418,7 @@ void Scenetree::onNetworkTick()
 	for (auto ent : entities)
 	{
 		//Serialize our entities based on their specific tick rates
-		if (ent->isOwner() &&
+		if (ent->isOwner(network_manager) &&
 			ent->isNetworked() &&
 			ent->network_tick_rate > 0 &&
 			total_network_ticks % ent->network_tick_rate == 0)
@@ -1430,7 +1428,7 @@ void Scenetree::onNetworkTick()
 			//todo: this is why we need a generic buffer, because sometimes we need to serialise a packet within a packet and that means redundant packet header overhead
 			ent->serializeOnTick(p);
 			//todo: send lots of little packets, or one big packet?
-			game_data->network_manager->client->sendPacket(0, &p);
+			network_manager->client->sendPacket(0, &p);
 		}
 	}
 }

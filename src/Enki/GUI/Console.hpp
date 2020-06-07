@@ -6,6 +6,9 @@
 
 namespace enki
 {
+
+class Scenetree;
+
 class Console : public enki::Entity
 {
 public:
@@ -31,7 +34,7 @@ public:
 		std::function<void(std::vector<std::string>)> function;
 	};
 
-	Console(enki::EntityInfo info, enki::GameData* game_data);
+	Console(EntityInfo info, Scenetree* scenetree);
 
 	void input(Event& e) override;
 	void update(float dt) override;
@@ -43,6 +46,8 @@ private:
 	void executeCommand(Command* command, std::vector<std::string> tokens);
 	Command* getCommand(std::string name);
 
+	Scenetree* scenetree;
+	
 	bool opened = false;
 	std::string user_input;
 	std::vector<Item> items;
