@@ -104,9 +104,7 @@ void RPCManager::registerGlobalRPC(RPCType rpctype, std::string name, F* func)
 		"You can't register a function as an RPC if it doesn't return void");
 
 	if (global_rpcs.count(name))
-	{
 		return;
-	}
 
 	global_rpcs[name].function = RPCUtil<F>::wrap(func);
 	global_rpcs[name].rpctype = rpctype;
@@ -119,9 +117,7 @@ void RPCManager::registerGlobalRPC(RPCType rpctype, std::string name, std::funct
 		"You can't register std::function as an RPC if it doesn't return void");
 
 	if (global_rpcs.count(name))
-	{
 		return;
-	}
 
 	global_rpcs[name].function = [func](Packet p)
 	{
@@ -142,9 +138,7 @@ void RPCManager::registerClassRPC(RPCType rpctype, std::string name, R (Class::*
 		"You can't register a ClassRPC for a class derived from Entity");
 
 	if (RPCWrapper<Class>::class_rpcs.count(name))
-	{
 		return;
-	}
 
 	RPCWrapper<Class>::class_rpcs[name].function = RPCUtil<R (Class::*)(Args ...)>::wrap(func);
 	RPCWrapper<Class>::class_rpcs[name].rpctype = rpctype;
@@ -161,9 +155,7 @@ void RPCManager::registerEntityRPC(RPCType rpctype, HashedID type, std::string n
 		"You can't register a EntityRPC for a class not derived from Entity");
 
 	if (entity_rpcs.count(type) && entity_rpcs[type].class_rpcs.count(name))
-	{
 		return;
-	}
 
 	entity_rpcs[type].class_rpcs[name].function = RPCUtil<R (Class::*)(Args ...)>::template wrapAndCast<Entity>(func);
 	entity_rpcs[type].class_rpcs[name].rpctype = rpctype;
@@ -253,9 +245,7 @@ template <typename... Args>
 void RPCManager::callGlobalRPCUnsafe(std::string name, Args ... args)
 {
 	if (!global_rpcs.count(name))
-	{
 		return;
-	}
 
 	Packet p({PacketType::GLOBAL_RPC});
 	p << name;
@@ -272,9 +262,7 @@ void RPCManager::callGlobalRPCUnsafe(std::string name, Args ... args)
 	}
 
 	if (local)
-	{
 		receive(p);
-	}
 }
 
 template <typename T, typename... Args>
@@ -304,9 +292,7 @@ void RPCManager::callEntityRPCUnsafe(std::string name, T* instance, Args ... arg
 	}
 
 	if (local)
-	{
 		receive(p, instance);
-	}
 }
 
 template <typename T, typename... Args>
@@ -316,9 +302,7 @@ void RPCManager::callClassRPCUnsafe(std::string name, T* instance, Args ... args
 		"You tried to call a ClassRPC for a class derived from Entity");
 
 	if (!RPCWrapper<T>::class_rpcs.count(name))
-	{
 		return;
-	}
 
 	Packet p({PacketType::CLASS_RPC});
 	p << name;
@@ -335,9 +319,7 @@ void RPCManager::callClassRPCUnsafe(std::string name, T* instance, Args ... args
 	}
 
 	if (local)
-	{
 		receive(p, instance);
-	}
 }
 
 template <typename T>

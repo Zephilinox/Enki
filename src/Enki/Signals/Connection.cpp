@@ -14,9 +14,7 @@ bool Connection::disconnect()
 {
 	auto disconnector = dc.lock();
 	if (disconnector)
-	{
 		return disconnector->disconnect(*this);
-	}
 
 	return false;
 }

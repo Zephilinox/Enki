@@ -76,9 +76,7 @@ void ServerStandard::processPackets()
 		//Sometimes on LAN/localhost a client's time will be a few milliseconds off
 		//So if it's before the packet sent time, we make them the same so there's no timetravel
 		if (p.getHeader().timeSent > p.info.timeReceived)
-		{
 			p.info.timeReceived = p.getHeader().timeSent;
-		}
 
 		pushPacket(std::move(p));
 	};
@@ -106,7 +104,7 @@ void ServerStandard::sendPacketToAllClients(enet_uint8 channel_id, Packet* p, en
 
 	if (!server.get_connected_clients().empty())
 	{
-		auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
+		const auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
 #pragma warning(push)
 #pragma warning(disable : 4100)
 		server.send_packet_to_all_if(channel_id, data, p->getBytesWritten(), flags, []([[maybe_unused]] const ClientInfo& client) { return true; });
@@ -123,7 +121,7 @@ void ServerStandard::sendPacketToSomeClients(enet_uint8 channel_id, Packet* p, e
 	auto console = spdlog::get("Enki");
 	if (!server.get_connected_clients().empty())
 	{
-		auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
+		const auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
 		server.send_packet_to_all_if(channel_id, data, p->getBytesWritten(), flags, predicate);
 	}
 }
@@ -136,7 +134,7 @@ void ServerStandard::sendPacketToAllExceptOneClient(ClientID client_id_excluded,
 
 	if (!server.get_connected_clients().empty())
 	{
-		auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
+		const auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
 		server.send_packet_to_all_if(channel_id, data, p->getBytesWritten(), flags, [client_id_excluded](const ClientInfo& client) {
 			return client.id != client_id_excluded;
 		});
@@ -153,7 +151,7 @@ ClientID ServerStandard::getNextUID()
 	}
 	else
 	{
-		auto id = free_ids.front();
+		const auto id = free_ids.front();
 		console->info("ServerStandard:\tooh free ids, giving {}", id);
 		free_ids.pop();
 		return id;

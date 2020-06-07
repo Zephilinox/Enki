@@ -26,9 +26,7 @@ void AnimatedSprite::addFrame(FrameData data)
 
 	//currently -1, make it 0 and update sprite's texture and stuff with the frame data
 	if (frames.size() == 1)
-	{
 		nextFrame();
-	}
 }
 
 void AnimatedSprite::update(float dt)
@@ -37,9 +35,7 @@ void AnimatedSprite::update(float dt)
 	sprite.setPosition(position + frames[current_frame].relative_pos);
 
 	if (!paused && !frames.empty())
-	{
 		timer.update(dt);
-	}
 }
 
 void AnimatedSprite::draw(Renderer* renderer)
@@ -65,11 +61,10 @@ void AnimatedSprite::restart()
 bool AnimatedSprite::isOver() const
 {
 	if (loop || frames.empty())
-	{
 		return false;
-	}
 
-	return current_frame == frames.size() - 1 && timer.getTimeInSeconds() >= frames.back().frame_duration_seconds;
+	return current_frame == frames.size() - 1
+		&& timer.getTimeInSeconds() >= frames.back().frame_duration_seconds;
 }
 
 bool AnimatedSprite::isPaused() const
@@ -80,13 +75,9 @@ bool AnimatedSprite::isPaused() const
 Frame AnimatedSprite::getCurrentFrame() const
 {
 	if (!frames.empty())
-	{
 		return {current_frame, frames[current_frame]};
-	}
-	else
-	{
-		return {};
-	}
+	
+	return {};
 }
 
 sf::Sprite* AnimatedSprite::getSprite()
@@ -97,25 +88,17 @@ sf::Sprite* AnimatedSprite::getSprite()
 void AnimatedSprite::nextFrame()
 {
 	if (current_frame < frames.size() - 1)
-	{
 		current_frame++;
-	}
 	else if (loop)	//on last frame, reset to start
-	{
 		current_frame = 0;
-	}
 	else	//stay on last frame
-	{
 		return;
-	}
 
 	sf::Texture* texture = texture_manager->getTexture(frames[current_frame].texture_path);
 	sprite.setTexture(*texture, true);
 
 	if (frames[current_frame].subtexture_rect != sf::IntRect{})
-	{
 		sprite.setTextureRect(frames[current_frame].subtexture_rect);
-	}
 
 	sprite.setPosition(position + frames[current_frame].relative_pos);
 	timer.trigger_time_seconds = frames[current_frame].frame_duration_seconds;

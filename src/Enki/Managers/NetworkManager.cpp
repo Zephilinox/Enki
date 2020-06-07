@@ -19,9 +19,7 @@ NetworkManager::NetworkManager()
 {
 	console = spdlog::get("Enki");
 	if (!console)
-	{
 		console = spdlog::stdout_color_mt("Enki");
-	}
 
 	console->info("Initializing enet global state");
 	enetpp::global_state::get().initialize();
@@ -102,14 +100,10 @@ void NetworkManager::stopHost()
 void NetworkManager::update()
 {
 	if (isServer())
-	{
 		server->update();
-	}
 
 	if (isClient())
-	{
 		client->update();
-	}
 
 	if (network_process_timer.getElapsedTime() > 1.0f / float(network_send_rate))
 	{
@@ -160,14 +154,10 @@ void NetworkManager::runThreadedNetwork()
 	while (!exit_thread)
 	{
 		if (isServer())
-		{
 			server->processPackets();
-		}
 
 		if (isClient())
-		{
 			client->processPackets();
-		}
 
 		std::this_thread::sleep_for(1s / float(network_process_rate));
 	}

@@ -7,11 +7,11 @@ sf::Font* FontManager::registerFont(const std::string& path, HashedID name)
 	auto f = std::make_unique<sf::Font>();
 	f->loadFromFile(path);
 
-	auto pair_font = fonts.emplace(name, std::move(f));
+	const auto pair_font = fonts.emplace(name, std::move(f));
 
 	if (!pair_font.second)	//hash exists, failed to insert
 	{
-		auto font_path_it = font_paths.find(name);
+		const auto font_path_it = font_paths.find(name);
 		if (font_path_it == font_paths.end())	//path doesn't exist
 		{
 			spdlog::error(
@@ -65,29 +65,21 @@ sf::Font* FontManager::registerFont(const std::string& path, HashedID name)
 
 sf::Font* FontManager::getFont(HashedID name) const
 {
-	auto font_it = fonts.find(name);
-	if (font_it == fonts.end())
-	{
-		spdlog::warn("Failed to get font with hash {}", name);
-		return nullptr;
-	}
-	else
-	{
+	const auto font_it = fonts.find(name);
+	if (font_it != fonts.end())
 		return font_it->second.get();
-	}
+	
+	spdlog::warn("Failed to get font with hash {}", name);
+	return nullptr;
 }
 
 std::string FontManager::getFontPath(HashedID name) const
 {
-	auto path_it = font_paths.find(name);
-	if (path_it == font_paths.end())
-	{
-		spdlog::warn("Failed to get path with hash {}", name);
-		return {};
-	}
-	else
-	{
+	const auto path_it = font_paths.find(name);
+	if (path_it != font_paths.end())
 		return path_it->second;
-	}
+	
+	spdlog::warn("Failed to get path with hash {}", name);
+	return {};
 }
 }	// namespace enki

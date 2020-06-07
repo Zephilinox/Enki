@@ -77,9 +77,7 @@ void ServerHost::processPackets()
 		//Sometimes on LAN/localhost a client's time will be a few milliseconds off
 		//So if it's before the packet sent time, we make them the same so there's no timetravel
 		if (p.getHeader().timeSent > p.info.timeReceived)
-		{
 			p.info.timeReceived = p.getHeader().timeSent;
-		}
 
 		pushPacket(std::move(p));
 	};

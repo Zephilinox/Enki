@@ -21,11 +21,8 @@ public:
 	void setSeed(int s);
 
 	[[nodiscard]] int getSeed() const;
-
 	[[nodiscard]] int generateInt(int lower, int upper);
-
 	[[nodiscard]] float generateFloat(float lower, float upper);
-
 	[[nodiscard]] double generateDouble(double lower, double upper);
 
 	template <typename Return, typename Distribution>

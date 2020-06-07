@@ -11,9 +11,7 @@ void TextureManager::registerTexture(const std::string& path)
 sf::Texture* TextureManager::getTexture(const std::string& path)
 {
 	if (textures.count(path))
-	{
 		return textures[path].get();
-	}
 
 	return nullptr;
 }

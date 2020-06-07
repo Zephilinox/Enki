@@ -21,9 +21,7 @@ std::size_t MessageQueue::processMessages(Timer::nanoseconds_float max_processin
 	const auto total_msg_count = priority_msg_count + normal_msg_count;
 
 	if (total_msg_count > 0)
-	{
-		std::cout << "INFO:\t MessageQueue took " << std::fixed << std::setprecision(2) << std::setfill('0') << std::setw(3) << timer.getElapsedTime<Timer::milliseconds>() << "ms processing " << std::setw(4) << total_msg_count << " messages. " << std::setw(4) << message_queue.size() << " remain\n";
-	}
+		std::cout << "INFO:\t MessageQueue took "<< std::fixed << std::setprecision(2) << std::setfill('0') << std::setw(3)<< timer.getElapsedTime<Timer::milliseconds>() << "ms processing " << std::setw(4) << total_msg_count << " messages. " << std::setw(4) << message_queue.size() << " remain\n";
 
 	return total_msg_count;
 }
@@ -40,13 +38,11 @@ bool MessageQueue::removeListener(Connection c)
 
 std::size_t MessageQueue::processPriorityMessages()
 {
-	auto msg_count = priority_messages.size();
+	const auto msg_count = priority_messages.size();
 
 	for (const auto& msg : priority_messages)
-	{
 		messenger.emit(msg.get());
-	}
-
+	
 	priority_messages.clear();
 
 	if (msg_count > 0)

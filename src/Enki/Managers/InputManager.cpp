@@ -14,9 +14,7 @@ InputManager::InputManager()
 void InputManager::update()
 {
 	for (size_t i = 0; i < keys_last_frame.size(); ++i)
-	{
 		keys_last_frame[i] = keys_this_frame[i];
-	}
 
 	for (auto key = sf::Keyboard::Key::A;
 		key < sf::Keyboard::Key::KeyCount;

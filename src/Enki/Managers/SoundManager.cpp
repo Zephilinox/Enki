@@ -34,9 +34,7 @@ void SoundManager::registerSound(const std::string& path)
 sf::SoundBuffer* SoundManager::getSoundBuffer(const std::string& path)
 {
 	if (buffers.count(path))
-	{
 		return buffers[path].get();
-	}
 
 	return nullptr;
 }

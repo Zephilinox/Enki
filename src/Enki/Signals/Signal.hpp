@@ -39,9 +39,7 @@ public:
 	Connection connect(FunctionType&& function)
 	{
 		if (!function)
-		{
 			throw std::runtime_error("Invalid function");
-		}
 
 		slot_id_counter++;
 		slots.emplace_back(Connection(dc, slot_id_counter), std::forward<FunctionType>(function));
@@ -80,9 +78,7 @@ public:
 	bool disconnect(Connection& connection)
 	{
 		if (!connection)
-		{
 			return false;
-		}
 
 		bool valid_disconnect = false;
 
@@ -108,11 +104,9 @@ public:
 	{
 		for (const auto& s : slots)
 		{
+			//guaranteed valid from connect();
 			if (s.function)
-			{
-				//guaranteed valid from connect();
 				s.function(args...);
-			}
 		}
 	}
 
@@ -140,9 +134,7 @@ private:
 		bool disconnect(Connection& c) final
 		{
 			if (signal)
-			{
 				return signal->disconnect(c);
-			}
 
 			return false;
 		}

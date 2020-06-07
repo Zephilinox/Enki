@@ -9,7 +9,7 @@ namespace enki
 
 class Scenetree;
 
-class Console : public enki::Entity
+class Console : public Entity
 {
 public:
 	struct Item
@@ -44,7 +44,7 @@ public:
 private:
 	void addInput(std::string input);
 	void executeCommand(Command* command, std::vector<std::string> tokens);
-	Command* getCommand(std::string name);
+	Command* getCommand(const std::string& name);
 
 	Scenetree* scenetree;
 	

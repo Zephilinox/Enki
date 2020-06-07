@@ -33,9 +33,7 @@ Console::Console(EntityInfo info, Scenetree* scenetree)
 		[&](std::vector<std::string> tokens) {
 			std::string command_strings;
 			for (auto& command : commands)
-			{
 				command_strings += "\"" + command.name + "\": " + command.description + "\n";
-			}
 
 			addItem({
 				"commands",
@@ -51,9 +49,7 @@ Console::Console(EntityInfo info, Scenetree* scenetree)
 		[&](std::vector<std::string> tokens) {
 			std::string text;
 			for (auto& s : tokens)
-			{
 				text += s + " ";
-			}
 
 			addItem({
 				"zephilinox",
@@ -209,9 +205,7 @@ Console::Console(EntityInfo info, Scenetree* scenetree)
 
 			std::string text;
 			for (auto& s : tokens)
-			{
 				text += s + " ";
-			}
 
 			text.pop_back();
 
@@ -270,9 +264,7 @@ Console::Console(EntityInfo info, Scenetree* scenetree)
 
 			std::string hashes_concat;
 			for (const auto& s : hashes)
-			{
 				hashes_concat += s;
-			}
 
 			this->addItem({
 				"hashes",
@@ -405,7 +397,7 @@ void Console::update(float)
 		ImGui::Separator();
 
 		static auto callback = [](ImGuiInputTextCallbackData* data) -> int {
-			Console* console = static_cast<Console*>(data->UserData);
+			auto console = static_cast<Console*>(data->UserData);
 
 			if (data->EventFlag == ImGuiInputTextFlags_CallbackHistory)
 			{
@@ -414,13 +406,9 @@ void Console::update(float)
 				if (data->EventKey == ImGuiKey_UpArrow)
 				{
 					if (console->history_index < 0)
-					{
 						console->history_index = console->history.size() - 1;
-					}
 					else if (console->history_index > 0)
-					{
 						console->history_index--;
-					}
 				}
 				else if (data->EventKey == ImGuiKey_DownArrow)
 				{
@@ -428,17 +416,15 @@ void Console::update(float)
 					{
 						console->history_index++;
 						if (console->history_index > console->history.size() - 1)
-						{
 							console->history_index = -1;
-						}
 					}
 				}
 
 				if (prev_history_index != console->history_index)
 				{
 					std::string history_str;
-					if (console->history_index >= 0 &&
-						console->history_index < console->history.size())
+					if (console->history_index >= 0
+						&& console->history_index < console->history.size())
 					{
 						history_str = console->history[console->history_index];
 					}
@@ -482,23 +468,19 @@ void Console::addItem(Item item)
 void Console::addInput(std::string input)
 {
 	if (input.empty())
-	{
 		return;
-	}
 
 	//save the untrimmed input, it'll be trimmed later anyway
-	history.push_back(input);
+	history.emplace_back(std::move(input));
 	history_index = -1;
 
 	std::string trimmed_input;
-	for (unsigned i = 0; i < user_input.size(); ++i)
+	for (const auto& letter : user_input)
 	{
-		if (!user_input[i])
-		{
+		if (!letter)
 			break;
-		}
 
-		trimmed_input.push_back(user_input[i]);
+		trimmed_input.push_back(letter);
 	}
 
 	addItem({
@@ -511,14 +493,13 @@ void Console::addInput(std::string input)
 	std::stringstream ss(trimmed_input);
 	std::vector<std::string> tokens;
 	std::string token;
+	
 	while (std::getline(ss, token, ' '))
-	{
 		tokens.push_back(token);
-	}
 
 	if (!tokens.empty())
 	{
-		std::string name = tokens[0];
+		const std::string name = tokens[0];
 
 		//commands already know the first token, it's their command name
 		tokens.erase(tokens.begin());
@@ -527,14 +508,12 @@ void Console::addInput(std::string input)
 	}
 }
 
-Console::Command* Console::getCommand(std::string name)
+Console::Command* Console::getCommand(const std::string& name)
 {
 	for (auto& c : commands)
 	{
 		if (c.name == name)
-		{
 			return &c;
-		}
 	}
 
 	return nullptr;
@@ -555,7 +534,7 @@ void Console::executeCommand(Command* command, std::vector<std::string> tokens)
 
 	try
 	{
-		command->function(tokens);
+		command->function(std::move(tokens));
 	}
 	catch (std::exception& e)
 	{

@@ -77,9 +77,7 @@ void Packet::writeBits(int data, int bits_to_write, int offset)
 	int bytes_needed = static_cast<int>(std::ceil(static_cast<float>(bits_needed) / 8.0f));
 
 	if (bytes_written + bytes_needed > bytes.size())
-	{
 		bytes.resize(bytes_written + bytes_needed);
-	}
 
 	const auto write_bits = [&](int bits, int extra_offset) {
 		//maybe there is a better way to do it than a loop

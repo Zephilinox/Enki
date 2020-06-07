@@ -6,9 +6,7 @@ RPCManager::RPCManager(NetworkManager* network_manager)
 	: network_manager(network_manager)
 {
 	if (!network_manager)
-	{
 		throw;
-	}
 
 	console = spdlog::get("Enki");
 	if (console == nullptr)
@@ -62,35 +60,50 @@ std::tuple<bool, bool> RPCManager::RPCInfo(RPCType type, bool owner)
 
 	switch (type)
 	{
-		case MASTER: if (owner)
-			{
+		case MASTER:
+		{
+			if (owner)
 				local = true;
-			}
 			else
-			{
 				remote = true;
-			}
 			break;
-		case REMOTE: if (owner)
-			{
+		}
+		case REMOTE:
+		{
+			if (owner)
 				remote = true;
-			}
 			break;
-		case REMOTE_AND_LOCAL: if (owner)
+		}
+		case REMOTE_AND_LOCAL:
+		{
+			if (owner)
 			{
 				remote = true;
 				local = true;
 			}
 			break;
-		case MASTER_AND_REMOTE: remote = true;
+		}
+		case MASTER_AND_REMOTE:
+		{
+			remote = true;
 			break;
-		case LOCAL: local = true;
-			break;
-		case ALL: remote = true;
+		}
+		case LOCAL:
+		{
 			local = true;
 			break;
-		default: throw;
+		}
+		case ALL:
+		{
+			remote = true;
+			local = true;
 			break;
+		}
+		default:
+		{
+			throw;
+			break;
+		}
 	}
 
 	return std::make_tuple(local, remote);

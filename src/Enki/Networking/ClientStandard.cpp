@@ -65,9 +65,7 @@ void ClientStandard::processPackets()
 		//Sometimes on LAN/localhost a client's time will be a few milliseconds off
 		//So if it's before the packet sent time, we make them the same so there's no timetravel shenanigans
 		if (p.getHeader().timeSent > p.info.timeReceived)
-		{
 			p.info.timeReceived = p.getHeader().timeSent;
-		}
 
 		pushPacket(std::move(p));
 	};
@@ -83,11 +81,10 @@ void ClientStandard::sendPacket(enet_uint8 channel_id, Packet* p, enet_uint32 fl
 	if (!connected_to_server)
 	{
 		console->error("Client sending packet when not connecting to server, thread will now sleep until connection is established");
-		Timer timer;
+		const Timer timer;
 		while (!connected_to_server)
-		{
 			std::this_thread::sleep_for(1ms);
-		}
+		
 		console->error("It took {} seconds to connect to the server", timer.getElapsedTime());
 	}
 
@@ -96,7 +93,7 @@ void ClientStandard::sendPacket(enet_uint8 channel_id, Packet* p, enet_uint32 fl
 	p->setHeader(header);
 
 	//console->info("Client sending packet");
-	auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
+	const auto data = reinterpret_cast<const enet_uint8*>(p->getBytes().data());
 	client.send_packet(channel_id, data, p->getBytesWritten(), flags);
 }
 }	// namespace enki
