@@ -140,7 +140,7 @@ enum class Button
 	Button4,
 	Button5,
 
-	KeyCount,
+	ButtonCount,
 };
 
 std::string buttonToString(const Button button);

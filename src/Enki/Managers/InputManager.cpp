@@ -1,5 +1,8 @@
 #include "InputManager.hpp"
 
+//SELF
+#include "Enki/Window/WindowSFML.hpp"
+
 namespace enki
 {
 InputManager::InputManager()
@@ -11,72 +14,87 @@ InputManager::InputManager()
 	mouse_buttons_this_frame.fill(InputState::Unheld);
 }
 
+void InputManager::input(const Event& e)
+{
+	const auto visitor = overload{
+		[this](const EventKey& e) {
+			if (e.key == Keyboard::Key::Unknown)
+				return;	//todo: I'd rather not need to do this error checking
+			
+			const auto key = static_cast<std::size_t>(e.key);
+
+			int state;
+			
+			if (this->keys_last_frame[key] == InputState::JustPressed
+				|| this->keys_last_frame[key] == InputState::HeldDown)
+			{
+				if (e.down)
+					state = InputState::HeldDown;
+				else
+					state = InputState::JustReleased;
+			}
+			else if (this->keys_last_frame[key] == InputState::JustReleased
+				|| this->keys_last_frame[key] == InputState::Unheld)
+			{
+				if (e.down)
+					state = InputState::JustPressed;
+				else
+					state = InputState::Unheld;
+			}
+			else
+			{
+				throw; //unreachable
+			}
+			
+			this->keys_this_frame[key] = state;
+		},
+		[this](const EventMouseButton& e) {
+			if (e.button == Mouse::Button::Unknown)
+				return; //todo: I'd rather not need to do this error checking
+			
+			const auto button = static_cast<std::size_t>(e.button);
+
+			int state;
+
+			if (this->mouse_buttons_last_frame[button] == InputState::JustPressed
+				|| this->mouse_buttons_last_frame[button] == InputState::HeldDown)
+			{
+				if (e.down)
+					state = InputState::HeldDown;
+				else
+					state = InputState::JustReleased;
+			}
+			else if (this->mouse_buttons_last_frame[button] == InputState::JustReleased
+				|| this->mouse_buttons_last_frame[button] == InputState::Unheld)
+			{
+				if (e.down)
+					state = InputState::JustPressed;
+				else
+					state = InputState::Unheld;
+			}
+			else
+			{
+				throw;	//unreachable
+			}
+
+			this->mouse_buttons_this_frame[button] = state;
+		},
+		[](const auto&) {}
+	};
+
+	std::visit(visitor, e);
+}
+
 void InputManager::update()
 {
 	for (size_t i = 0; i < keys_last_frame.size(); ++i)
 		keys_last_frame[i] = keys_this_frame[i];
 
-	for (auto key = sf::Keyboard::Key::A;
-		key < sf::Keyboard::Key::KeyCount;
-		key = static_cast<sf::Keyboard::Key>(static_cast<int>(key) + 1))
-	{
-		int state;
-
-		//todo: this is a problem, we should be using events, or we'll miss user input
-		if (sf::Keyboard::isKeyPressed(key))
-		{
-			if (keys_last_frame[key] == InputState::JustReleased
-				|| keys_last_frame[key] == InputState::Unheld) 
-				state = InputState::JustPressed;
-			else
-				state = InputState::HeldDown;
-		}
-		else
-		{
-			if (keys_last_frame[key] == InputState::JustPressed
-				|| keys_last_frame[key] == InputState::HeldDown)
-				state = InputState::JustReleased;
-			else
-				state = InputState::Unheld;
-		}
-
-		keys_this_frame[key] = state;
-	}
-
 	for (size_t i = 0; i < mouse_buttons_last_frame.size(); ++i)
-	{
 		mouse_buttons_last_frame[i] = mouse_buttons_this_frame[i];
-	}
-
-	for (auto button = sf::Mouse::Button::Left;
-		button < sf::Mouse::Button::ButtonCount;
-		button = static_cast<sf::Mouse::Button>(static_cast<int>(button) + 1))
-	{
-		int state;
-
-		//todo: use events for the same reason as above
-		if (sf::Mouse::isButtonPressed(button))
-		{
-			if (mouse_buttons_last_frame[button] == InputState::JustReleased
-				|| mouse_buttons_last_frame[button] == InputState::Unheld)
-				state = InputState::JustPressed;
-			else
-				state = InputState::HeldDown;
-		}
-		else
-		{
-			if (mouse_buttons_last_frame[button] == InputState::JustPressed
-				|| mouse_buttons_last_frame[button] == InputState::HeldDown)
-				state = InputState::JustReleased;
-			else
-				state = InputState::Unheld;
-		}
-
-		mouse_buttons_this_frame[button] = state;
-	}
 
 	mouse_desktop_pos = static_cast<sf::Vector2f>(sf::Mouse::getPosition());
-	mouse_screen_pos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*window));
+	mouse_screen_pos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*static_cast<WindowSFML*>(window)->getRawWindow()));
 }
 
 bool InputManager::isKeyUp(int key)
@@ -135,6 +153,6 @@ sf::Vector2f InputManager::getMouseScreenPos() const
 
 sf::Vector2f InputManager::getMouseWorldPos() const
 {
-	return window->mapPixelToCoords(static_cast<sf::Vector2i>(mouse_screen_pos));
+	return static_cast<WindowSFML*>(window)->getRawWindow()->mapPixelToCoords(static_cast<sf::Vector2i>(mouse_screen_pos));
 }
 }	// namespace enki
