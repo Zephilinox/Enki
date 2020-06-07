@@ -9,11 +9,8 @@ RPCManager::RPCManager(NetworkManager* network_manager)
 		throw;
 
 	console = spdlog::get("Enki");
-	if (console == nullptr)
-	{
-		spdlog::stdout_color_mt("Enki");
-		console = spdlog::get("Enki");
-	}
+	if (!console)
+		console = spdlog::stdout_color_mt("Enki");
 }
 
 void RPCManager::receive(Packet p)
@@ -27,15 +24,13 @@ void RPCManager::receive(Packet p)
 			return;
 		}
 
-		auto name = p.read<std::string>();
-
-		if (!global_rpcs.count(name))
-		{
-			console->error("Invalid RPC packet received due to invalid name, ignoring\n");
-			return;
-		}
-
-		global_rpcs[name].function(p);
+		//todo: change to string_view in C++20
+		const auto name = p.read<std::string>();
+		const auto found_it = global_rpcs.find(name);
+		if (found_it != global_rpcs.end())
+			found_it->second.function(std::move(p));
+		else
+			console->error("Invalid RPC packet received with name '{}', ignoring\n", name);
 	}
 	catch (std::exception&)
 	{
@@ -50,7 +45,7 @@ RPCType RPCManager::getGlobalRPCType(const std::string& name) const
 
 RPCType RPCManager::getEntityRPCType(HashedID type, const std::string& name) const
 {
-	return entity_rpcs.at(type).class_rpcs.at(name).rpctype;
+	return RPCWrapper<Entity>::class_rpcs.at(name).rpctype;
 }
 
 std::tuple<bool, bool> RPCManager::RPCInfo(RPCType type, bool owner)
@@ -106,6 +101,6 @@ std::tuple<bool, bool> RPCManager::RPCInfo(RPCType type, bool owner)
 		}
 	}
 
-	return std::make_tuple(local, remote);
+	return {local, remote};
 }
 } // namespace enki

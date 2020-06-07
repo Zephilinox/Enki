@@ -262,7 +262,7 @@ void RPCManager::callGlobalRPCUnsafe(std::string name, Args ... args)
 	}
 
 	if (local)
-		receive(p);
+		receive(std::move(p));
 }
 
 template <typename T, typename... Args>

@@ -155,6 +155,8 @@ public:
 
 	Packet& operator<<(std::string data);
 	Packet& operator>>(std::string& data);
+	Packet& operator<<(std::string_view data);
+	Packet& operator>>(std::string_view& data);
 
 	//Serialize and deserialize arithmetic types
 	template <typename T>

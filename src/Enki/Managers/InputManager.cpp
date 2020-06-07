@@ -74,7 +74,7 @@ void InputManager::input(const Event& e)
 			}
 			else
 			{
-				throw;	//unreachable
+				throw;	//unreachable, todo: change code so this isn't needed
 			}
 
 			this->mouse_buttons_this_frame[button] = state;

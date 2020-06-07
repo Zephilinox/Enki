@@ -297,7 +297,7 @@ std::size_t Packet::getBytesRead() const
 
 Packet& Packet::operator<<(Packet data)
 {
-	*this << data.bytes;
+	*this << std::move(data.bytes);
 	return *this;
 }
 
@@ -322,6 +322,35 @@ Packet& Packet::operator>>(std::string& data)
 	*this >> length;
 	data.resize(length);
 	deserialize(data.data(), length);
+	return *this;
+}
+
+
+Packet& Packet::operator<<(std::string_view data)
+{
+	*this << data.length();
+	serialize(data.data(), data.length());
+	return *this;
+}
+
+Packet& Packet::operator>>(std::string_view& data)
+{
+	std::size_t length;
+	*this >> length;
+
+	if (bytes_read + length > bytes.size())
+	{
+		throw std::runtime_error(
+			"Failed to deserialize data in packet, "
+			"would be reading past end of packet buffer");
+	}
+
+	char* ptr = reinterpret_cast<char*>(bytes.data()) + bytes_read;
+	bytes_read += length;
+	bits_read = 8;
+
+	data = std::string_view(ptr, length);
+	
 	return *this;
 }
 }	// namespace enki
