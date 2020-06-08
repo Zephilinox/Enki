@@ -4,6 +4,7 @@
 #include <chrono>
 
 //LIBS
+#include <Tracy.hpp>
 
 //SELF
 #include "Enki/Networking/ClientHost.hpp"
@@ -99,6 +100,7 @@ void NetworkManager::stopHost()
 
 void NetworkManager::update()
 {
+	ZoneScopedN("update network manager")
 	if (isServer())
 		server->update();
 
@@ -157,7 +159,7 @@ void NetworkManager::runThreadedNetwork()
 			server->processPackets();
 
 		if (isClient())
-			client->processPackets();
+				client->processPackets();
 
 		std::this_thread::sleep_for(1s / float(network_process_rate));
 	}

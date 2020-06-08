@@ -1,5 +1,8 @@
 #include "Scenetree.hpp"
 
+//LIBS
+#include <Tracy.hpp>
+
 namespace enki
 {
 Scenetree::Scenetree(NetworkManager* network_manager)
@@ -52,6 +55,7 @@ void Scenetree::enableNetworking()
 
 void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 {
+	ZoneScopedN("forEachEntity")
 	for (const auto& [version, ent] : entitiesLocal)
 	{
 		if (ent)
@@ -72,6 +76,7 @@ void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 void Scenetree::forEachEntity(std::function<void(const Entity&)> function,
 	const std::vector<EntityID> ids)
 {
+	ZoneScopedN("forEachEntity2")
 	std::vector<Entity*> ents;
 	for (auto id : ids)
 	{
@@ -94,6 +99,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 	Packet spawnInfo,
 	const std::vector<EntityChildCreationInfo>& children)
 {
+	ZoneScopedN("createEntityLocal")
 	if (parentID != Entity::InvalidID && findEntity(parentID) == nullptr)
 		return nullptr;
 	if (registeredTypes[type] == nullptr)
@@ -160,6 +166,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 
 void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string name, const EntityID parentID, Packet spawnInfo, const std::vector<EntityChildCreationInfo>& children)
 {
+	ZoneScopedN("createEntityNetworkedRequest")
 	auto net_man = network_manager;
 	if (!network_ready)
 	{
@@ -212,6 +219,7 @@ void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string 
 
 Scenetree::ErrorCodeRemove Scenetree::removeEntity(const EntityID ID)
 {
+	ZoneScopedN("removeEntity")
 	if (localFromID(ID))
 		return removeEntityLocal(ID);
 
@@ -220,6 +228,7 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntity(const EntityID ID)
 
 Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 {
+	ZoneScopedN("removeEntityLocal")
 	if (ID == 0)
 		return ErrorCodeRemove::IDWasZero;
 
@@ -251,6 +260,7 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 
 Entity* Scenetree::findEntity(const EntityID ID)
 {
+	ZoneScopedN("findEntity")
 	if (ID == 0)
 		return nullptr;
 
@@ -266,6 +276,7 @@ Entity* Scenetree::findEntity(const EntityID ID)
 
 Entity* Scenetree::getEntityUnsafe(const EntityID ID)
 {
+	ZoneScopedN("getEntityUnsafe")
 	if (ID < 0)
 		return entitiesLocal[indexFromID(ID)].entity.get();
 	else
@@ -274,6 +285,7 @@ Entity* Scenetree::getEntityUnsafe(const EntityID ID)
 
 bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children)
 {
+	ZoneScopedN("registerChildren")
 	if (!children.empty())
 	{
 		std::set<EntityType> parentTypes{type};
@@ -289,6 +301,7 @@ bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildC
 
 std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 {
+	ZoneScopedN("getEntitiesFromRoot")
 	std::vector<Entity*> ents;
 
 	if (ID == 0)
@@ -307,6 +320,7 @@ std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 
 void Scenetree::input(Event& event)
 {
+	ZoneScopedN("input")
 	// do not use range for loop
 	for (std::size_t i = 0; i < entitiesParentless.size(); ++i)
 		input(event, entitiesParentless[i]);
@@ -314,6 +328,7 @@ void Scenetree::input(Event& event)
 
 void Scenetree::update(float dt)
 {
+	ZoneScopedN("update")
 	auto entities = getEntitiesFromRoot();
 	std::vector<Entity*> entitiesToRemove;
 
@@ -368,6 +383,7 @@ void Scenetree::update(float dt)
 
 void Scenetree::draw(Renderer* renderer)
 {
+	ZoneScopedN("draw")
 	//do not use range for loop
 	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
 		draw(renderer, entitiesParentless[i]);
@@ -375,6 +391,7 @@ void Scenetree::draw(Renderer* renderer)
 
 void Scenetree::deleteEntity(EntityID ID)
 {
+	ZoneScopedN("deleteEntity")
 	auto e = findEntity(ID);
 
 	if (!e)
@@ -404,6 +421,7 @@ void Scenetree::deleteEntity(EntityID ID)
 
 std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 {
+	ZoneScopedN("findEntitiesByType")
 	std::vector<Entity*> ents;
 
 	for (const auto& [version, entity] : entitiesLocal)
@@ -423,6 +441,7 @@ std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 
 std::vector<Entity*> Scenetree::findEntitiesByName(const std::string& name) const
 {
+	ZoneScopedN("findEntitiesByName")
 	std::vector<Entity*> ents;
 
 	for (const auto& [version, entity] : entitiesLocal)
@@ -442,6 +461,7 @@ std::vector<Entity*> Scenetree::findEntitiesByName(const std::string& name) cons
 
 std::vector<Entity*> Scenetree::findEntitiesByOwner(ClientID owner) const
 {
+	ZoneScopedN("findEntitiesByOwner")
 	std::vector<Entity*> ents;
 
 	for (const auto& [version, entity] : entitiesLocal)
@@ -461,6 +481,7 @@ std::vector<Entity*> Scenetree::findEntitiesByOwner(ClientID owner) const
 
 std::vector<Entity*> Scenetree::findEntitiesByParent(EntityID parent) const
 {
+	ZoneScopedN("findEntitiesByParent")
 	std::vector<Entity*> ents;
 
 	for (const auto& [version, entity] : entitiesLocal)
@@ -480,6 +501,7 @@ std::vector<Entity*> Scenetree::findEntitiesByParent(EntityID parent) const
 
 std::vector<Entity*> Scenetree::findEntitiesByPredicate(const std::function<bool(const Entity&)>& predicate) const
 {
+	ZoneScopedN("findEntitiesByPredicate")
 	std::vector<Entity*> ents;
 
 	for (const auto& [version, entity] : entitiesLocal)
@@ -501,6 +523,7 @@ void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 	const Packet& spawnInfo,
 	const std::vector<EntityChildCreationInfo>& children)
 {
+	ZoneScopedN("createEntityNetworkedFromRequest")
 	Packet p({PacketType::ENTITY_CREATION_TREE});
 	auto* e = createEntityNetworkedFromRequestImpl(std::move(info), spawnInfo, children, p);
 
@@ -522,6 +545,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	const std::vector<EntityChildCreationInfo>& children,
 	Packet& p)
 {
+	ZoneScopedN("createEntityNetworkedFromRequestImpl")
 	if (info.name.empty() || info.type == 0)
 	{
 		console->error(
@@ -632,6 +656,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 void Scenetree::createEntitiesFromTreePacket(Packet p)
 {
+	ZoneScopedN("createEntitiesFromTreePacket")
 	console->info("got tree packet {}", p.getBytesWritten());
 
 	if (!network_manager->isClient())
@@ -704,6 +729,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 
 void Scenetree::input(Event& event, EntityID ID)
 {
+	ZoneScopedN("input id")
 	auto e = findEntity(ID);
 	if (!e)
 		return;
@@ -715,6 +741,7 @@ void Scenetree::input(Event& event, EntityID ID)
 
 void Scenetree::update(float dt, EntityID ID)
 {
+	ZoneScopedN("update id")
 	auto e = findEntity(ID);
 	if (!e)
 		return;
@@ -726,6 +753,7 @@ void Scenetree::update(float dt, EntityID ID)
 
 void Scenetree::draw(Renderer* renderer, EntityID ID)
 {
+	ZoneScopedN("draw id")
 	auto e = findEntity(ID);
 	if (!e)
 		return;
@@ -737,6 +765,7 @@ void Scenetree::draw(Renderer* renderer, EntityID ID)
 
 void Scenetree::fillEntitiesFromChildren(std::vector<EntityID> children, std::vector<Entity*>& ents)
 {
+	ZoneScopedN("fillEntitiesFromChildren")
 	for (auto id : children)
 	{
 		auto e = findEntity(id);
@@ -750,6 +779,7 @@ void Scenetree::fillEntitiesFromChildren(std::vector<EntityID> children, std::ve
 
 bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std::vector<EntityChildCreationInfo>& children)
 {
+	ZoneScopedN("checkChildrenValid")
 	for (const auto& child : children)
 	{
 		//make sure none of the children match the parental hierarchy
@@ -783,6 +813,7 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 
 void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 {
+	ZoneScopedN("sendAllNetworkedEntitiesToClient")
 	if (!network_ready || !network_manager->isServer())
 	{
 		console->error(
@@ -837,6 +868,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 
 void Scenetree::receivedPacketFromClient(Packet p)
 {
+	ZoneScopedN("receivedPacketFromClient")
 	switch (p.getHeader().type)
 	{
 		case CLIENT_INITIALIZED:
@@ -911,6 +943,7 @@ void Scenetree::receivedPacketFromClient(Packet p)
 
 void Scenetree::receivedEntityRPCFromClient(Packet& p)
 {
+	ZoneScopedN("receivedEntityRPCFromClient")
 	const auto info = p.read<EntityInfo>();
 	const auto name = p.read<std::string>();
 	const auto rpctype = rpc_man.getEntityRPCType(info.type, name);
@@ -1021,6 +1054,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 
 void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 {
+	ZoneScopedN("receivedEntityDeletionFromClient")
 	const auto entID = p.read<EntityID>();
 	const auto ent = findEntity(entID);
 	if (!ent)
@@ -1047,6 +1081,7 @@ void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 
 void Scenetree::receivedPacketFromServer(Packet p)
 {
+	ZoneScopedN("receivedPacketFromServer")
 	switch (p.getHeader().type)
 	{
 		case CLIENT_INITIALIZED:
@@ -1251,6 +1286,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 
 void Scenetree::receivedEntityCreationFromServer(Packet p)
 {
+	ZoneScopedN("receivedEntityCreationFromServer")
 	//todo
 	//so the server will create all the networked entities from our request
 	//and give them ids and then send them all to us, yay
@@ -1295,6 +1331,7 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 
 void Scenetree::onNetworkTick()
 {
+	ZoneScopedN("onNetworkTick")
 	total_network_ticks++;
 
 	Packet p({PacketType::ENTITY_UPDATE});

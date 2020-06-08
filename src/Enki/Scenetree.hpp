@@ -12,6 +12,8 @@
 //LIBS
 #include <spdlog/spdlog.h>
 
+#include <Tracy.hpp>
+
 //SELF
 #include "Enki/Entity.hpp"
 #include "Enki/Hash.hpp"
@@ -233,6 +235,7 @@ private:
 template <typename T>
 bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCreationInfo> children)
 {
+	ZoneScopedN("registerEntity")
 	registeredTypes[type] = [](EntityInfo info) -> std::unique_ptr<Entity> {
 		return std::make_unique<T>(std::move(info));
 	};
@@ -250,6 +253,7 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 template <typename T, typename... Args>
 bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCreationInfo> children, Args... args)
 {
+	ZoneScopedN("registerEntity args")
 	registeredTypes[type] = [args...](EntityInfo info) -> std::unique_ptr<Entity> {
 		return std::make_unique<T>(std::move(info), args...);
 	};
@@ -267,6 +271,7 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 template <typename T>
 T* Scenetree::findEntityByType(HashedID type) const
 {
+	ZoneScopedN("findEntityByType")
 	for (const auto& [version, entity] : entitiesLocal)
 	{
 		if (entity && entity->info.type == type)
@@ -289,6 +294,7 @@ T* Scenetree::findEntityByType(HashedID type) const
 template <typename T>
 T* Scenetree::findEntityByName(const std::string& name) const
 {
+	ZoneScopedN("findEntityByName")
 	for (const auto& [version, entity] : entitiesLocal)
 	{
 		if (entity && entity->info.name == name)
@@ -311,6 +317,7 @@ T* Scenetree::findEntityByName(const std::string& name) const
 template <typename T>
 T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 {
+	ZoneScopedN("findEntityByPredicate")
 	for (const auto& [version, entity] : entitiesLocal)
 	{
 		if (entity && predicate(*entity))
@@ -352,6 +359,7 @@ std::vector<T*> Scenetree::findEntitiesByType(HashedID type) const
 
 inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 {
+	ZoneScopedN("printTree")
 	if (tree == nullptr)
 		return;
 

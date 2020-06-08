@@ -56,3 +56,7 @@ message(STATUS "############ Adding pcg")
 target_include_directories(Enki PUBLIC "pcg/")
 target_include_directories(Enki PUBLIC "pcg/include/")
 message(STATUS "############ Done")
+
+message(STATUS "############ Adding Tracy")
+target_include_directories(Enki PUBLIC "${tracy_SOURCE_DIR}")
+message(STATUS "############ Done")

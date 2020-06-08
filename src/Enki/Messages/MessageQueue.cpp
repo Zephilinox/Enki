@@ -4,6 +4,9 @@
 #include <iomanip>
 #include <iostream>
 
+//LIBS
+#include <Tracy.hpp>
+
 //SELF
 #include "Enki/TimerLog.hpp"
 
@@ -11,6 +14,7 @@ namespace enki
 {
 std::size_t MessageQueue::processMessages(Timer::nanoseconds_float max_processing_time)
 {
+	ZoneScopedN("processMessages")
 	/*todo: Optimise this more by having listeners choose which events they care about
 	 * thus less listeners being called back.*/
 
@@ -38,6 +42,7 @@ bool MessageQueue::removeListener(Connection c)
 
 std::size_t MessageQueue::processPriorityMessages()
 {
+	ZoneScopedN("processPriorityMessages")
 	const auto msg_count = priority_messages.size();
 
 	for (const auto& msg : priority_messages)
@@ -58,6 +63,7 @@ std::size_t MessageQueue::processPriorityMessages()
 
 std::size_t MessageQueue::processNormalMessages(Timer::nanoseconds_float max_processing_time)
 {
+	ZoneScopedN("processNormalMessages")
 	//If we have any extra time, process any other messages we can
 	int msg_count = 0;
 

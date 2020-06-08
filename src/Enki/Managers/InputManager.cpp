@@ -3,6 +3,9 @@
 //SELF
 #include "Enki/Window/WindowSFML.hpp"
 
+//LIBS
+#include <Tracy.hpp>
+
 namespace enki
 {
 InputManager::InputManager()
@@ -16,6 +19,7 @@ InputManager::InputManager()
 
 void InputManager::input(const Event& e)
 {
+	ZoneScopedN("input InputManager")
 	const auto visitor = overload{
 		[this](const EventKey& e) {
 			if (e.key == Keyboard::Key::Unknown)

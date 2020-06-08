@@ -2,8 +2,9 @@
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(ENKI_BUILD_DEMOS "Build all demos" OFF)
-option(ENKI_BUILD_TESTS "Build tests" OFF)
+option(ENKI_DEMOS "Build all demos" OFF)
+option(ENKI_TESTS "Build tests" OFF)
+option(ENKI_TRACY "Tracy profiler client for Enki" ON)
 
 set(CMAKE_MODULE_PATH "${EnkiEngine_SOURCE_DIR}/cmake")
 
@@ -22,7 +23,24 @@ endif()
 
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
+include(FetchContent)
+FetchContent_Declare(tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy
+    GIT_TAG        v0.6.3
+    SOURCE_DIR     "${FETCHCONTENT_BASE_DIR}/tracy"
+)
+FetchContent_GetProperties(tracy)
+if (NOT tracy_POPULATED)
+    FetchContent_Populate(tracy)
+    set(tracy_SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/tracy")# PARENT_SCOPE)
+endif ()
+
 add_subdirectory ("src")
+
+if (ENKI_TRACY)
+	target_compile_definitions(Enki PUBLIC TRACY_ENABLE)
+endif()
+
 set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT Enki)
 
 #all the demo projects

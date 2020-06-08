@@ -103,6 +103,9 @@ set (Enki_SRC
 	"Enki/TimerLog.cpp"
 )
 
+if (ENKI_TRACY)
+	list(APPEND Enki_SRC "${tracy_SOURCE_DIR}/TracyClient.cpp")
+endif()
 #include("../cmake/FilesystemSourceGroup.cmake")
 #SOURCE_GROUP_BY_FOLDER(Enki)
 
