@@ -18,7 +18,7 @@
 #include "Enki/Input/Events.hpp"
 #include "Enki/Networking/RPC.hpp"
 #include "Enki/Networking/RPCManager.hpp"
-#include "Enki/Renderer.hpp"
+#include "Enki/Renderer/Renderer.hpp"
 
 namespace enki
 {

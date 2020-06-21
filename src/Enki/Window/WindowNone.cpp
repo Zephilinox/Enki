@@ -6,7 +6,7 @@
 namespace enki
 {
 WindowNone::WindowNone(Properties properties)
-	: Window(std::move(properties))
+	: Window(type, std::move(properties))
 {
 	vsync = properties.vsync;
 }

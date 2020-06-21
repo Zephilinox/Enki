@@ -5,8 +5,9 @@
 
 namespace enki
 {
+
 WindowSFML::WindowSFML(Properties properties)
-	: Window(std::move(properties))
+	: Window(type, std::move(properties))
 	, window(sf::VideoMode{properties.width, properties.height}, properties.title)
 {
 	window.setVerticalSyncEnabled(properties.vsync);

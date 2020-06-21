@@ -40,7 +40,8 @@ void AnimatedSprite::update(float dt)
 
 void AnimatedSprite::draw(Renderer* renderer)
 {
-	renderer->draw({&sprite, layer, order});
+	throw; //todo
+	//renderer->draw({&sprite, layer, order});
 }
 
 void AnimatedSprite::play()

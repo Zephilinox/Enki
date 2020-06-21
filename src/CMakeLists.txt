@@ -42,16 +42,20 @@ set(Enki_HEADERS
 	"Enki/Input/Events.hpp"
 
 	"Enki/Window/Window.hpp"
+	"Enki/Window/WindowNone.hpp"
+
+	"Enki/Renderer/Renderer.hpp"
+	"Enki/Renderer/RendererNone.hpp"
 
 	#todo: detect SFML is available
 	"Enki/Input/SFML/KeyConversion.hpp"
 	"Enki/Window/WindowSFML.hpp"
+	"Enki/Renderer/RendererSFML.hpp"
 
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenetree.hpp"
 	"Enki/Entity.hpp"
-	"Enki/Renderer.hpp"
 	"Enki/RNG.hpp"
 	"Enki/Hash.hpp"
 	"Enki/AnimatedSprite.hpp"
@@ -90,14 +94,18 @@ set (Enki_SRC
 
 	"Enki/Input/Keys.cpp"
 
+	"Enki/Window/WindowNone.cpp"
+
+	"Enki/Renderer/RendererNone.cpp"
+
 	#todo: detect SFML is available
 	"Enki/Input/SFML/KeyConversion.cpp"
 	"Enki/Window/WindowSFML.cpp"
+	"Enki/Renderer/RendererSFML.cpp"
 
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
 	"Enki/Scenetree.cpp"
-	"Enki/Renderer.cpp"
 	"Enki/RNG.cpp"
 	"Enki/AnimatedSprite.cpp"
 	"Enki/TimerLog.cpp"

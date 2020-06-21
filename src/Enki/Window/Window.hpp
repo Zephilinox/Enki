@@ -14,12 +14,15 @@
 
 namespace enki
 {
+
+using WindowType = HashedID;
+
 // Window is polymorphic so that the windowing can be changed at run time
 // This will probably only happen once, before it is first constructed
 // Use Case: Disable windowing for running headless servers with command line argument
 // Possible optimization: If we only change what the window type will be once, is the compiler able to devirtualize calls?
 //  Try and limit it to only change once, it's unlikely we'd want to change the window after it is made (and the difficulties of doing so when stuff relies on it being around)
-class Window : private enki::NonCopyableAndNonMovable
+class Window
 {
 public:
 	struct Properties
@@ -30,13 +33,13 @@ public:
 		bool vsync{false};
 	};
 
-	Window(Properties properties)
-		: properties(std::move(properties)){};
-	Window(Window&&) noexcept = default;
-	Window& operator=(Window&&) noexcept = default;
+	Window(const Window&) noexcept = delete;
+	Window(Window&&) noexcept = delete;
+	Window& operator=(Window&&) noexcept = delete;
+	Window& operator=(const Window&) noexcept = delete;
 	virtual ~Window() noexcept = default;
 
-	virtual bool poll(Event& e) = 0;
+	[[nodiscard]] virtual bool poll(Event& e) = 0;
 	[[nodiscard]] virtual bool isOpen() = 0;
 	[[nodiscard]] virtual bool isVerticalSyncEnabled() = 0;
 
@@ -46,25 +49,31 @@ public:
 
 	virtual void setVerticalSyncEnabled(bool enabled) = 0;
 
-	[[nodiscard]] HashedID getType() const { return type; }
+	[[nodiscard]] WindowType getType() const { return type; }
 
-	template <typename W>
-	bool is()
+	template <typename T>
+	[[nodiscard]] bool is()
 	{
-		static_assert(std::is_base_of_v<Window, W>);
-		return W::type == type;
+		static_assert(std::is_base_of_v<Window, T>);
+		return T::type == type;
 	}
 
-	template <typename W>
-	W* as()
+	template <typename T>
+	[[nodiscard]] T* as()
 	{
-		static_assert(std::is_base_of_v<Window, W>);
-		return W::type == type ? static_cast<W*>(this) : nullptr;
+		static_assert(std::is_base_of_v<Window, T>);
+		return T::type == type ? static_cast<T*>(this) : nullptr;
 	}
 
 protected:
+	Window(WindowType type, Properties properties)
+		: type(type)
+		, properties(std::move(properties))
+	{
+	}
+
+	WindowType type;
 	Properties properties;
-	HashedID type = hash("Window");
 };
 
 // Create a static instance globally for a typical ServiceLocator (e.g. window_locator.get())

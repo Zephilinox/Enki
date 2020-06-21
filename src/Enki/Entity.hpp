@@ -17,7 +17,7 @@
 #include "Enki/Managers/NetworkManager.hpp"
 #include "Enki/Networking/Client.hpp"
 #include "Enki/Networking/Packet.hpp"
-#include "Enki/Renderer.hpp"
+#include "Enki/Renderer/Renderer.hpp"
 
 namespace enki
 {

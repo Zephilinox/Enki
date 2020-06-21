@@ -1,5 +1,7 @@
 #pragma once
 
+//todo: what was I thinking when I made this?
+
 namespace enki
 {
 /*
