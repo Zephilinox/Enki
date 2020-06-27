@@ -52,7 +52,7 @@ void Scenetree::enableNetworking()
 
 void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 {
-	for (const auto& [version, ent] : entitiesLocal)
+	for (const auto& [version, ent] : frame_wip.entities[local])
 	{
 		if (ent)
 		{
@@ -60,7 +60,7 @@ void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 		}
 	}
 
-	for (const auto& [version, ent] : entitiesNetworked)
+	for (const auto& [version, ent] : frame_wip.entities[networked])
 	{
 		if (ent)
 		{
@@ -102,41 +102,41 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 	Entity* entity = nullptr;
 
 	//no free indices available, create a new entity with version 0
-	if (freeIndicesLocal.empty())
+	if (frame_wip.entities_free_indices[local].empty())
 	{
 		EntityInfo info;
 		info.type = type;
 		info.name = std::move(name);
-		info.ID = generateEntityID(true, 0, static_cast<std::uint32_t>(entitiesLocal.size()));
+		info.ID = generateEntityID(true, 0, static_cast<std::uint32_t>(frame_wip.entities[local].size()));
 		info.parentID = parentID;
 
 		if (parentID == Entity::InvalidID)
-			entitiesParentless.push_back(info.ID);
+			frame_wip.entities_parentless.push_back(info.ID);
 
 		auto e = registeredTypes[type](std::move(info));
 		entity = e.get();
 
-		entitiesLocal.emplace_back(VersionEntityPair{0, std::move(e)});
+		frame_wip.entities[local].emplace_back(VersionEntityPair{0, std::move(e)});
 	}
 	else	//reuse existing index
 	{
-		std::uint32_t index = freeIndicesLocal.top();
-		freeIndicesLocal.pop();
+		std::uint32_t index = frame_wip.entities_free_indices[local].top();
+		frame_wip.entities_free_indices[local].pop();
 
 		EntityInfo info;
 		info.type = type;
 		info.name = std::move(name);
 		//version was incremented when the last entity here was deleted, no need to change it here
-		info.ID = generateEntityID(true, entitiesLocal[index].version, index);
+		info.ID = generateEntityID(true, frame_wip.entities[local][index].version, index);
 		info.parentID = parentID;
 
 		if (parentID == Entity::InvalidID)
-			entitiesParentless.push_back(info.ID);
+			frame_wip.entities_parentless.push_back(info.ID);
 
 		auto e = registeredTypes[type](std::move(info));
 		entity = e.get();
 
-		entitiesLocal[index].entity = std::move(e);
+		frame_wip.entities[local][index].entity = std::move(e);
 	}
 
 	for (const auto& child : registeredChildCreationInfo[type])
@@ -228,10 +228,10 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 	if (!local)
 		return ErrorCodeRemove::IDWasNotLocal;
 	
-	if (index >= entitiesLocal.size())
+	if (index >= frame_wip.entities[local].size())
 		return ErrorCodeRemove::IndexOutOfBounds;
 
-	auto& e = entitiesLocal[index];
+	auto& e = frame_wip.entities[local][index];
 	if (ID != e.entity->info.ID)
 		return ErrorCodeRemove::IDDoesNotMatchFoundID;
 	//this should never happen, the version we store and the version in the ID has diverged somehow
@@ -245,76 +245,50 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 
 	e.version++;
 	e.entity.reset(nullptr);
-	freeIndicesLocal.push(index);
+	frame_wip.entities_free_indices[local].push(index);
 	return ErrorCodeRemove::Success;
 }
 
 Entity* Scenetree::findEntity(const EntityID ID)
 {
-	if (ID == 0)
-		return nullptr;
-
-	const auto [local, version, index] = splitID(ID);
-
-	if (local && index < entitiesLocal.size() && entitiesLocal[index].version == version)
-		return entitiesLocal[index].entity.get();
-	else if (!local && index < entitiesNetworked.size() && entitiesNetworked[index].version == version)
-		return entitiesNetworked[index].entity.get();
-
-	return nullptr;
+	return frame_finished.findEntity(ID);
 }
 
 Entity* Scenetree::getEntityUnsafe(const EntityID ID)
 {
-	if (ID < 0)
-		return entitiesLocal[indexFromID(ID)].entity.get();
-	else
-		return entitiesNetworked[indexFromID(ID)].entity.get();
+	const auto [is_local, version, index] = splitID(ID);
+	return frame_finished.entities[is_local][index].entity.get();
 }
 
 bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children)
 {
-	if (!children.empty())
-	{
-		std::set<EntityType> parentTypes{type};
+	if (children.empty())
+		return true;
 
-		if (!checkChildrenValid(parentTypes, children))
-			return false;
+	std::set<EntityType> parentTypes{type};
 
-		registeredChildCreationInfo[type] = children;	 //do we need to do this beforehand?
-	}
+	if (!checkChildrenValid(parentTypes, children))
+		return false;
 
+	registeredChildCreationInfo[type] = children;	 //do we need to do this beforehand?
 	return true;
 }
 
 std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 {
-	std::vector<Entity*> ents;
-
-	if (ID == 0)
-	{
-		fillEntitiesFromChildren(entitiesParentless, ents);
-	}
-	else
-	{
-		auto e = findEntity(ID);
-		if (e)
-			fillEntitiesFromChildren(e->info.childIDs, ents);
-	}
-
-	return ents;
+	return frame_finished.getEntitiesFromRoot(ID);
 }
 
 void Scenetree::input(Event& event)
 {
 	// do not use range for loop
-	for (std::size_t i = 0; i < entitiesParentless.size(); ++i)
-		input(event, entitiesParentless[i]);
+	for (std::size_t i = 0; i < frame_wip.entities_parentless.size(); ++i)
+		input(event, frame_wip.entities_parentless[i]);
 }
 
 void Scenetree::update(float dt)
 {
-	auto entities = getEntitiesFromRoot();
+	auto entities = frame_wip.getEntitiesFromRoot();
 	std::vector<Entity*> entitiesToRemove;
 
 	//todo: does not handle deleting children of deleted entities
@@ -324,14 +298,9 @@ void Scenetree::update(float dt)
 	//from parents to children
 	for (auto e : entities)
 	{
-		if (e->remove)
+		if (e && e->remove)
 		{
-			auto [local, version, index] = splitID(e->info.ID);
-
-			if (local)
-				entitiesLocal[index].entity->onDespawn();
-			else
-				entitiesNetworked[index].entity->onDespawn();
+			e->onDespawn();
 
 			entitiesToRemove.push_back(e);
 		}
@@ -341,41 +310,34 @@ void Scenetree::update(float dt)
 	for (auto it = entitiesToRemove.rbegin(); it != entitiesToRemove.rend(); ++it)
 	{
 		auto e = *it;
-		auto [local, version, index] = splitID(e->info.ID);
+		auto [is_local, version, index] = splitID(e->info.ID);
 
-		std::erase_if(entitiesParentless, [removedID = e->info.ID](EntityID id) {
+		std::erase_if(frame_wip.entities_parentless, [removedID = e->info.ID](EntityID id) {
 			return id == removedID;
 		});
 
-		if (local)
-		{
-			entitiesLocal[index].version++;
-			entitiesLocal[index].entity = nullptr;
-			freeIndicesLocal.push(index);
-		}
-		else
-		{
-			entitiesNetworked[index].version++;
-			entitiesNetworked[index].entity = nullptr;
-			freeIndicesNetworked.push(index);
-		}
+		frame_wip.entities[is_local][index].version++;
+		frame_wip.entities[is_local][index].entity = nullptr;
+		frame_wip.entities_free_indices[is_local].push(index);
 	}
 
 	//do not use range for loop
-	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
-		update(dt, entitiesParentless[i]);
+	for (unsigned int i = 0; i < frame_wip.entities_parentless.size(); ++i)
+		update(dt, frame_wip.entities_parentless[i]);
+	
+	frame_finished = frame_wip;
 }
 
 void Scenetree::draw(Renderer* renderer)
-{
+{	
 	//do not use range for loop
-	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
-		draw(renderer, entitiesParentless[i]);
+	for (unsigned int i = 0; i < frame_finished.entities_parentless.size(); ++i)
+		draw(renderer, frame_finished.entities_parentless[i]);
 }
 
 void Scenetree::deleteEntity(EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto e = frame_wip.findEntity(ID);
 
 	if (!e)
 	{
@@ -406,13 +368,13 @@ std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_finished.entities[local])
 	{
 		if (entity->info.type == type)
 			ents.push_back(entity.get());
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_finished.entities[networked])
 	{
 		if (entity->info.type == type)
 			ents.push_back(entity.get());
@@ -425,13 +387,13 @@ std::vector<Entity*> Scenetree::findEntitiesByName(const std::string& name) cons
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_finished.entities[local])
 	{
 		if (entity && entity->info.name == name)
 			ents.push_back(entity.get());
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_finished.entities[networked])
 	{
 		if (entity && entity->info.name == name)
 			ents.push_back(entity.get());
@@ -444,13 +406,13 @@ std::vector<Entity*> Scenetree::findEntitiesByOwner(ClientID owner) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_finished.entities[local])
 	{
 		if (entity && entity->info.ownerID == owner)
 			ents.push_back(entity.get());
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_finished.entities[networked])
 	{
 		if (entity && entity->info.ownerID == owner)
 			ents.push_back(entity.get());
@@ -463,13 +425,13 @@ std::vector<Entity*> Scenetree::findEntitiesByParent(EntityID parent) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_finished.entities[local])
 	{
 		if (entity && entity->info.parentID == parent)
 			ents.push_back(entity.get());
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_finished.entities[networked])
 	{
 		if (entity && entity->info.parentID == parent)
 			ents.push_back(entity.get());
@@ -482,13 +444,13 @@ std::vector<Entity*> Scenetree::findEntitiesByPredicate(const std::function<bool
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_finished.entities[local])
 	{
 		if (entity && predicate(*entity))
 			ents.push_back(entity.get());
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_finished.entities[networked])
 	{
 		if (entity && predicate(*entity))
 			ents.push_back(entity.get());
@@ -571,31 +533,32 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	std::uint32_t index;
 	std::uint32_t version;
 
-	if (freeIndicesNetworked.empty())
+	if (frame_wip.entities_free_indices[networked].empty())
 	{
-		index = static_cast<std::uint32_t>(entitiesNetworked.size());
+		index = static_cast<std::uint32_t>(frame_wip.entities[networked].size());
 		version = 0;
-		entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+		frame_wip.entities[networked].emplace_back(VersionEntityPair{0, nullptr});
 	}
 	else
 	{
-		index = freeIndicesLocal.top();
-		freeIndicesLocal.pop();
-		version = entitiesNetworked[index].version;
+		//todo: this used to grab it from the local free indices which seemed wrong, changed it to networked, but unsure given it seemed to be working :shock:
+		index = frame_wip.entities_free_indices[networked].top();
+		frame_wip.entities_free_indices[networked].pop();
+		version = frame_wip.entities[networked][index].version;
 	}
 
 	info.ID = generateEntityID(false, version, index);
 
 	if (info.parentID == Entity::InvalidID)
-		entitiesParentless.push_back(info.ID);
+		frame_wip.entities_parentless.push_back(info.ID);
 
 	Entity* entity;
 
 	{
 		auto e = registeredTypes[info.type](info);
 		entity = e.get();
-		entitiesNetworked[index].version = version;
-		entitiesNetworked[index].entity = std::move(e);
+		frame_wip.entities[networked][index].version = version;
+		frame_wip.entities[networked][index].entity = std::move(e);
 	}
 
 	p << entity->info;
@@ -645,49 +608,49 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 		auto info = p.read<EntityInfo>();
 		auto spawnInfo = p.read<Packet>();
 
-		auto [local, version, index] = splitID(info.ID);
-		auto type = info.type;
+		auto [is_local, version, index] = splitID(info.ID);
+		const auto type = info.type;
 
 		if (info.parentID == Entity::InvalidID)
-			entitiesParentless.push_back(info.ID);
+			frame_wip.entities_parentless.push_back(info.ID);
 
 		auto e = registeredTypes[type](std::move(info));
 		auto entity = e.get();
 
-		if (index >= entitiesNetworked.size())	  //need to create a new one
+		if (index >= frame_wip.entities[networked].size())	  //need to create a new one
 		{
 			console->info(
 				"Creating additional entities from a tree packet. {} {}\n{}",
 				index,
-				entitiesNetworked.size(),
+				frame_wip.entities[networked].size(),
 				entity->info);
 
-			while (index != entitiesNetworked.size())	 //need to create empty ents to match required index
-				entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+			while (index != frame_wip.entities[networked].size())	 //need to create empty ents to match required index
+				frame_wip.entities[networked].emplace_back(VersionEntityPair{0, nullptr});
 
 			//now index == size, so last push back is the correct index
-			entitiesNetworked.emplace_back(VersionEntityPair{version, std::move(e)});
+			frame_wip.entities[networked].emplace_back(VersionEntityPair{version, std::move(e)});
 		}
 		else
 		{
 			console->info(
 				"Creating exact entity from a tree packet. {} {}\n{}",
 				index,
-				entitiesNetworked.size(),
+				frame_wip.entities[networked].size(),
 				entity->info);
 
-			if (entitiesNetworked[index].version != version)
+			if (frame_wip.entities[networked][index].version != version)
 			{
 				console->error("packet tree version mismatch");
 				throw;
 			}
-			else if (entitiesNetworked[index].entity != nullptr)
+			else if (frame_wip.entities[networked][index].entity != nullptr)
 			{
 				console->error("packet tree entity already exists at index with same version");
 				throw;
 			}
 
-			entitiesNetworked[index] = {version, std::move(e)};
+			frame_wip.entities[networked][index] = {version, std::move(e)};
 		}
 
 		//todo: this is calling it from parent-to-child, should be child-to-parent
@@ -703,7 +666,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 
 void Scenetree::input(Event& event, EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto e = frame_wip.findEntity(ID);
 	if (!e)
 		return;
 	
@@ -714,7 +677,7 @@ void Scenetree::input(Event& event, EntityID ID)
 
 void Scenetree::update(float dt, EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto e = frame_wip.findEntity(ID);
 	if (!e)
 		return;
 
@@ -732,19 +695,6 @@ void Scenetree::draw(Renderer* renderer, EntityID ID)
 	e->draw(renderer);
 	for (auto childID : e->info.childIDs)
 		draw(renderer, childID);
-}
-
-void Scenetree::fillEntitiesFromChildren(std::vector<EntityID> children, std::vector<Entity*>& ents)
-{
-	for (auto id : children)
-	{
-		auto e = findEntity(id);
-		if (e)
-		{
-			ents.push_back(e);
-			fillEntitiesFromChildren(e->info.childIDs, ents);
-		}
-	}
 }
 
 bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std::vector<EntityChildCreationInfo>& children)
@@ -794,7 +744,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 	Packet p({PacketType::ENTITY_CREATION_ON_CONNECTION});
 
 	//flat tree structure
-	auto ents = getEntitiesFromRoot();
+	auto ents = frame_finished.getEntitiesFromRoot();
 
 	for (auto ent : ents)
 	{
@@ -1122,46 +1072,46 @@ void Scenetree::receivedPacketFromServer(Packet p)
 				
 				if (info.parentID == Entity::InvalidID)
 				{
-					entitiesParentless.push_back(info.ID);
+					frame_wip.entities_parentless.push_back(info.ID);
 				}
 
 				auto e = registeredTypes[info.type](info);
 				auto entity = e.get();
 
-				if (index >= entitiesNetworked.size())	  //need to create a new one
+				if (index >= frame_wip.entities[networked].size())	  //need to create a new one
 				{
 					console->info(
 						"Creating additional entities from a connection packet. {} {}\n{}",
 						index,
-						entitiesNetworked.size(),
+						frame_wip.entities[networked].size(),
 						info);
 
-					while (index != entitiesNetworked.size())	 //need to create empty ents to match required index
-						entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+					while (index != frame_wip.entities[networked].size())	 //need to create empty ents to match required index
+						frame_wip.entities[networked].emplace_back(VersionEntityPair{0, nullptr});
 
 					//now index == size, so last push back is the correct index
-					entitiesNetworked.emplace_back(VersionEntityPair{version, std::move(e)});
+					frame_wip.entities[networked].emplace_back(VersionEntityPair{version, std::move(e)});
 				}
 				else
 				{
 					console->info(
 						"Creating exact entity from a connection packet. {} {}\n{}",
 						index,
-						entitiesNetworked.size(),
+						frame_wip.entities[networked].size(),
 						info);
 
-					if (entitiesNetworked[index].version != version)
+					if (frame_wip.entities[networked][index].version != version)
 					{
 						console->error("packet connection version mismatch");
 						throw;
 					}
-					else if (entitiesNetworked[index].entity != nullptr)
+					else if (frame_wip.entities[networked][index].entity != nullptr)
 					{
 						console->error("packet connection entity already exists at index with same version");
 						throw;
 					}
 
-					entitiesNetworked[index] = {version, std::move(e)};
+					frame_wip.entities[networked][index] = {version, std::move(e)};
 				}
 
 				//todo: we pass the whole damn thing, they should only have access to their specific data, this is really really bad
@@ -1266,21 +1216,21 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 		auto type = info.type;
 		auto e = registeredTypes[type](std::move(info));
 
-		if (index >= entitiesNetworked.size())	  //need to create a new one
+		if (index >= frame_wip.entities[networked].size())	  //need to create a new one
 		{
-			while (index != entitiesNetworked.size())	 //need to create empty ents to match required index
-				entitiesNetworked.emplace_back(VersionEntityPair{0, nullptr});
+			while (index != frame_wip.entities[networked].size())	 //need to create empty ents to match required index
+				frame_wip.entities[networked].emplace_back(VersionEntityPair{0, nullptr});
 
 			//now index == size, so last push back is the correct index
-			entitiesNetworked.emplace_back(VersionEntityPair{version, std::move(e)});
+			frame_wip.entities[networked].emplace_back(VersionEntityPair{version, std::move(e)});
 		}
 		else
 		{
-			if (entitiesNetworked[index].version != version
-				|| entitiesNetworked[index].entity != nullptr)
+			if (frame_wip.entities[networked][index].version != version
+				|| frame_wip.entities[networked][index].entity != nullptr)
 				throw;
 
-			entitiesNetworked[index] = {version, std::move(e)};
+			frame_wip.entities[networked][index] = {version, std::move(e)};
 		}
 	}
 }
@@ -1291,7 +1241,7 @@ void Scenetree::onNetworkTick()
 
 	Packet p({PacketType::ENTITY_UPDATE});
 
-	auto entities = getEntitiesFromRoot();
+	auto entities = frame_finished.getEntitiesFromRoot();
 
 	//todo: some kind of flag when we iterate over entities and those entities could modify the entity container
 	//so that they don't accidentally invalidate the loop
@@ -1316,6 +1266,51 @@ void Scenetree::onNetworkTick()
 			ent->serializeOnTick(p);
 			//todo: send lots of little packets, or one big packet?
 			network_manager->client->sendPacket(0, &p);
+		}
+	}
+}
+
+std::vector<Entity*> Scenetree::Frame::getEntitiesFromRoot(EntityID ID)
+{
+	std::vector<Entity*> ents;
+
+	if (ID == Entity::InvalidID)
+	{
+		fillEntitiesFromChildren(entities_parentless, ents);
+	}
+	else
+	{
+		auto e = findEntity(ID);
+		if (e)
+			fillEntitiesFromChildren(e->info.childIDs, ents);
+	}
+
+	return ents;
+}
+
+Entity* Scenetree::Frame::findEntity(const EntityID ID)
+{
+	if (ID == 0)
+		return nullptr;
+
+	const auto [is_local, version, index] = splitID(ID);
+	const auto& ents = entities[is_local];
+
+	if (index < ents.size() && ents[index].version == version)
+		return entities[is_local][index].entity.get();
+
+	return nullptr;
+}
+
+void Scenetree::Frame::fillEntitiesFromChildren(std::vector<EntityID> children, std::vector<Entity*>& ents)
+{
+	for (auto id : children)
+	{
+		auto e = findEntity(id);
+		if (e)
+		{
+			ents.push_back(e);
+			fillEntitiesFromChildren(e->info.childIDs, ents);
 		}
 	}
 }

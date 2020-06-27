@@ -191,6 +191,11 @@ public:
 	{
 	}
 
+	//The scenetree double-buffers. The previous frame is drawn, allowing the current frame to process at the same time.
+	//In addition, the current frame update will use entity information from the previous frame, so it becomes deterministic and can also be threaded
+	//If you're not using the scene tree then you might not care about this, but I don't want to provide a default returning nullptr because it can be surprising
+	virtual std::unique_ptr<Entity> clone() = 0;
+	
 	virtual ~Entity() = default;
 
 	//Called when an entity is created

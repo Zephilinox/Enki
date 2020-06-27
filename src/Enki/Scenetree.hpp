@@ -28,6 +28,47 @@ class Scenetree;
 
 struct VersionEntityPair
 {
+	VersionEntityPair(std::uint32_t version, std::unique_ptr<Entity> entity)
+		: version(version)
+		, entity(std::move(entity))
+	{
+
+	}
+
+	VersionEntityPair(const VersionEntityPair& vep)
+		: version(vep.version)
+		, entity(vep.entity ? vep.entity->clone() : nullptr)
+	{
+	}
+	
+	VersionEntityPair(VersionEntityPair&& vep) noexcept
+		: version(vep.version)
+		, entity(std::move(vep.entity))
+	{
+	}
+	
+	VersionEntityPair& operator=(const VersionEntityPair& vep)
+	{
+		if (&vep != this)
+		{
+			version = vep.version;
+			entity = vep.entity ? vep.entity->clone() : nullptr;
+		}
+		
+		return *this;
+	}
+
+	VersionEntityPair& operator=(VersionEntityPair&& vep) noexcept
+	{
+		if (&vep != this)
+		{
+			version = vep.version;
+			entity = std::move(vep.entity);
+		}
+
+		return *this;
+	}
+	
 	std::uint32_t version;
 	std::unique_ptr<Entity> entity;
 };
@@ -58,6 +99,9 @@ inline Packet& operator>>(Packet& p, EntityChildCreationInfo& e)
 class Scenetree
 {
 public:
+	static constexpr auto local = 1;
+	static constexpr auto networked = 0;
+	
 	struct ErrorCodeRemove
 	{
 		enum ErrorCode : std::uint8_t
@@ -93,12 +137,12 @@ public:
 
 	[[nodiscard]] const std::vector<EntityID>& getRootEntitiesIDs() const
 	{
-		return entitiesParentless;
+		return frame_wip.entities_parentless;
 	}
 
 	[[nodiscard]] std::size_t getEntityCount() const
 	{
-		return entitiesLocal.size() + entitiesNetworked.size();
+		return frame_wip.entities[local].size() + frame_wip.entities[networked].size();
 	}
 
 	void forEachEntity(std::function<void(const Entity&)> function);
@@ -167,6 +211,21 @@ public:
 	RPCManager rpc_man;
 
 private:
+	struct Frame
+	{
+		std::vector<EntityID> entities_parentless;
+
+		std::array<std::vector<VersionEntityPair>, 2> entities;
+		std::array<std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>>, 2> entities_free_indices;
+
+		std::vector<Entity*> getEntitiesFromRoot(EntityID ID = 0);
+		Entity* findEntity(const EntityID ID);
+
+		//todo: I need a better name for this, help
+		void fillEntitiesFromChildren(std::vector<EntityID> children,
+			std::vector<Entity*>& ents);
+	};
+	
 	//Used by the server when receiving a creation request, sends one packet with all the data
 	void createEntityNetworkedFromRequest(EntityInfo info,
 		const Packet& spawnInfo,
@@ -184,10 +243,6 @@ private:
 	void input(Event& e, EntityID ID);
 	void update(float dt, EntityID ID);
 	void draw(Renderer* renderer, EntityID ID);
-
-	//todo: I need a better name for this, help
-	void fillEntitiesFromChildren(std::vector<EntityID> children,
-		std::vector<Entity*>& ents);
 
 	bool checkChildrenValid(std::set<EntityType>& parentTypes,
 		const std::vector<EntityChildCreationInfo>& children);
@@ -207,13 +262,11 @@ private:
 
 	std::shared_ptr<spdlog::logger> console;
 
-	std::vector<VersionEntityPair> entitiesLocal;
-	std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>> freeIndicesLocal;
-
 	std::map<EntityType, BuilderFunction> registeredTypes;
 	std::map<EntityType, std::vector<EntityChildCreationInfo>> registeredChildCreationInfo;
 
-	std::vector<EntityID> entitiesParentless;
+	Frame frame_finished;
+	Frame frame_wip;
 
 	//Networking
 	NetworkManager* network_manager;
@@ -223,8 +276,6 @@ private:
 
 	bool network_ready = false;
 	std::uint32_t total_network_ticks = 0;
-	std::vector<VersionEntityPair> entitiesNetworked;
-	std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>> freeIndicesNetworked;
 };
 
 template <typename T>
@@ -264,7 +315,7 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 template <typename T>
 T* Scenetree::findEntityByType(HashedID type) const
 {
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_wip.entities[local])
 	{
 		if (entity && entity->info.type == type)
 		{
@@ -272,7 +323,7 @@ T* Scenetree::findEntityByType(HashedID type) const
 		}
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_wip.entities[networked])
 	{
 		if (entity && entity->info.type == type)
 		{
@@ -286,7 +337,7 @@ T* Scenetree::findEntityByType(HashedID type) const
 template <typename T>
 T* Scenetree::findEntityByName(const std::string& name) const
 {
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_wip.entities[local])
 	{
 		if (entity && entity->info.name == name)
 		{
@@ -294,7 +345,7 @@ T* Scenetree::findEntityByName(const std::string& name) const
 		}
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_wip.entities[networked])
 	{
 		if (entity && entity->info.name == name)
 		{
@@ -308,7 +359,7 @@ T* Scenetree::findEntityByName(const std::string& name) const
 template <typename T>
 T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 {
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : frame_wip.entities[local])
 	{
 		if (entity && predicate(*entity))
 		{
@@ -316,7 +367,7 @@ T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& pr
 		}
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : frame_wip.entities[networked])
 	{
 		if (entity && predicate(*entity))
 		{

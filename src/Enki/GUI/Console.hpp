@@ -36,6 +36,8 @@ public:
 
 	Console(EntityInfo info, Scenetree* scenetree);
 
+	std::unique_ptr<Entity> clone() final;
+	
 	void input(Event& e) override;
 	void update(float dt) override;
 

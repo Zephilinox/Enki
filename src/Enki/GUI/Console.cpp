@@ -313,6 +313,11 @@ Console::Console(EntityInfo info, Scenetree* scenetree)
 		}});
 }
 
+std::unique_ptr<Entity> Console::clone()
+{
+	return std::make_unique<Console>(*this);
+}
+
 void Console::input(Event& e)
 {
 	auto visitor = overload{
