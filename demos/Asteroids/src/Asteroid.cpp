@@ -5,16 +5,17 @@
 
 //LIBS
 #include <Enki/Scenetree.hpp>
+#include "Enki/Window/WindowSFML.hpp"
 
-Asteroid::Asteroid(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
-	: Entity(info, data)
+Asteroid::Asteroid(enki::EntityInfo info, CustomData* custom_data)
+	: Entity(info)
 	, custom_data(custom_data)
-	, window(window)
+	, window(custom_data->window->as<enki::WindowSFML>()->getRawWindow())
 {
 	network_tick_rate = 1;
 }
 
-void Asteroid::onSpawn([[maybe_unused]]enki::Packet& p)
+void Asteroid::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
 
@@ -28,9 +29,14 @@ void Asteroid::onSpawn([[maybe_unused]]enki::Packet& p)
 	}
 }
 
+std::unique_ptr<enki::Entity> Asteroid::clone()
+{
+	return std::make_unique<Asteroid>(*this);
+}
+
 void Asteroid::update(float dt)
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -58,13 +64,13 @@ void Asteroid::update(float dt)
 
 	if (!alive)
 	{
-		game_data->scenetree->deleteEntity(info.ID);
+		custom_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
-void Asteroid::draw(sf::RenderWindow& window_) const
+void Asteroid::draw(enki::Renderer* renderer)
 {
-	window_.draw(shape);
+	renderer->draw(&shape);
 }
 
 void Asteroid::serializeOnConnection(enki::Packet& p)
@@ -171,7 +177,7 @@ void Asteroid::createShape(unsigned sides)
 
 void Asteroid::handleCollision()
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -194,7 +200,7 @@ void Asteroid::split()
 				<< shape.getPosition().x + (std::rand() % 20 - 10)
 				<< shape.getPosition().y + (std::rand() % 20 - 10)
 				<< speed + (std::rand() % 200 + 50);
-			game_data->scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+			custom_data->scenetree->createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
 		};
 
 		newAsteroid();
@@ -202,5 +208,5 @@ void Asteroid::split()
 	}
 
 	alive = false;
-	game_data->scenetree->deleteEntity(info.ID);
+	custom_data->scenetree->deleteEntity(info.ID);
 }

@@ -8,15 +8,17 @@
 //SELF
 #include "CustomData.hpp"
 
-class Player : public enki::Entity
+class Player final : public enki::Entity
 {
 public:
-	Player(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window);
+	Player(enki::EntityInfo info, CustomData* custom_data);
 
-	void onSpawn(enki::Packet& p) final;
+	std::unique_ptr<Entity> clone() final;
+	
+	void onSpawn(enki::Packet p) final;
 
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 	void serializeOnTick(enki::Packet& p) final;
 	void deserializeOnTick(enki::Packet& p) final;
@@ -32,12 +34,12 @@ public:
 	void stopInvincible();
 
 private:
-	sf::Keyboard::Key up;
-	sf::Keyboard::Key down;
-	sf::Keyboard::Key left;
-	sf::Keyboard::Key right;
-	sf::Keyboard::Key shoot;
-	sf::Keyboard::Key slow;
+	enki::Keyboard::Key up;
+	enki::Keyboard::Key down;
+	enki::Keyboard::Key left;
+	enki::Keyboard::Key right;
+	enki::Keyboard::Key shoot;
+	enki::Keyboard::Key slow;
 
 	CustomData* custom_data;
 	sf::RenderWindow* window;

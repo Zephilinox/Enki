@@ -1,13 +1,13 @@
 #include "Game.hpp"
 
-//STD
-#include <iostream>
-
 //LIBS
-#include <SFML/Graphics.hpp>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+
+#include <SFML/Graphics.hpp>
 #include <Enki/Networking/ServerHost.hpp>
+#include <Enki/Window/WindowSFML.hpp>
+#include <Enki/Messages/MessageFunction.hpp>
 
 //SELF
 #include "Player.hpp"
@@ -18,94 +18,107 @@
 #include "CustomData.hpp"
 
 Game::Game()
+	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", false}))
+	, scenetree(&network_manager)
+	, renderer(window->as<enki::WindowSFML>()->getRawWindow())
 {
 	spdlog::stdout_color_mt("console");
 	auto console = spdlog::get("console");
 
-	window = std::make_unique<sf::RenderWindow>(sf::VideoMode(1280, 720), "Enki");
 	input_manager.window = window.get();
 
-	game_data = std::make_unique<enki::GameData>();
-	custom_data = std::make_unique<CustomData>();
+	custom_data.input_manager = &input_manager;
 
-	custom_data->input_manager = &input_manager;
-
-	scenetree = std::make_unique<enki::Scenetree>(game_data.get());
 	auto enki_logger = spdlog::get("Enki");
 	enki_logger->set_level(spdlog::level::err);
 
-	network_manager = std::make_unique<enki::NetworkManager>();
+	custom_data.scenetree = &scenetree;
+	custom_data.network_manager = &network_manager;
+	custom_data.window = window.get();
 
-	game_data->scenetree = scenetree.get();
-	game_data->network_manager = network_manager.get();
+	auto player_children = std::vector<enki::EntityChildCreationInfo>{
+		{hash("PlayerText"), "PlayerText"},
+	};
+	
+	custom_data.scenetree->registerEntity<Player>(hash("Player"), std::move(player_children), &custom_data);
+	custom_data.scenetree->registerEntity<Asteroid>(hash("Asteroid"), {}, &custom_data);
+	custom_data.scenetree->registerEntity<Bullet>(hash("Bullet"), {}, &custom_data);
+	custom_data.scenetree->registerEntity<CollisionManager>(hash("CollisionManager"), {}, &custom_data);
+	custom_data.scenetree->registerEntity<PlayerText>(hash("PlayerText"), {}, &custom_data);
 
-	scenetree->registerEntity<Player>("Player", custom_data.get(), window.get());
-	scenetree->registerEntity<Asteroid>("Asteroid", custom_data.get(), window.get());
-	scenetree->registerEntity<Bullet>("Bullet", custom_data.get(), window.get());
-	scenetree->registerEntity<CollisionManager>("CollisionManager", custom_data.get(), window.get());
-	scenetree->registerEntity<PlayerText>("PlayerText");
+	custom_data.scenetree->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Player"), "startInvincible", &Player::startInvincible);
+	custom_data.scenetree->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Player"), "stopInvincible", &Player::stopInvincible);
 
-	scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "startInvincible", &Player::startInvincible);
-	scenetree->rpc_man.add(enki::RPCType::REMOTE_AND_LOCAL, "Player", "stopInvincible", &Player::stopInvincible);
-
-	scenetree->registerEntityChildren("Player", enki::ChildEntityCreationInfo{"PlayerText", "PlayerText"});
-
+	message_queue.addListener<enki::MessageFunction&>([](enki::MessageFunction& msg) {
+		msg.execute();
+	});
+	
 	run();
 }
 
 void Game::run()
 {
-	//window->setFramerateLimit(120);
-
-	enki::Timer fpsTimer;
+	float dt = 1.0f / 60.0f;
+	
+	enki::Timer display_fps_timer;
 	auto console = spdlog::get("console");
+	
 	while (window->isOpen())
 	{
+		input_manager.update();
 		input();
-		update();
+		update(dt);
 		draw();
 
-		dt = timer.getElapsedTime();
-		if (fpsTimer.getElapsedTime() > 0.5f)
+		if (display_fps_timer.getElapsedTime() > 5.0f)
 		{
-			console->info("FPS: {}", 1.0f / dt);
-			fpsTimer.restart();
+			message_queue.sendPriorityMessage<enki::MessageFunction>([dt]() {
+				spdlog::info("FPS {}", 1.0f / dt);
+				spdlog::info("MS {}", dt * 1000.0f);
+			});
+			
+			display_fps_timer.restart();
 		}
+		
+		dt = timer.getElapsedTime();
 		timer.restart();
 	}
 }
 
 void Game::input()
 {
-	sf::Event e;
-	while (window->pollEvent(e))
+	enki::Event e;
+	while (window->poll(e))
 	{
-		if (e.type == sf::Event::Closed)
-		{
-			window->close();
-		}
-		else if (e.type == sf::Event::GainedFocus)
-		{
-			custom_data->window_active = true;
-		}
-		else if (e.type == sf::Event::LostFocus)
-		{
-			custom_data->window_active = false;
-		}
+		auto visitor = enki::overload{
+			[&](enki::EventQuit) {
+				window->close();
+			},
+			[&](enki::EventFocus e) {
+				custom_data.window_active = e.focused;
+			},
+			[](auto&) {
 
-		scenetree->input(e);
+			},
+		};
+
+		std::visit(visitor, e);
+
+		input_manager.input(e);
+		scenetree.input(e);
 	}
 }
 
-void Game::update()
+void Game::update(float dt)
 {
-	network_manager->update();
+	message_queue.processMessages(2ms);
+	network_manager.update();
 	input_manager.update();
 
 	static bool networking = false;
 
-	if (network_manager->server &&
-		(input_manager.isKeyPressed(sf::Keyboard::Key::F2) ||
+	if (network_manager.server &&
+		(input_manager.isKeyPressed(enki::Keyboard::Key::F2) ||
 			asteroid_spawn_timer.getElapsedTime() > 1.0f))
 	{
 		enki::Packet p;
@@ -113,19 +126,19 @@ void Game::update()
 			<< static_cast<float>(std::rand() % 1280)
 			<< static_cast<float>(std::rand() % 720)
 			<< static_cast<float>((std::rand() % 200) + 50);
-		scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+		scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p, {});
 		asteroid_spawn_timer.restart();
 	}
 
-	if (!networking && custom_data->window_active)
+	if (!networking && custom_data.window_active)
 	{
-		if (input_manager.isKeyPressed(sf::Keyboard::Key::S))
+		if (input_manager.isKeyPressed(enki::Keyboard::Key::S))
 		{
 			networking = true;
-			network_manager->startHost();
-			scenetree->enableNetworking();
-			scenetree->createNetworkedEntity({ "Player", "Player 1" });
-			scenetree->createEntity({ "CollisionManager", "CollisionManager" });
+			network_manager.startHost();
+			scenetree.enableNetworking();
+			scenetree.createEntityNetworkedRequest(hash("Player"), "Player 1");
+			scenetree.createEntityLocal(hash("CollisionManager"), "CollisionManager");
 
 			for (int i = 0; i < 20; ++i)
 			{
@@ -134,42 +147,45 @@ void Game::update()
 					<< static_cast<float>(std::rand() % 1280)
 					<< static_cast<float>(std::rand() % 720)
 					<< static_cast<float>((std::rand() % 200) + 50);
-				scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+				scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
 			}
 
-			mc1 = network_manager->server->on_packet_received.connect([this](enki::Packet p)
+			mc1 = network_manager.server->on_packet_received.connect([this](enki::Packet p)
 			{
 				if (p.getHeader().type == enki::PacketType::CONNECTED)
 				{
-					scenetree->createNetworkedEntity({ "Player", "Player " + std::to_string(p.info.senderID), 0, p.info.senderID });
+					scenetree.createEntityNetworkedFromRequest(
+						{hash("Player"), "Player " + std::to_string(p.info.senderID), 0, p.info.senderID},
+						{},
+						{});
 				}
 
 				if (p.getHeader().type == enki::PacketType::DISCONNECTED)
 				{
-					auto ent = scenetree->findEntityByName("Player " + std::to_string(p.info.senderID));
+					auto ent = scenetree.findEntityByName("Player " + std::to_string(p.info.senderID));
 					if (ent)
 					{
-						scenetree->deleteEntity(ent->info.ID);
+						scenetree.deleteEntity(ent->info.ID);
 					}
 				}
 			});
 		}
 
-		if (input_manager.isKeyPressed(sf::Keyboard::Key::C))
+		if (input_manager.isKeyPressed(enki::Keyboard::Key::C))
 		{
 			networking = true;
-			network_manager->startClient();
-			scenetree->enableNetworking();
-			scenetree->createEntity({ "CollisionManager", "CollisionManager" });
+			network_manager.startClient();
+			scenetree.enableNetworking();
+			scenetree.createEntityLocal(hash("CollisionManager"), "CollisionManager");
 		}
 	}
 
-	scenetree->update(dt);
+	scenetree.update(dt);
 }
 
-void Game::draw() const
+void Game::draw()
 {
-	window->clear({ 40, 40, 40, 255 });
-	scenetree->draw(*window.get());
+	window->clear(40, 40, 40);
+	scenetree.draw(&renderer);
 	window->display();
 }

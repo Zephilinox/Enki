@@ -97,48 +97,56 @@ void InputManager::update()
 	mouse_screen_pos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*static_cast<WindowSFML*>(window)->getRawWindow()));
 }
 
-bool InputManager::isKeyUp(int key)
+bool InputManager::isKeyUp(Keyboard::Key key)
 {
-	return (keys_this_frame[key] == InputState::Unheld
-		|| keys_this_frame[key] == InputState::JustReleased);
+	const auto k = static_cast<std::size_t>(key);
+	return (keys_this_frame[k] == InputState::Unheld
+		|| keys_this_frame[k] == InputState::JustReleased);
 }
 
-bool InputManager::isKeyReleased(int key)
+bool InputManager::isKeyReleased(Keyboard::Key key)
 {
-	return (keys_this_frame[key] == InputState::JustReleased);
+	const auto k = static_cast<std::size_t>(key);
+	return (keys_this_frame[k] == InputState::JustReleased);
 }
 
-bool InputManager::isKeyPressed(int key)
+bool InputManager::isKeyPressed(Keyboard::Key key)
 {
-	return (keys_this_frame[key] == InputState::JustPressed);
+	const auto k = static_cast<std::size_t>(key);
+	return (keys_this_frame[k] == InputState::JustPressed);
 }
 
-bool InputManager::isKeyDown(int key)
+bool InputManager::isKeyDown(Keyboard::Key key)
 {
-	return (keys_this_frame[key] == InputState::HeldDown
-		|| keys_this_frame[key] == InputState::JustPressed);
+	const auto k = static_cast<std::size_t>(key);
+	return (keys_this_frame[k] == InputState::HeldDown
+		|| keys_this_frame[k] == InputState::JustPressed);
 }
 
-bool InputManager::isMouseButtonUp(int button)
+bool InputManager::isMouseButtonUp(Mouse::Button button)
 {
-	return (mouse_buttons_this_frame[button] == InputState::Unheld
-		|| mouse_buttons_this_frame[button] == InputState::JustReleased);
+	const auto b = static_cast<std::size_t>(button);
+	return (mouse_buttons_this_frame[b] == InputState::Unheld
+		|| mouse_buttons_this_frame[b] == InputState::JustReleased);
 }
 
-bool InputManager::isMouseButtonPressed(int button)
+bool InputManager::isMouseButtonPressed(Mouse::Button button)
 {
-	return (mouse_buttons_this_frame[button] == InputState::JustPressed);
+	const auto b = static_cast<std::size_t>(button);
+	return (mouse_buttons_this_frame[b] == InputState::JustPressed);
 }
 
-bool InputManager::isMouseButtonReleased(int button)
+bool InputManager::isMouseButtonReleased(Mouse::Button button)
 {
-	return (mouse_buttons_this_frame[button] == InputState::JustReleased);
+	const auto b = static_cast<std::size_t>(button);
+	return (mouse_buttons_this_frame[b] == InputState::JustReleased);
 }
 
-bool InputManager::isMouseButtonDown(int button)
+bool InputManager::isMouseButtonDown(Mouse::Button button)
 {
-	return (mouse_buttons_this_frame[button] == InputState::HeldDown
-		|| mouse_buttons_this_frame[button] == InputState::JustPressed);
+	const auto b = static_cast<std::size_t>(button);
+	return (mouse_buttons_this_frame[b] == InputState::HeldDown
+		|| mouse_buttons_this_frame[b] == InputState::JustPressed);
 }
 
 sf::Vector2f InputManager::getMouseDesktopPos() const

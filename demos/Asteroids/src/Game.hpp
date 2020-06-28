@@ -7,7 +7,8 @@
 #include <Enki/Scenetree.hpp>
 #include <Enki/Timer.hpp>
 #include <Enki/Networking/RPC.hpp>
-#include <Enki/GameData.hpp>
+#include <Enki/Managers/InputManager.hpp>
+#include <Enki/Messages/MessageQueue.hpp>
 
 //SELF
 #include "CustomData.hpp"
@@ -20,18 +21,17 @@ public:
 private:
 	void run();
 	void input();
-	void update();
-	void draw() const;
-
-	float dt = 1.0f / 60.0f;
+	void update(float dt);
+	void draw();
 
 	enki::Timer timer;
-	std::unique_ptr<sf::RenderWindow> window;
-	std::unique_ptr<enki::Scenetree> scenetree;
-	std::unique_ptr<enki::GameData> game_data;
-	std::unique_ptr<enki::NetworkManager> network_manager;
-	std::unique_ptr<CustomData> custom_data;
-	InputManager input_manager;
+	CustomData custom_data;
+	std::unique_ptr<enki::Window> window;
+	enki::NetworkManager network_manager;
+	enki::Scenetree scenetree;
+	enki::InputManager input_manager;
+	enki::Renderer renderer;
+	enki::MessageQueue message_queue;
 
 	enki::ManagedConnection mc1;
 	enki::Timer asteroid_spawn_timer;

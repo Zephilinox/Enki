@@ -6,15 +6,22 @@
 //LIBS
 #include <Enki/Scenetree.hpp>
 
-Bullet::Bullet(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
-	: Entity(info, data)
+#include "Enki/Window/WindowSFML.hpp"
+
+Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
+	: Entity(info)
 	, custom_data(custom_data)
-	, window(window)
+	, window(custom_data->window->as<enki::WindowSFML>()->getRawWindow())
 {
 	network_tick_rate = 1;
 }
 
-void Bullet::onSpawn([[maybe_unused]]enki::Packet& p)
+std::unique_ptr<enki::Entity> Bullet::clone()
+{
+	return std::make_unique<Bullet>(*this);
+}
+
+void Bullet::onSpawn([[maybe_unused]] enki::Packet p)
 {
 	auto console = spdlog::get("console");
 	bullet_tex.loadFromFile("resources/bullet.png");
@@ -58,7 +65,7 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet& p)
 
 void Bullet::update(float dt)
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -95,13 +102,13 @@ void Bullet::update(float dt)
 
 	if (!alive)
 	{
-		game_data->scenetree->deleteEntity(info.ID);
+		custom_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
-void Bullet::draw(sf::RenderWindow& window_) const
+void Bullet::draw(enki::Renderer* renderer)
 {
-	window_.draw(bullet);
+	renderer->draw(&bullet);
 }
 
 void Bullet::serializeOnConnection(enki::Packet& p)
@@ -160,7 +167,7 @@ unsigned int Bullet::getWarpCount() const
 
 void Bullet::handleCollision()
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -168,6 +175,6 @@ void Bullet::handleCollision()
 	if (alive)
 	{
 		alive = false;
-		game_data->scenetree->deleteEntity(info.ID);
+		custom_data->scenetree->deleteEntity(info.ID);
 	}
 }

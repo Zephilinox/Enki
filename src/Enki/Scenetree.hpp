@@ -210,6 +210,12 @@ public:
 
 	RPCManager rpc_man;
 
+	//todo: was private, basically need to support a way for the user that is a server to request an entity is made with an owner that isn't the server
+	//Used by the server when receiving a creation request, sends one packet with all the data
+	void createEntityNetworkedFromRequest(EntityInfo info,
+		const Packet& spawnInfo,
+		const std::vector<EntityChildCreationInfo>& children);
+
 private:
 	struct Frame
 	{
@@ -225,11 +231,6 @@ private:
 		void fillEntitiesFromChildren(std::vector<EntityID> children,
 			std::vector<Entity*>& ents);
 	};
-	
-	//Used by the server when receiving a creation request, sends one packet with all the data
-	void createEntityNetworkedFromRequest(EntityInfo info,
-		const Packet& spawnInfo,
-		const std::vector<EntityChildCreationInfo>& children);
 
 	//used by the above to fill out packet without sending more
 	Entity* createEntityNetworkedFromRequestImpl(EntityInfo info,

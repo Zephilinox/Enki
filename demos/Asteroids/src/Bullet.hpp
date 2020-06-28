@@ -8,15 +8,16 @@
 //SELF
 #include "CustomData.hpp"
 
-class Bullet : public enki::Entity
+class Bullet final : public enki::Entity
 {
 public:
-	Bullet(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window);
-
-	void onSpawn(enki::Packet& p) final;
+	Bullet(enki::EntityInfo info, CustomData* custom_data);
+	std::unique_ptr<Entity> clone() final;
+	
+	void onSpawn(enki::Packet p) final;
 
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 	void serializeOnConnection(enki::Packet& p) final;
 	void deserializeOnConnection(enki::Packet& p) final;

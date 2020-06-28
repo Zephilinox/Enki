@@ -30,8 +30,9 @@ public:
 		bool vsync{false};
 	};
 
-	Window(Properties properties)
-		: properties(std::move(properties)){};
+	Window(HashedID type, Properties properties)
+		: type(type)
+		, properties(std::move(properties)){};
 	Window(Window&&) noexcept = default;
 	Window& operator=(Window&&) noexcept = default;
 	virtual ~Window() noexcept = default;
@@ -63,8 +64,8 @@ public:
 	}
 
 protected:
-	Properties properties;
 	HashedID type = hash("Window");
+	Properties properties;
 };
 
 // Create a static instance globally for a typical ServiceLocator (e.g. window_locator.get())

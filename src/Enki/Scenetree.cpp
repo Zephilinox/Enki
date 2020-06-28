@@ -520,7 +520,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 		throw;
 	}
 
-	if (info.parentID != Entity::InvalidID && !findEntity(info.parentID))
+	if (info.parentID != Entity::InvalidID && !frame_wip.findEntity(info.parentID))
 	{
 		console->error(
 			"Tried to create networked entity that has "
@@ -1297,7 +1297,7 @@ Entity* Scenetree::Frame::findEntity(const EntityID ID)
 	const auto& ents = entities[is_local];
 
 	if (index < ents.size() && ents[index].version == version)
-		return entities[is_local][index].entity.get();
+		return ents[index].entity.get();
 
 	return nullptr;
 }
