@@ -18,6 +18,6 @@ public:
 
 private:
 	CustomData* custom_data;
-	sf::Font font;
+	sf::Font* font;
 	sf::Text label;
 };

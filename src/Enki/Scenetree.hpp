@@ -19,6 +19,7 @@
 #include "Enki/Networking/RPC.hpp"
 #include "Enki/Networking/RPCManager.hpp"
 #include "Enki/Renderer.hpp"
+#include "Enki/Messages/Message.hpp"
 
 namespace enki
 {
@@ -142,7 +143,7 @@ public:
 
 	[[nodiscard]] std::size_t getEntityCount() const
 	{
-		return frame_wip.entities[local].size() + frame_wip.entities[networked].size();
+		return frame_wip.entities[local].size() + frame_wip.entities[networked].size() - frame_wip.entities_free_indices[local].size() - frame_wip.entities_free_indices[networked].size();
 	}
 
 	void forEachEntity(std::function<void(const Entity&)> function);
@@ -172,9 +173,12 @@ public:
 	std::vector<Entity*> getEntitiesFromRoot(EntityID ID = 0);
 
 	void input(Event& e);
+	void processMessages();
 	void update(float dt);
 	void draw(Renderer* renderer);
 
+	void sendMessage(EntityID id, std::unique_ptr<Message> msg);
+	
 	/*Mark the entity for deletion next frame
 		Will be sent across the network if not a local entity*/
 	void deleteEntity(EntityID ID);
@@ -217,6 +221,20 @@ public:
 		const std::vector<EntityChildCreationInfo>& children);
 
 private:
+	class MessageEntityWrapper : public MessageID<hash_constexpr("EntityWrapper")>
+	{
+	public:
+		MessageEntityWrapper(EntityID entity_id, std::unique_ptr<Message> msg)
+			: entity_id(entity_id)
+			, msg(std::move(msg))
+		{
+			
+		}
+
+		EntityID entity_id;
+		std::unique_ptr<Message> msg;
+	};
+	
 	struct Frame
 	{
 		std::vector<EntityID> entities_parentless;
@@ -268,6 +286,9 @@ private:
 
 	Frame frame_finished;
 	Frame frame_wip;
+	std::vector<std::unique_ptr<MessageEntityWrapper>> messages_for_next_frame;
+	std::int64_t frame_count = 0;
+	std::unordered_map<EntityID, std::pair<std::int64_t, EntityInfo>> dead_entity_history;
 
 	//Networking
 	NetworkManager* network_manager;

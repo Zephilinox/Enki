@@ -9,7 +9,9 @@
 #include <Enki/Networking/RPC.hpp>
 #include <Enki/Managers/InputManager.hpp>
 #include <Enki/Messages/MessageQueue.hpp>
-
+#include <Enki/Managers/FontManager.hpp>
+#include <Enki/Managers/SoundManager.hpp>
+#include <Enki/Managers/TextureManager.hpp>
 //SELF
 #include "CustomData.hpp"
 
@@ -32,7 +34,10 @@ private:
 	enki::InputManager input_manager;
 	enki::Renderer renderer;
 	enki::MessageQueue message_queue;
-
+	enki::TextureManager texture_manager;
+	//enki::SoundManager sound_manager;
+	enki::FontManager font_manager;
+	
 	enki::ManagedConnection mc1;
 	enki::Timer asteroid_spawn_timer;
 };

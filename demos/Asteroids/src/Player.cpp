@@ -11,6 +11,7 @@ Player::Player(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(std::move(info))
 	, custom_data(custom_data)
 	, window(custom_data->window->as<enki::WindowSFML>()->getRawWindow())
+	, ship_tex(custom_data->texture_manager->getTextureOrRegister("resources/ship.png"))
 {
 	network_tick_rate = 1;
 }
@@ -18,15 +19,11 @@ Player::Player(enki::EntityInfo info, CustomData* custom_data)
 void Player::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
-	if (!ship_tex.loadFromFile("resources/ship.png"))
-	{
-		console->error(":(");
-	}
 
-	ship.setTexture(ship_tex);
+	ship.setTexture(*ship_tex);
 	ship.setOrigin(
-		static_cast<float>(ship_tex.getSize().x / 2),
-		static_cast<float>(ship_tex.getSize().y / 2));
+		static_cast<float>(ship_tex->getSize().x / 2),
+		static_cast<float>(ship_tex->getSize().y / 2));
 	ship.setPosition(static_cast<float>(1280 / 2), static_cast<float>(720 / 2));
 
 	if (info.ownerID == 1)
@@ -147,19 +144,19 @@ void Player::update(float dt)
 
 	ship.move(velocity * dt);
 
-	if (ship.getPosition().x + (ship_tex.getSize().x / 2) <= 0)
+	if (ship.getPosition().x + (ship_tex->getSize().x / 2) <= 0)
 	{
 		ship.setPosition(window->getView().getSize().x, ship.getPosition().y);
 	}
-	else if (ship.getPosition().x - (ship_tex.getSize().x / 2) >= window->getView().getSize().x)
+	else if (ship.getPosition().x - (ship_tex->getSize().x / 2) >= window->getView().getSize().x)
 	{
 		ship.setPosition(0, ship.getPosition().y);
 	}
-	else if (ship.getPosition().y + (ship_tex.getSize().y / 2) <= 0)
+	else if (ship.getPosition().y + (ship_tex->getSize().y / 2) <= 0)
 	{
 		ship.setPosition(ship.getPosition().x, window->getView().getSize().y);
 	}
-	else if (ship.getPosition().y - (ship_tex.getSize().y / 2) >= window->getView().getSize().y)
+	else if (ship.getPosition().y - (ship_tex->getSize().y / 2) >= window->getView().getSize().y)
 	{
 		ship.setPosition(ship.getPosition().x, 0);
 	}
@@ -201,6 +198,14 @@ void Player::draw(enki::Renderer* renderer)
 		{
 			renderer->draw(&ship);
 		}
+	}
+}
+
+void Player::receive(enki::Message* msg)
+{
+	if (msg->id == hash_constexpr("Collision"))
+	{
+		handleCollision();
 	}
 }
 

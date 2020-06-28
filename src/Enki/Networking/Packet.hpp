@@ -180,7 +180,10 @@ public:
 	//Useful when deserializing to a local variable that should be initialized with this data
 	template <typename T>
 	T read();
-
+	
+	template <typename T>
+	T writeAndRetrieve(T& data);
+	
 	//todo: Constructor constructs, no way of automatically deconstructing though
 	//we should have a function to get a pair of byte/size and/or char*/size
 	//also, maybe bytes shouldn't be public? class invariants could easily be violated
@@ -328,6 +331,32 @@ T Packet::read()
 {
 	T t;
 	*this >> t;
+	return t;
+}
+
+template <typename T>
+T Packet::writeAndRetrieve(T& data)
+{
+	const auto bits_written = this->bits_written;
+	const auto bytes_written = this->bytes_written;
+	*this << data;
+	const auto new_bits_written = this->bits_written;
+	const auto new_bytes_written = this->bytes_written;
+	
+	const auto bits_read = this->bits_read;
+	const auto bytes_read = this->bytes_read;
+
+	this->bits_read = bits_written;
+	this->bytes_read = bytes_written;
+	
+	T t;
+	*this >> t;
+	
+	this->bits_read = bits_read;
+	this->bytes_read = bytes_read;
+	this->bytes_written = new_bytes_written;
+	this->bits_written = new_bits_written;
+	
 	return t;
 }
 

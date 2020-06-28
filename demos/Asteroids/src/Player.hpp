@@ -19,11 +19,10 @@ public:
 
 	void update(float dt) final;
 	void draw(enki::Renderer* renderer) final;
-
+	void receive(enki::Message* msg) final;
+	
 	void serializeOnTick(enki::Packet& p) final;
 	void deserializeOnTick(enki::Packet& p) final;
-	
-	void handleCollision();
 
 	sf::Vector2f getPosition() const;
 	bool isInvincible() const;
@@ -34,6 +33,8 @@ public:
 	void stopInvincible();
 
 private:
+	void handleCollision();
+	
 	enki::Keyboard::Key up;
 	enki::Keyboard::Key down;
 	enki::Keyboard::Key left;
@@ -45,7 +46,7 @@ private:
 	sf::RenderWindow* window;
 	sf::View view;
 
-	sf::Texture ship_tex;
+	sf::Texture* ship_tex;
 	sf::Sprite ship;
 
 	sf::Vector2f velocity;
@@ -58,5 +59,5 @@ private:
 	float flashing_duration = 1.0f;
 
 	enki::Timer shoot_timer;
-	float shoot_delay = 0.1f;
+	float shoot_delay = 0.05f;
 };

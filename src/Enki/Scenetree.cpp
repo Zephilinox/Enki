@@ -281,13 +281,55 @@ std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 
 void Scenetree::input(Event& event)
 {
+	console->info("Scenetree::input()");
 	// do not use range for loop
 	for (std::size_t i = 0; i < frame_wip.entities_parentless.size(); ++i)
 		input(event, frame_wip.entities_parentless[i]);
 }
 
+void Scenetree::processMessages()
+{
+	frame_count++;
+	console->debug("");
+	console->info("frame {} - {} entities", frame_count, getEntityCount());
+	console->debug("Scenetree::processMessages()");
+	auto ents = frame_wip.getEntitiesFromRoot();
+	//move all the messages so that any extra generated as part of receiving messages are handled next frame
+	//todo: decide if this is necessary
+	auto messages = std::move(messages_for_next_frame);
+	
+	for (auto& m : messages)
+	{
+		auto e = frame_wip.findEntity(m->entity_id);
+		if (e)
+		{
+			console->info("entity received message {}.\n\t{}", m->msg->id, e->info);
+			e->receive(m->msg.get());
+		}
+		else
+		{
+			auto found = dead_entity_history.find(m->entity_id);
+			if (found != dead_entity_history.end())
+			{
+				console->error("message of type {} exists for entity with id {} but the entity could not be found. It was deleted {} frames ago.\n\t{}",
+					m->msg->id,
+					prettyID(m->entity_id),
+					frame_count - found->second.first,
+					found->second.second);
+			}
+			else
+			{
+				console->error("message of type {} exists for entity with id {} but the entity could not be found. No record of it being deleted previously.",
+					m->msg->id,
+					prettyID(m->entity_id));
+			}
+		}
+	}
+}
+
 void Scenetree::update(float dt)
 {
+	console->debug("Scenetree::update()");
 	auto entities = frame_wip.getEntitiesFromRoot();
 	std::vector<Entity*> entitiesToRemove;
 
@@ -300,6 +342,7 @@ void Scenetree::update(float dt)
 	{
 		if (e && e->remove)
 		{
+			console->info("onDespawn called for entity.\n\t{}", e->info);
 			e->onDespawn();
 
 			entitiesToRemove.push_back(e);
@@ -312,10 +355,13 @@ void Scenetree::update(float dt)
 		auto e = *it;
 		auto [is_local, version, index] = splitID(e->info.ID);
 
-		std::erase_if(frame_wip.entities_parentless, [removedID = e->info.ID](EntityID id) {
+		//delete it from our list in case it was parentless
+		std::erase_if(frame_wip.entities_parentless, [this, removedID = e->info.ID](EntityID id) {
 			return id == removedID;
 		});
 
+		dead_entity_history[e->info.ID] = {frame_count, e->info};
+		console->info("Deleted entity.\n\t{}", e->info);
 		frame_wip.entities[is_local][index].version++;
 		frame_wip.entities[is_local][index].entity = nullptr;
 		frame_wip.entities_free_indices[is_local].push(index);
@@ -329,10 +375,38 @@ void Scenetree::update(float dt)
 }
 
 void Scenetree::draw(Renderer* renderer)
-{	
+{
+	console->debug("Scenetree::draw()");
 	//do not use range for loop
 	for (unsigned int i = 0; i < frame_finished.entities_parentless.size(); ++i)
 		draw(renderer, frame_finished.entities_parentless[i]);
+}
+
+void Scenetree::sendMessage(EntityID id, std::unique_ptr<Message> msg)
+{
+	auto e = frame_wip.findEntity(id);
+	if (!e)
+	{
+		auto found = dead_entity_history.find(id);
+		if (found != dead_entity_history.end())
+		{
+			console->error("Tried to send message {} to entity with id {} but it doesn't exist. It was deleted {} frames ago.\n\t{}",
+				msg->id,
+				prettyID(id),
+				frame_count - found->second.first,
+				found->second.second);
+		}
+		else
+		{
+			console->error("Tried to send message {} to entity with id {} but it doesn't exist. No history of deletion.",
+				msg->id,
+				prettyID(id));
+		}
+		return;
+	}
+	
+	console->info("Sent message with id {} for entity.\n\t{}", msg->id, e->info);
+	messages_for_next_frame.emplace_back(std::make_unique<MessageEntityWrapper>(id, std::move(msg)));
 }
 
 void Scenetree::deleteEntity(EntityID ID)
@@ -370,13 +444,13 @@ std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 
 	for (const auto& [version, entity] : frame_finished.entities[local])
 	{
-		if (entity->info.type == type)
+		if (entity && entity->info.type == type)
 			ents.push_back(entity.get());
 	}
 
 	for (const auto& [version, entity] : frame_finished.entities[networked])
 	{
-		if (entity->info.type == type)
+		if (entity && entity->info.type == type)
 			ents.push_back(entity.get());
 	}
 
@@ -772,7 +846,13 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 				info);
 		}
 
-		p << info;
+		auto test = p.writeAndRetrieve<EntityInfo>(info);
+		
+		if (test != info)
+		{
+			assert(false);
+		}
+		
 		ent->serializeOnConnection(p);
 	}
 	network_manager->server->sendPacketToOneClient(client_id, 0, &p);
@@ -858,7 +938,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 	const auto name = p.read<std::string>();
 	const auto rpctype = rpc_man.getEntityRPCType(info.type, name);
 
-	const auto ent = findEntity(info.ID);
+	const auto ent = frame_wip.findEntity(info.ID);
 	if (!ent)
 	{
 		console->error(
@@ -872,8 +952,8 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 	if (info != ent->info)
 	{
 		console->error(
-			"Received request to call RPC {} on entity {} "
-			"but it doesn't match the entity we have: {}",
+			"Received request to call RPC {} on entity"
+			"but it doesn't match the entity we have.\n\t{}\nVS\n\t{}",
 			name,
 			info,
 			ent->info);
@@ -965,7 +1045,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 {
 	const auto entID = p.read<EntityID>();
-	const auto ent = findEntity(entID);
+	const auto ent = frame_wip.findEntity(entID);
 	if (!ent)
 	{
 		console->error(
@@ -984,6 +1064,10 @@ void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 			p.info.senderID);
 		return;
 	}
+
+	console->info(
+		"Received request to delete entity.\n\t{}",
+		ent->info);
 
 	network_manager->server->sendPacketToAllClients(0, &p);
 }
@@ -1006,7 +1090,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 		case ENTITY_RPC:
 		{
 			auto info = p.read<EntityInfo>();
-			auto ent = findEntity(info.ID);
+			auto ent = frame_wip.findEntity(info.ID);
 
 			if (!ent)
 			{
@@ -1143,7 +1227,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 				return;
 			}
 
-			auto ent = findEntity(info.ID);
+			auto ent = frame_wip.findEntity(info.ID);
 			if (!ent)
 			{
 				console->error(
@@ -1173,7 +1257,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 		case ENTITY_DELETION:
 		{
 			auto entID = p.read<EntityID>();
-			auto ent = findEntity(entID);
+			auto ent = frame_wip.findEntity(entID);
 			if (ent)
 			{
 				ent->remove = true;

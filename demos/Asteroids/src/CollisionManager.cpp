@@ -5,7 +5,8 @@
 
 //LIBS
 #include <Enki/Scenetree.hpp>
-#include "Enki/Window/WindowSFML.hpp"
+#include <Enki/Window/WindowSFML.hpp>
+#include <Enki/Messages/MessageFunction.hpp>
 
 //SELF
 #include "Bullet.hpp"
@@ -50,6 +51,9 @@ void CollisionManager::update(float dt)
 	for (auto& a : asteroids)
 	{
 		auto asteroid = static_cast<Asteroid*>(a);
+		if (!asteroid->isAlive())
+			continue;
+		
 		asteroidCS.setRadius(asteroid->getRadius());
 		asteroidCS.setOrigin(asteroid->getRadius() / 2.0f, asteroid->getRadius() / 2.0f);
 		asteroidCS.setPosition(asteroid->getPosition());
@@ -59,19 +63,22 @@ void CollisionManager::update(float dt)
 		for (auto& b : bullets)
 		{
 			auto bullet = static_cast<Bullet*>(b);
+			if (!bullet->isAlive())
+				continue;
+			
 			bulletCS.setPosition(bullet->getPosition());
 
 			if (circlesColliding(asteroidCS, bulletCS))
 			{
-				asteroid->handleCollision();
-				bullet->handleCollision();
+				custom_data->scenetree->sendMessage(asteroid->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
+				custom_data->scenetree->sendMessage(bullet->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
 			}
 		}
 
 		sf::CircleShape playerCS(16);
 		playerCS.setOrigin(8.0f, 8.0f);
 
-		const auto playerCheck = [asteroid, &asteroidCS, &playerCS, &circlesColliding](Player* player)
+		const auto playerCheck = [this, asteroid, &asteroidCS, &playerCS, &circlesColliding](Player* player)
 		{
 			if (player)
 			{
@@ -80,9 +87,9 @@ void CollisionManager::update(float dt)
 				{
 					if (!player->isInvincible())
 					{
-						asteroid->handleCollision();
+						custom_data->scenetree->sendMessage(asteroid->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
 					}
-					player->handleCollision();
+					custom_data->scenetree->sendMessage(player->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
 				}
 			}
 		};

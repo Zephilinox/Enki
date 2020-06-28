@@ -10,6 +10,7 @@
 PlayerText::PlayerText(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)
 	, custom_data(custom_data)
+	, font(custom_data->font_manager->registerFont("resources/arial.ttf", "arial"))
 {
 }
 
@@ -20,12 +21,7 @@ std::unique_ptr<enki::Entity> PlayerText::clone()
 
 void PlayerText::onSpawn([[maybe_unused]] enki::Packet p)
 {
-	if (!font.loadFromFile("resources/arial.ttf"))
-	{
-		fmt::print("Failed to load resources/arial.ttf");
-	}
-
-	label.setFont(font);
+	label.setFont(*font);
 	label.setString(std::string("Player ") + std::to_string(info.ownerID));
 	label.setCharacterSize(10);
 }

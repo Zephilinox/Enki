@@ -19,14 +19,11 @@ void Asteroid::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
 
-	if (p.canDeserialize<int, float, float, float>())
-	{
-		int sides = p.read<int>();
-		float x = p.read<float>();
-		float y = p.read<float>();
-		speed = p.read<float>();
-		constructAsteroid(sides, x, y);
-	}
+	int sides = p.read<int>();
+	float x = p.read<float>();
+	float y = p.read<float>();
+	speed = p.read<float>();
+	constructAsteroid(sides, x, y);
 }
 
 std::unique_ptr<enki::Entity> Asteroid::clone()
@@ -40,8 +37,6 @@ void Asteroid::update(float dt)
 	{
 		return;
 	}
-
-	auto input_manager = custom_data->input_manager;
 
 	shape.move(velocity.x * dt, velocity.y * dt);
 
@@ -61,16 +56,19 @@ void Asteroid::update(float dt)
 	{
 		shape.setPosition(shape.getPosition().x, 0);
 	}
-
-	if (!alive)
-	{
-		custom_data->scenetree->deleteEntity(info.ID);
-	}
 }
 
 void Asteroid::draw(enki::Renderer* renderer)
 {
 	renderer->draw(&shape);
+}
+
+void Asteroid::receive(enki::Message* msg)
+{
+	if (msg->id == hash_constexpr("Collision"))
+	{
+		handleCollision();
+	}
 }
 
 void Asteroid::serializeOnConnection(enki::Packet& p)
@@ -83,7 +81,7 @@ void Asteroid::deserializeOnConnection(enki::Packet& p)
 {
 	deserializeOnTick(p);
 
-	unsigned sides;
+	std::size_t sides;
 	p >> sides >> speed;
 
 	constructAsteroid(sides, shape.getPosition().x, shape.getPosition().y);
@@ -111,7 +109,7 @@ bool Asteroid::isAlive() const
 
 bool Asteroid::canSplit() const
 {
-	return shape.getPointCount() - 2 >= 5;
+	return alive && shape.getPointCount() - 2 >= 5;
 }
 
 sf::Vector2f Asteroid::getPosition() const
@@ -151,7 +149,9 @@ void Asteroid::constructAsteroid(unsigned sides, float x, float y)
 	}
 	velocity.x *= target_dir_norm.x * speed / sides;
 	velocity.y *= target_dir_norm.y * speed / sides;
-	rotation_speed = (std::rand() % int((speed * 2) / sides)) - speed / sides;
+	int rot = (speed * 10) / sides;
+	int max_rot = (speed * 20) / sides;
+	//rotation_speed = (std::rand() % max_rot) - rot;
 }
 
 void Asteroid::createShape(unsigned sides)
@@ -182,11 +182,7 @@ void Asteroid::handleCollision()
 		return;
 	}
 
-	if (alive)
-	{
-		alive = false;
-		split();
-	}
+	split();
 }
 
 void Asteroid::split()
@@ -195,11 +191,14 @@ void Asteroid::split()
 	{
 		const auto newAsteroid = [&]()
 		{
+			auto x = shape.getPosition().x + (std::rand() % 20 - 10);
+			auto y = shape.getPosition().y + (std::rand() % 20 - 10);
 			enki::Packet p;
-			p << shape.getPointCount() - 2
-				<< shape.getPosition().x + (std::rand() % 20 - 10)
-				<< shape.getPosition().y + (std::rand() % 20 - 10)
-				<< speed + (std::rand() % 200 + 50);
+			p << static_cast<int>(shape.getPointCount() - 2);
+			p << x;
+			p << y;
+			p << speed + (std::rand() % 200 + 50);
+			
 			custom_data->scenetree->createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
 		};
 

@@ -19,13 +19,13 @@ public:
 
 	void update(float dt) final;
 	void draw(enki::Renderer* renderer) final;
-
+	void receive(enki::Message* msg) final;
+	
 	void serializeOnConnection(enki::Packet& p) final;
 	void deserializeOnConnection(enki::Packet& p) final;
 	void serializeOnTick(enki::Packet& p) final;
 	void deserializeOnTick(enki::Packet& p) final;
 	
-	void handleCollision();
 	void split();
 
 	bool isAlive() const;
@@ -35,6 +35,7 @@ public:
 	float getRotation() const;
 
 private:
+	void handleCollision();
 	void constructAsteroid(unsigned sides, float x, float y);
 	void createShape(unsigned sides);
 

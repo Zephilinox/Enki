@@ -18,13 +18,13 @@ public:
 
 	void update(float dt) final;
 	void draw(enki::Renderer* renderer) final;
-
+	void receive(enki::Message* msg) final;
+	
 	void serializeOnConnection(enki::Packet& p) final;
 	void deserializeOnConnection(enki::Packet& p) final;
 	void serializeOnTick(enki::Packet& p) final;
 	void deserializeOnTick(enki::Packet& p) final;
 	
-	void handleCollision();
 	sf::Vector2f getPosition() const;
 	float getRotation() const;
 	sf::Color getColour() const;
@@ -33,10 +33,12 @@ public:
 	bool isAlive() const;
 
 private:
+	void handleCollision();
+	
 	CustomData* custom_data;
 	sf::RenderWindow* window;
 
-	sf::Texture bullet_tex;
+	sf::Texture* bullet_tex;
 	sf::Sprite bullet;
 
 	float speed = 300;

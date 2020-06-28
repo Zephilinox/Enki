@@ -12,6 +12,7 @@ Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)
 	, custom_data(custom_data)
 	, window(custom_data->window->as<enki::WindowSFML>()->getRawWindow())
+	, bullet_tex(custom_data->texture_manager->getTextureOrRegister("resources/bullet.png"))
 {
 	network_tick_rate = 1;
 }
@@ -24,11 +25,10 @@ std::unique_ptr<enki::Entity> Bullet::clone()
 void Bullet::onSpawn([[maybe_unused]] enki::Packet p)
 {
 	auto console = spdlog::get("console");
-	bullet_tex.loadFromFile("resources/bullet.png");
-	bullet.setTexture(bullet_tex);
+	bullet.setTexture(*bullet_tex);
 	bullet.setOrigin(
-		bullet_tex.getSize().x / 2,
-		bullet_tex.getSize().y / 2);
+		bullet_tex->getSize().x / 2,
+		bullet_tex->getSize().y / 2);
 
 	if (p.canDeserialize<float, float, float, float, sf::Uint8, sf::Uint8, sf::Uint8>())
 	{
@@ -74,22 +74,22 @@ void Bullet::update(float dt)
 
 	bullet.move(velocity.x * dt, velocity.y * dt);
 
-	if (bullet.getPosition().x + (bullet_tex.getSize().x / 2) <= 0)
+	if (bullet.getPosition().x + (bullet_tex->getSize().x / 2) <= 0)
 	{
 		warp_count++;
 		bullet.setPosition(window->getView().getSize().x, bullet.getPosition().y);
 	}
-	else if (bullet.getPosition().x - (bullet_tex.getSize().x / 2) >= window->getView().getSize().x)
+	else if (bullet.getPosition().x - (bullet_tex->getSize().x / 2) >= window->getView().getSize().x)
 	{
 		warp_count++;
 		bullet.setPosition(0, bullet.getPosition().y);
 	}
-	else if (bullet.getPosition().y + (bullet_tex.getSize().y / 2) <= 0)
+	else if (bullet.getPosition().y + (bullet_tex->getSize().y / 2) <= 0)
 	{
 		warp_count++;
 		bullet.setPosition(bullet.getPosition().x, window->getView().getSize().y);
 	}
-	else if (bullet.getPosition().y - (bullet_tex.getSize().y / 2) >= window->getView().getSize().y)
+	else if (bullet.getPosition().y - (bullet_tex->getSize().y / 2) >= window->getView().getSize().y)
 	{
 		warp_count++;
 		bullet.setPosition(bullet.getPosition().x, 0);
@@ -109,6 +109,14 @@ void Bullet::update(float dt)
 void Bullet::draw(enki::Renderer* renderer)
 {
 	renderer->draw(&bullet);
+}
+
+void Bullet::receive(enki::Message* msg)
+{
+	if (msg->id == hash_constexpr("Collision"))
+	{
+		handleCollision();
+	}
 }
 
 void Bullet::serializeOnConnection(enki::Packet& p)

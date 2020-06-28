@@ -16,6 +16,14 @@ sf::Texture* TextureManager::getTexture(const std::string& path)
 	return nullptr;
 }
 
+sf::Texture* TextureManager::getTextureOrRegister(const std::string& path)
+{
+	if (!textureExists(path))
+		registerTexture(path);
+	
+	return getTexture(path);
+}
+
 bool TextureManager::textureExists(const std::string& path)
 {
 	return textures.find(path) != textures.end();
