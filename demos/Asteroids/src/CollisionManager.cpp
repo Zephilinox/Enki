@@ -33,40 +33,41 @@ std::unique_ptr<enki::Entity> CollisionManager::clone()
 
 void CollisionManager::update(float dt)
 {
-	auto bullets = custom_data->scenetree->findEntitiesByType(hash("Bullet"));
-	auto asteroids = custom_data->scenetree->findEntitiesByType(hash("Asteroid"));
-	auto player1 = custom_data->scenetree->findEntityByName<Player>("Player 1");
-	auto player2 = custom_data->scenetree->findEntityByName<Player>("Player 2");
-	auto player3 = custom_data->scenetree->findEntityByName<Player>("Player 3");
-	auto player4 = custom_data->scenetree->findEntityByName<Player>("Player 4");
-
-	const auto circlesColliding = [](sf::CircleShape& shape_one, sf::CircleShape& shape_two) -> bool
+	struct Circle
 	{
-		sf::Vector2f distance = shape_one.getPosition() - shape_two.getPosition();
-		float length = std::sqrtf((distance.x * distance.x) + (distance.y * distance.y));
-		return length < shape_one.getRadius() + shape_two.getRadius();
+		sf::Vector2f pos;
+		const float radius = 0;
 	};
 
-	sf::CircleShape asteroidCS;
-	for (auto& a : asteroids)
-	{
-		auto asteroid = static_cast<Asteroid*>(a);
-		if (!asteroid->isAlive())
-			continue;
-		
-		asteroidCS.setRadius(asteroid->getRadius());
-		asteroidCS.setOrigin(asteroid->getRadius() / 2.0f, asteroid->getRadius() / 2.0f);
-		asteroidCS.setPosition(asteroid->getPosition());
+	static std::vector<Entity*> bullets;
+	static std::vector<Entity*> asteroids;
+	static std::vector<Entity*> players;
+	bullets.clear();
+	asteroids.clear();
+	players.clear();
+	
+	custom_data->scenetree->fillEntitiesByType(hash("Bullet"), bullets);
+	custom_data->scenetree->fillEntitiesByType(hash("Asteroid"), asteroids);
+	custom_data->scenetree->fillEntitiesByType(hash("Player"), players);
 
-		sf::CircleShape bulletCS(5);
-		bulletCS.setOrigin(2.5f, 2.5f);
-		for (auto& b : bullets)
+	const auto circlesColliding = [](Circle shape_one, Circle shape_two) -> bool
+	{
+		const float dist_x = shape_one.pos.x - shape_two.pos.x;
+		const float dist_y = shape_one.pos.y - shape_two.pos.y;
+		const float length_squared = (dist_x * dist_x) + (dist_y * dist_y);
+		return length_squared < (shape_one.radius + shape_two.radius) * (shape_one.radius + shape_two.radius);
+	};
+
+	for (auto a : asteroids)
+	{
+		const auto asteroid = static_cast<Asteroid*>(a);
+		const Circle asteroidCS{asteroid->getPosition(), asteroid->getRadius()};
+		
+		for (auto b : bullets)
 		{
-			auto bullet = static_cast<Bullet*>(b);
-			if (!bullet->isAlive())
-				continue;
-			
-			bulletCS.setPosition(bullet->getPosition());
+			const auto bullet = static_cast<Bullet*>(b);
+			static Circle bulletCS{{}, 5};
+			bulletCS.pos = bullet->getPosition();
 
 			if (circlesColliding(asteroidCS, bulletCS))
 			{
@@ -75,29 +76,21 @@ void CollisionManager::update(float dt)
 			}
 		}
 
-		sf::CircleShape playerCS(16);
-		playerCS.setOrigin(8.0f, 8.0f);
-
-		const auto playerCheck = [this, asteroid, &asteroidCS, &playerCS, &circlesColliding](Player* player)
+		for (auto p : players)
 		{
-			if (player)
+			const auto ply = static_cast<Player*>(p);
+			static Circle playerCS{{}, 16};
+			playerCS.pos = ply->getPosition();
+			
+			if (circlesColliding(asteroidCS, playerCS))
 			{
-				playerCS.setPosition(player->getPosition());
-				if (circlesColliding(asteroidCS, playerCS))
+				if (!ply->isInvincible())
 				{
-					if (!player->isInvincible())
-					{
-						custom_data->scenetree->sendMessage(asteroid->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
-					}
-					custom_data->scenetree->sendMessage(player->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
+					custom_data->scenetree->sendMessage(asteroid->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
 				}
+				custom_data->scenetree->sendMessage(ply->info.ID, std::make_unique<enki::MessageID<hash_constexpr("Collision")>>());
 			}
-		};
-
-		playerCheck(player1);
-		playerCheck(player2);
-		playerCheck(player3);
-		playerCheck(player4);
+		}
 	}
 }
 

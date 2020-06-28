@@ -18,7 +18,7 @@
 #include "CustomData.hpp"
 
 Game::Game()
-	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", true}))
+	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", false}))
 	, scenetree(&network_manager)
 	, renderer(window->as<enki::WindowSFML>()->getRawWindow())
 {
@@ -30,7 +30,7 @@ Game::Game()
 	custom_data.input_manager = &input_manager;
 
 	auto enki_logger = spdlog::get("Enki");
-	enki_logger->set_level(spdlog::level::info);
+	enki_logger->set_level(spdlog::level::critical);
 
 	custom_data.scenetree = &scenetree;
 	custom_data.network_manager = &network_manager;
@@ -64,6 +64,8 @@ void Game::run()
 	
 	enki::Timer display_fps_timer;
 	auto console = spdlog::get("console");
+
+	enki::Timer draw_timer;
 	
 	while (window->isOpen())
 	{
@@ -72,7 +74,12 @@ void Game::run()
 		//todo: could this be part of the scene tree update? does it ever need to be run at a different stage?
 		scenetree.processMessages();
 		update(dt);
-		draw();
+
+		if (draw_timer.getElapsedTime() > 1.0f / 60.0f)
+		{
+			draw();
+			draw_timer.restart();
+		}
 
 		if (display_fps_timer.getElapsedTime() > 5.0f)
 		{

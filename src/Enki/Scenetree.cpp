@@ -438,6 +438,21 @@ void Scenetree::deleteEntity(EntityID ID)
 	}
 }
 
+void enki::Scenetree::fillEntitiesByType(HashedID type, std::vector<Entity*>& ents) const
+{
+	for (const auto& [version, entity] : frame_finished.entities[local])
+	{
+		if (entity && entity->info.type == type)
+			ents.push_back(entity.get());
+	}
+
+	for (const auto& [version, entity] : frame_finished.entities[networked])
+	{
+		if (entity && entity->info.type == type)
+			ents.push_back(entity.get());
+	}
+}
+
 std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 {
 	std::vector<Entity*> ents;
@@ -1356,8 +1371,9 @@ void Scenetree::onNetworkTick()
 
 std::vector<Entity*> Scenetree::Frame::getEntitiesFromRoot(EntityID ID)
 {
-	std::vector<Entity*> ents;
-
+	static std::vector<Entity*> ents;
+	ents.clear();
+	
 	if (ID == Entity::InvalidID)
 	{
 		fillEntitiesFromChildren(entities_parentless, ents);
@@ -1386,7 +1402,7 @@ Entity* Scenetree::Frame::findEntity(const EntityID ID)
 	return nullptr;
 }
 
-void Scenetree::Frame::fillEntitiesFromChildren(std::vector<EntityID> children, std::vector<Entity*>& ents)
+void Scenetree::Frame::fillEntitiesFromChildren(const std::vector<EntityID>& children, std::vector<Entity*>& ents)
 {
 	for (auto id : children)
 	{

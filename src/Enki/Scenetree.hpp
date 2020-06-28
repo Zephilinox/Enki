@@ -183,6 +183,9 @@ public:
 		Will be sent across the network if not a local entity*/
 	void deleteEntity(EntityID ID);
 
+	//Vector will be empty if none found. Optimisation test where you can preserve the vector reservation from the last call
+	void fillEntitiesByType(HashedID type, std::vector<Entity*>& ents) const;
+	
 	//Vector will be empty if none found
 	[[nodiscard]] std::vector<Entity*> findEntitiesByType(HashedID type) const;
 
@@ -246,7 +249,7 @@ private:
 		Entity* findEntity(const EntityID ID);
 
 		//todo: I need a better name for this, help
-		void fillEntitiesFromChildren(std::vector<EntityID> children,
+		void fillEntitiesFromChildren(const std::vector<EntityID>& children,
 			std::vector<Entity*>& ents);
 	};
 

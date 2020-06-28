@@ -79,9 +79,15 @@ void InputManager::input(const Event& e)
 
 			this->mouse_buttons_this_frame[button] = state;
 		},
+		[this](const EventMouseMove& e)
+		{
+			mouse_screen_pos = sf::Vector2f(e.x, e.y);
+			const auto window_pos = window->as<WindowSFML>()->getRawWindow()->getPosition();
+			mouse_desktop_pos = sf::Vector2f(e.x + window_pos.x, e.y + window_pos.y);
+		},
 		[](const auto&) {}
 	};
-
+	
 	std::visit(visitor, e);
 }
 
@@ -92,9 +98,6 @@ void InputManager::update()
 
 	for (size_t i = 0; i < mouse_buttons_last_frame.size(); ++i)
 		mouse_buttons_last_frame[i] = mouse_buttons_this_frame[i];
-
-	mouse_desktop_pos = static_cast<sf::Vector2f>(sf::Mouse::getPosition());
-	mouse_screen_pos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(*static_cast<WindowSFML*>(window)->getRawWindow()));
 }
 
 bool InputManager::isKeyUp(Keyboard::Key key)

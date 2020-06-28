@@ -12,7 +12,12 @@ class Asteroid final : public enki::Entity
 {
 public:
 	Asteroid(enki::EntityInfo info, CustomData* custom_data);
-
+	Asteroid(Asteroid&& asteroid) noexcept;
+	Asteroid(const Asteroid& asteroid);
+	Asteroid& operator=(Asteroid&& asteroid) noexcept;
+	Asteroid& operator=(const Asteroid& asteroid);
+	~Asteroid();
+	
 	std::unique_ptr<enki::Entity> clone() final;
 	
 	void onSpawn(enki::Packet p) final;
@@ -39,7 +44,8 @@ private:
 	void constructAsteroid(unsigned sides, float x, float y);
 	void createShape(unsigned sides);
 
-	sf::ConvexShape shape;
+	sf::ConvexShape* shape = nullptr;
+	int* shape_ref_count = nullptr;
 
 	CustomData* custom_data;
 	sf::RenderWindow* window;

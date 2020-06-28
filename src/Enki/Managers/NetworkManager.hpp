@@ -64,7 +64,7 @@ public:
 
 	//How many times new packets will be checked every second
 	//Increase for reduced delays but with increased CPU usage
-	int network_process_rate = 120;
+	int network_process_rate = 10;
 
 	//Used by the server
 	//note: doesn't include the client when hosting
