@@ -287,19 +287,25 @@ void Scenetree::input(Event& event)
 		input(event, frame_wip.entities_parentless[i]);
 }
 
-void Scenetree::processMessages()
+void Scenetree::processMessages(bool process_new_messages)
 {
 	frame_count++;
 	console->debug("");
 	console->info("frame {} - {} entities", frame_count, getEntityCount());
 	console->debug("Scenetree::processMessages()");
 	auto ents = frame_wip.getEntitiesFromRoot();
-	//move all the messages so that any extra generated as part of receiving messages are handled next frame
-	//todo: decide if this is necessary
-	auto messages = std::move(messages_for_next_frame);
-	
-	for (auto& m : messages)
+
+	std::vector<std::unique_ptr<MessageEntityWrapper>>* messages_to_read = &messages_for_next_frame;
+	std::vector<std::unique_ptr<MessageEntityWrapper>> messages_moved;
+	if (process_new_messages)
 	{
+		messages_moved = std::move(messages_for_next_frame);
+		messages_to_read = &messages_moved;
+	}
+	
+	for (unsigned int i = 0; i < messages_to_read->size(); ++i)
+	{
+		auto& m = (*messages_to_read)[i];
 		auto e = frame_wip.findEntity(m->entity_id);
 		if (e)
 		{
@@ -370,7 +376,10 @@ void Scenetree::update(float dt)
 	//do not use range for loop
 	for (unsigned int i = 0; i < frame_wip.entities_parentless.size(); ++i)
 		update(dt, frame_wip.entities_parentless[i]);
-	
+}
+
+void Scenetree::finishUpdate()
+{
 	frame_finished = frame_wip;
 }
 

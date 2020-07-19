@@ -192,6 +192,8 @@ void Game::update(float dt)
 	}
 
 	scenetree.update(dt);
+	scenetree.processMessages(true);
+	scenetree.finishUpdate();
 }
 
 void Game::draw()

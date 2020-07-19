@@ -173,8 +173,10 @@ public:
 	std::vector<Entity*> getEntitiesFromRoot(EntityID ID = 0);
 
 	void input(Event& e);
-	void processMessages();
 	void update(float dt);
+
+	void processMessages(bool process_new_messages = true);
+	void finishUpdate();
 	void draw(Renderer* renderer);
 
 	void sendMessage(EntityID id, std::unique_ptr<Message> msg);
