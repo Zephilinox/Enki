@@ -121,6 +121,40 @@ void Game::input()
 	}
 }
 
+
+sf::Vector2f asteroidPos()
+{
+	bool vertical_horizontal = std::rand() % 2;
+	bool side = std::rand() % 2;
+	float x = 0;
+	float y = 0;
+	if (vertical_horizontal)
+	{
+		x = std::rand() % 1280;
+		if (side)
+		{
+			y = 0 - 100;
+		}
+		else
+		{
+			y = 720 + 100;
+		}
+	}
+	else
+	{
+		y = std::rand() % 720;
+		if (side)
+		{
+			x = 0 - 100;
+		}
+		else
+		{
+			x = 1280 + 100;
+		}
+	}
+
+	return {x, y};
+}
 void Game::update(float dt)
 {
 	ImGui::SFML::Update(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow(), dt);
@@ -132,17 +166,20 @@ void Game::update(float dt)
 
 	if (network_manager.server)
 	{
-		ImGui::Begin("Spawn Asteroid", nullptr);
-		ImGui::SetWindowSize({200, 80}, ImGuiCond_Once);
+		ImGui::Begin(" ", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::SetWindowPos({300, 50}, ImGuiCond_Once);
 
-		if (ImGui::Button("Spawn Asteroid", {120, 30})
-			|| asteroid_spawn_timer.getElapsedTime() > 1.0f)
+		const auto asteroidCount = custom_data.scenetree->findEntitiesByType(hash("Asteroid")).size();
+		const bool spawnAsteroids = asteroid_spawn_timer.getElapsedTime() > 1.0f && asteroidCount < 50;
+		const auto str = fmt::format("Spawn Asteroid {}", asteroidCount);
+		if (ImGui::Button(str.c_str(), {160, 30}) || spawnAsteroids)
 		{
 			enki::Packet p;
+
+			auto pos = asteroidPos();
 			p << (std::rand() % 8) + 5
-			  << static_cast<float>(std::rand() % 1280)
-			  << static_cast<float>(std::rand() % 720)
+			  << pos.x
+			  << pos.y
 			  << static_cast<float>((std::rand() % 200) + 50);
 			scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p, {});
 			asteroid_spawn_timer.restart();
@@ -162,9 +199,10 @@ void Game::update(float dt)
 			for (int i = 0; i < 20; ++i)
 			{
 				enki::Packet p;
+				auto pos = asteroidPos();
 				p << (std::rand() % 8) + 5
-				  << static_cast<float>(std::rand() % 1280)
-				  << static_cast<float>(std::rand() % 720)
+				  << pos.x
+				  << pos.y
 				  << static_cast<float>((std::rand() % 200) + 50);
 				scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
 			}

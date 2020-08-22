@@ -37,19 +37,19 @@ void Asteroid::update(float dt)
 
 	if (shape.getPosition().x + radius <= 0)
 	{
-		shape.setPosition(custom_data->window_sfml->getView().getSize().x, shape.getPosition().y);
+		shape.setPosition(custom_data->window_sfml->getView().getSize().x + radius, shape.getPosition().y);
 	}
 	else if (shape.getPosition().x - radius >= custom_data->window_sfml->getView().getSize().x)
 	{
-		shape.setPosition(0, shape.getPosition().y);
+		shape.setPosition(0 - radius, shape.getPosition().y);
 	}
 	else if (shape.getPosition().y + radius <= 0)
 	{
-		shape.setPosition(shape.getPosition().x, custom_data->window_sfml->getView().getSize().y);
+		shape.setPosition(shape.getPosition().x, custom_data->window_sfml->getView().getSize().y + radius);
 	}
 	else if (shape.getPosition().y - radius >= custom_data->window_sfml->getView().getSize().y)
 	{
-		shape.setPosition(shape.getPosition().x, 0);
+		shape.setPosition(shape.getPosition().x, 0 - radius);
 	}
 
 	if (!alive)
