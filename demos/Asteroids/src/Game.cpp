@@ -130,23 +130,29 @@ void Game::update(float dt)
 
 	static bool networking = false;
 
-	if (network_manager.server &&
-		(input_manager.isKeyPressed(enki::Keyboard::Key::F2) ||
-			asteroid_spawn_timer.getElapsedTime() > 1.0f))
+	if (network_manager.server)
 	{
-		enki::Packet p;
-		p << (std::rand() % 8) + 5
-			<< static_cast<float>(std::rand() % 1280)
-			<< static_cast<float>(std::rand() % 720)
-			<< static_cast<float>((std::rand() % 200) + 50);
-		scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p, {});
-		asteroid_spawn_timer.restart();
+		ImGui::Begin("Spawn Asteroid", nullptr);
+		ImGui::SetWindowSize({200, 80}, ImGuiCond_Once);
+		ImGui::SetWindowPos({300, 50}, ImGuiCond_Once);
+
+		if (ImGui::Button("Spawn Asteroid", {120, 30})
+			|| asteroid_spawn_timer.getElapsedTime() > 1.0f)
+		{
+			enki::Packet p;
+			p << (std::rand() % 8) + 5
+			  << static_cast<float>(std::rand() % 1280)
+			  << static_cast<float>(std::rand() % 720)
+			  << static_cast<float>((std::rand() % 200) + 50);
+			scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p, {});
+			asteroid_spawn_timer.restart();
+		}
+		ImGui::End();
 	}
 
 	if (!networking && custom_data.window_active)
 	{
-		if (input_manager.isKeyPressed(enki::Keyboard::Key::S))
-		{
+		const auto startServer = [&]() {
 			networking = true;
 			network_manager.startHost();
 			scenetree.enableNetworking();
@@ -157,14 +163,13 @@ void Game::update(float dt)
 			{
 				enki::Packet p;
 				p << (std::rand() % 8) + 5
-					<< static_cast<float>(std::rand() % 1280)
-					<< static_cast<float>(std::rand() % 720)
-					<< static_cast<float>((std::rand() % 200) + 50);
+				  << static_cast<float>(std::rand() % 1280)
+				  << static_cast<float>(std::rand() % 720)
+				  << static_cast<float>((std::rand() % 200) + 50);
 				scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
 			}
 
-			mc1 = network_manager.server->on_packet_received.connect([this](enki::Packet p)
-			{
+			mc1 = network_manager.server->on_packet_received.connect([this](enki::Packet p) {
 				if (p.getHeader().type == enki::PacketType::CONNECTED)
 				{
 					scenetree.createEntityNetworkedFromRequest(
@@ -182,15 +187,39 @@ void Game::update(float dt)
 					}
 				}
 			});
-		}
+		};
 
-		if (input_manager.isKeyPressed(enki::Keyboard::Key::C))
-		{
+		const auto startClient = [&]() {
 			networking = true;
 			network_manager.startClient();
 			scenetree.enableNetworking();
 			scenetree.createEntityLocal(hash("CollisionManager"), "CollisionManager");
+		};
+		
+		ImGui::Begin("Pick", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+		ImGui::SetWindowSize({400, 300}, ImGuiCond_Always);
+		ImGui::SetWindowPos({100, 100}, ImGuiCond_Always);
+		
+		if (ImGui::Button("Server", {60, 30}))
+		{
+			startServer();
 		}
+		
+		if (ImGui::Button("Client", {60, 30}))
+		{
+			startClient();
+		}
+
+		std::string buffer(custom_data.network_manager->server_ip);
+		buffer.resize(256, '\0');
+		ImGui::InputText("IP", buffer.data(), buffer.size(), ImGuiInputTextFlags_None, nullptr, nullptr);
+		custom_data.network_manager->server_ip = buffer;
+
+		int port = custom_data.network_manager->server_port;
+		ImGui::InputInt("Port", &port);
+		custom_data.network_manager->server_port = port;
+		
+		ImGui::End();
 	}
 
 	scenetree.update(dt);
