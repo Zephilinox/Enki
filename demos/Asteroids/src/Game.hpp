@@ -18,10 +18,8 @@ public:
 private:
 	void run();
 	void input();
-	void update();
+	void update(float dt);
 	void draw();
-
-	float dt = 1.0f / 60.0f;
 
 	std::unique_ptr<enki::Window> window;
 	enki::Timer timer;

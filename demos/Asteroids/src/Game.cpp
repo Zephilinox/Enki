@@ -4,12 +4,13 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-#include <SFML/Graphics.hpp>
-
 #include <Enki/Networking/ServerHost.hpp>
 #include <Enki/Window/Window.hpp>
 #include <Enki/Window/WindowSFML.hpp>
 #include <Enki/Messages/MessageFunction.hpp>
+#include <Enki/GUI/IMGUI/imgui_SFML.h> //todo: rename to .hpp so clang format can sort it properly
+#include <Enki/GUI/Console.hpp>
+#include <Enki/Entity.hpp>
 
 //SELF
 #include "Player.hpp"
@@ -20,10 +21,12 @@
 #include "CustomData.hpp"
 
 Game::Game()
-	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", true}))
+	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", false}))
 	, scenetree(&network_manager)
 	, renderer(window->as<enki::WindowSFML>()->getRawWindow())
 {
+	ImGui::SFML::Init(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow());
+	
 	spdlog::stdout_color_mt("console");
 	auto console = spdlog::get("console");
 
@@ -49,6 +52,7 @@ Game::Game()
 	custom_data.scenetree->registerEntity<Bullet>(hash("Bullet"), {}, &custom_data);
 	custom_data.scenetree->registerEntity<CollisionManager>(hash("CollisionManager"), {}, &custom_data);
 	custom_data.scenetree->registerEntity<PlayerText>(hash("PlayerText"), {}, &custom_data);
+	scenetree.registerEntity<enki::Console>(hash("Console"), {}, &scenetree);
 
 	custom_data.scenetree->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Player"), "startInvincible", &Player::startInvincible);
 	custom_data.scenetree->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Player"), "stopInvincible", &Player::stopInvincible);
@@ -57,6 +61,8 @@ Game::Game()
 		msg.execute();
 	});
 
+	scenetree.createEntityLocal(hash("Console"), "Console");
+	
 	run();
 }
 
@@ -71,7 +77,7 @@ void Game::run()
 	while (window->isOpen())
 	{
 		input();
-		update();
+		update(dt);
 		draw();
 
 		if (display_fps_timer.getElapsedTime() > 5.0f)
@@ -94,6 +100,8 @@ void Game::input()
 	enki::Event e;
 	while (window->poll(e))
 	{
+		ImGui::SFML::ProcessEvent(e);
+		
 		auto visitor = enki::overload{
 			[&](enki::EventQuit) {
 				window->close();
@@ -113,8 +121,10 @@ void Game::input()
 	}
 }
 
-void Game::update()
+void Game::update(float dt)
 {
+	ImGui::SFML::Update(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow(), dt);
+	
 	network_manager.update();
 	input_manager.update();
 
@@ -184,11 +194,19 @@ void Game::update()
 	}
 
 	scenetree.update(dt);
+	
+	ImGui::Begin("Framerate", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	ImGui::SetWindowSize({200, 30}, ImGuiCond_FirstUseEver);
+	ImGui::SetWindowPos({2, 2}, ImGuiCond_FirstUseEver);
+	ImGui::Text("%s", fmt::format("{:.3f}ms/frame ({:.1f} FPS)", dt * 1000.0f, 1.0f / dt).c_str());
+	ImGui::End();
 }
 
 void Game::draw()
 {
 	window->clear(40, 40, 40);
 	scenetree.draw(&renderer);
+	renderer.end();
+	ImGui::SFML::Render(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow());
 	window->display();
 }
