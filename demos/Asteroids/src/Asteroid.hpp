@@ -11,12 +11,12 @@
 class Asteroid : public enki::Entity
 {
 public:
-	Asteroid(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window);
+	Asteroid(enki::EntityInfo info, CustomData* custom_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 	void serializeOnConnection(enki::Packet& p) final;
 	void deserializeOnConnection(enki::Packet& p) final;
@@ -38,8 +38,7 @@ private:
 
 	sf::ConvexShape shape;
 
-	CustomData* custom_data;
-	sf::RenderWindow* window;
+	CustomData* const custom_data;
 
 	float speed = 300;
 	float radius = 10;

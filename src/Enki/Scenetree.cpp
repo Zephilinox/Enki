@@ -324,7 +324,7 @@ void Scenetree::update(float dt)
 	//from parents to children
 	for (auto e : entities)
 	{
-		if (e->remove)
+		if (e && e->remove)
 		{
 			auto [local, version, index] = splitID(e->info.ID);
 
@@ -408,13 +408,13 @@ std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 
 	for (const auto& [version, entity] : entitiesLocal)
 	{
-		if (entity->info.type == type)
+		if (entity && entity->info.type == type)
 			ents.push_back(entity.get());
 	}
 
 	for (const auto& [version, entity] : entitiesNetworked)
 	{
-		if (entity->info.type == type)
+		if (entity && entity->info.type == type)
 			ents.push_back(entity.get());
 	}
 
@@ -497,16 +497,12 @@ std::vector<Entity*> Scenetree::findEntitiesByPredicate(const std::function<bool
 	return ents;
 }
 
-////////////////////////
-/////////////////PRIVATE
-////////////////////////
-
 void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 	const Packet& spawnInfo,
 	const std::vector<EntityChildCreationInfo>& children)
 {
 	Packet p({PacketType::ENTITY_CREATION_TREE});
-	auto e = createEntityNetworkedFromRequestImpl(std::move(info), spawnInfo, children, p);
+	auto* e = createEntityNetworkedFromRequestImpl(std::move(info), spawnInfo, children, p);
 
 	console->info(
 		"Creating networked entity as the server "
@@ -516,6 +512,10 @@ void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 	//todo: maybe think about having a different ID even when hosting, i.e. 0 is invalid, 1 is this server, 2 is our client, 3+ is everyone else
 	network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
 }
+
+////////////////////////
+/////////////////PRIVATE
+////////////////////////
 
 Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	const Packet& spawnInfo,
@@ -579,8 +579,8 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	}
 	else
 	{
-		index = freeIndicesLocal.top();
-		freeIndicesLocal.pop();
+		index = freeIndicesNetworked.top();
+		freeIndicesNetworked.pop();
 		version = entitiesNetworked[index].version;
 	}
 
@@ -676,15 +676,16 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 				entitiesNetworked.size(),
 				entity->info);
 
-			if (entitiesNetworked[index].version != version)
+			if (entitiesNetworked[index].version != version													 //version mismatch
+				&& (entitiesNetworked[index].entity != nullptr && entitiesNetworked[index].version != 0))	 //but our version is 0 with a null entity, so it's just a placeholder, making it okay
 			{
 				console->error("packet tree version mismatch");
-				throw;
+				//throw;
 			}
 			else if (entitiesNetworked[index].entity != nullptr)
 			{
 				console->error("packet tree entity already exists at index with same version");
-				throw;
+				//throw;
 			}
 
 			entitiesNetworked[index] = {version, std::move(e)};
@@ -822,7 +823,13 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 				info);
 		}
 
-		p << info;
+		auto test = p.writeAndRetrieve<EntityInfo>(info);
+
+		if (test != info)
+		{
+			assert(false);
+		}
+
 		ent->serializeOnConnection(p);
 	}
 	network_manager->server->sendPacketToOneClient(client_id, 0, &p);
@@ -1150,15 +1157,16 @@ void Scenetree::receivedPacketFromServer(Packet p)
 						entitiesNetworked.size(),
 						info);
 
-					if (entitiesNetworked[index].version != version)
+					if (entitiesNetworked[index].version != version //version mismatch
+						&& (entitiesNetworked[index].entity != nullptr && entitiesNetworked[index].version != 0))	 //but our version is 0 with a null entity, so it's just a placeholder, making it okay
 					{
 						console->error("packet connection version mismatch");
-						throw;
+						//throw;
 					}
 					else if (entitiesNetworked[index].entity != nullptr)
 					{
 						console->error("packet connection entity already exists at index with same version");
-						throw;
+						//throw;
 					}
 
 					entitiesNetworked[index] = {version, std::move(e)};

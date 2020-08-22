@@ -6,31 +6,27 @@
 //LIBS
 #include <Enki/Scenetree.hpp>
 
-Asteroid::Asteroid(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
-	: Entity(info, data)
+Asteroid::Asteroid(enki::EntityInfo info, CustomData* custom_data)
+	: Entity(std::move(info))
 	, custom_data(custom_data)
-	, window(window)
 {
 	network_tick_rate = 1;
 }
 
-void Asteroid::onSpawn([[maybe_unused]]enki::Packet& p)
+void Asteroid::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
 
-	if (p.canDeserialize<int, float, float, float>())
-	{
-		int sides = p.read<int>();
-		float x = p.read<float>();
-		float y = p.read<float>();
-		speed = p.read<float>();
-		constructAsteroid(sides, x, y);
-	}
+	int sides = p.read<int>();
+	float x = p.read<float>();
+	float y = p.read<float>();
+	speed = p.read<float>();
+	constructAsteroid(sides, x, y);
 }
 
 void Asteroid::update(float dt)
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -41,43 +37,43 @@ void Asteroid::update(float dt)
 
 	if (shape.getPosition().x + radius <= 0)
 	{
-		shape.setPosition(window->getView().getSize().x, shape.getPosition().y);
+		shape.setPosition(custom_data->window_sfml->getView().getSize().x, shape.getPosition().y);
 	}
-	else if (shape.getPosition().x - radius >= window->getView().getSize().x)
+	else if (shape.getPosition().x - radius >= custom_data->window_sfml->getView().getSize().x)
 	{
 		shape.setPosition(0, shape.getPosition().y);
 	}
 	else if (shape.getPosition().y + radius <= 0)
 	{
-		shape.setPosition(shape.getPosition().x, window->getView().getSize().y);
+		shape.setPosition(shape.getPosition().x, custom_data->window_sfml->getView().getSize().y);
 	}
-	else if (shape.getPosition().y - radius >= window->getView().getSize().y)
+	else if (shape.getPosition().y - radius >= custom_data->window_sfml->getView().getSize().y)
 	{
 		shape.setPosition(shape.getPosition().x, 0);
 	}
 
 	if (!alive)
 	{
-		game_data->scenetree->deleteEntity(info.ID);
+		custom_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
-void Asteroid::draw(sf::RenderWindow& window_) const
+void Asteroid::draw(enki::Renderer* renderer)
 {
-	window_.draw(shape);
+	custom_data->window_sfml->draw(shape);
 }
 
 void Asteroid::serializeOnConnection(enki::Packet& p)
 {
 	serializeOnTick(p);
-	p << shape.getPointCount() << speed;
+	p << static_cast<int>(shape.getPointCount()) << speed;
 }
 
 void Asteroid::deserializeOnConnection(enki::Packet& p)
 {
 	deserializeOnTick(p);
 
-	unsigned sides;
+	int sides;
 	p >> sides >> speed;
 
 	constructAsteroid(sides, shape.getPosition().x, shape.getPosition().y);
@@ -145,7 +141,7 @@ void Asteroid::constructAsteroid(unsigned sides, float x, float y)
 	}
 	velocity.x *= target_dir_norm.x * speed / sides;
 	velocity.y *= target_dir_norm.y * speed / sides;
-	rotation_speed = (std::rand() % int((speed * 2) / sides)) - speed / sides;
+	rotation_speed = (std::rand() % std::max(1, int((speed * 2) / sides))) - speed / sides;
 }
 
 void Asteroid::createShape(unsigned sides)
@@ -171,7 +167,7 @@ void Asteroid::createShape(unsigned sides)
 
 void Asteroid::handleCollision()
 {
-	if (!isOwner())
+	if (!custom_data->network_manager->isServer())
 	{
 		return;
 	}
@@ -190,11 +186,13 @@ void Asteroid::split()
 		const auto newAsteroid = [&]()
 		{
 			enki::Packet p;
-			p << shape.getPointCount() - 2
-				<< shape.getPosition().x + (std::rand() % 20 - 10)
-				<< shape.getPosition().y + (std::rand() % 20 - 10)
+			float x = shape.getPosition().x + (std::rand() % 20 - 10);
+			float y = shape.getPosition().y + (std::rand() % 20 - 10);
+			p << static_cast<int>(shape.getPointCount() - 2)
+				<< x
+				<< y
 				<< speed + (std::rand() % 200 + 50);
-			game_data->scenetree->createNetworkedEntity({ "Asteroid", "Asteroid" }, p);
+			custom_data->scenetree->createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
 		};
 
 		newAsteroid();
@@ -202,5 +200,5 @@ void Asteroid::split()
 	}
 
 	alive = false;
-	game_data->scenetree->deleteEntity(info.ID);
+	custom_data->scenetree->deleteEntity(info.ID);
 }

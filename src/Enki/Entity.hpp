@@ -119,12 +119,16 @@ struct EntityInfo
 
 inline bool operator==(const EntityInfo& lhs, const EntityInfo& rhs)
 {
-	return lhs.ID == rhs.ID &&
-		   lhs.name == rhs.name &&
-		   lhs.type == rhs.type &&
-		   lhs.ownerID == rhs.ownerID &&
-		   lhs.parentID == rhs.parentID &&
-		   lhs.childIDs == rhs.childIDs;
+	const auto main_match = lhs.ID == rhs.ID &&
+							lhs.name == rhs.name &&
+							lhs.type == rhs.type &&
+							lhs.ownerID == rhs.ownerID &&
+							lhs.parentID == rhs.parentID;
+
+	const auto children_match = lhs.childIDs == rhs.childIDs;
+	//todo: because a networked entity can have a local child, the children might not match. we could ensure we update the childids of networked entities, but then those id's are invalid when trying to look them up
+	//worry about it later
+	return main_match;
 }
 
 inline bool operator!=(const EntityInfo& lhs, const EntityInfo& rhs)

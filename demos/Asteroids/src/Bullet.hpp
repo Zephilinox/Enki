@@ -11,12 +11,12 @@
 class Bullet : public enki::Entity
 {
 public:
-	Bullet(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window);
+	Bullet(enki::EntityInfo info, CustomData* custom_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 	void serializeOnConnection(enki::Packet& p) final;
 	void deserializeOnConnection(enki::Packet& p) final;
@@ -32,8 +32,7 @@ public:
 	bool isAlive() const;
 
 private:
-	CustomData* custom_data;
-	sf::RenderWindow* window;
+	CustomData* const custom_data;
 
 	sf::Texture bullet_tex;
 	sf::Sprite bullet;

@@ -3,19 +3,22 @@
 //LIBS
 #include <SFML/Graphics.hpp>
 
-//SELF
+//LIBS
 #include <Enki/Entity.hpp>
+
+//SELF
+#include "CustomData.hpp"
 
 class PlayerText : public enki::Entity
 {
 public:
-	PlayerText(enki::EntityInfo info, enki::GameData* game_data);
+	PlayerText(enki::EntityInfo info, CustomData* custom_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 private:
-	sf::Font font;
+	CustomData* const custom_data;
 	sf::Text label;
 };

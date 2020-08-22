@@ -7,19 +7,20 @@
 //SELF
 #include "Player.hpp"
 
-PlayerText::PlayerText(enki::EntityInfo info, enki::GameData* game_data)
-	: Entity(info, game_data)
+PlayerText::PlayerText(enki::EntityInfo info, CustomData* custom_data)
+	: Entity(std::move(info))
+	, custom_data(custom_data)
 {
 }
 
-void PlayerText::onSpawn([[maybe_unused]] enki::Packet& p)
+void PlayerText::onSpawn([[maybe_unused]] enki::Packet p)
 {
-	if (!font.loadFromFile("resources/arial.ttf"))
+	if (!custom_data->font_manager->registerFont("resources/arial.ttf", "arial"))
 	{
 		fmt::print("Failed to load resources/arial.ttf");
 	}
 
-	label.setFont(font);
+	label.setFont(*custom_data->font_manager->getFont(hash("arial")));
 	label.setString(std::string("Player ") + std::to_string(info.ownerID));
 	label.setCharacterSize(10);
 }
@@ -27,9 +28,9 @@ void PlayerText::onSpawn([[maybe_unused]] enki::Packet& p)
 void PlayerText::update([[maybe_unused]]float dt)
 {
 	auto console = spdlog::get("console");
-	auto parent = game_data->scenetree->getEntity(info.parentID);
+	auto parent = custom_data->scenetree->findEntity(info.parentID);
 
-	if (parent && parent->info.type == "Player")
+	if (parent && parent->info.type == hash("Player"))
 	{
 		auto parent_player = static_cast<Player*>(parent);
 		label.setFillColor(parent_player->getColour());
@@ -37,7 +38,7 @@ void PlayerText::update([[maybe_unused]]float dt)
 	}
 }
 
-void PlayerText::draw(sf::RenderWindow& window) const
+void PlayerText::draw(enki::Renderer* renderer)
 {
-	window.draw(label);
+	renderer->draw(&label);
 }

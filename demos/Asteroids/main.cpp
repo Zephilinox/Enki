@@ -1,7 +1,4 @@
-﻿//STD
-#include <iostream>
-
-//SELF
+﻿//SELF
 #include "src/Game.hpp"
 
 int main()

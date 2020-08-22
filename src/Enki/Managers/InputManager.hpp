@@ -41,15 +41,15 @@ public:
 	// Swaps the input states around (double buffering), call it once per frame (before handling the input)
 	void update();
 
-	[[nodiscard]] bool isKeyUp(int key);
-	[[nodiscard]] bool isKeyReleased(int key);
-	[[nodiscard]] bool isKeyPressed(int key);
-	[[nodiscard]] bool isKeyDown(int key);
-	
-	[[nodiscard]] bool isMouseButtonUp(int button);
-	[[nodiscard]] bool isMouseButtonPressed(int button);
-	[[nodiscard]] bool isMouseButtonReleased(int button);
-	[[nodiscard]] bool isMouseButtonDown(int button);
+	[[nodiscard]] bool isKeyUp(Keyboard::Key key);
+	[[nodiscard]] bool isKeyReleased(Keyboard::Key key);
+	[[nodiscard]] bool isKeyPressed(Keyboard::Key key);
+	[[nodiscard]] bool isKeyDown(Keyboard::Key key);
+
+	[[nodiscard]] bool isMouseButtonUp(Mouse::Button button);
+	[[nodiscard]] bool isMouseButtonPressed(Mouse::Button button);
+	[[nodiscard]] bool isMouseButtonReleased(Mouse::Button button);
+	[[nodiscard]] bool InputManager::isMouseButtonDown(Mouse::Button button);
 	
 	[[nodiscard]] sf::Vector2f getMouseDesktopPos() const;
 	[[nodiscard]] sf::Vector2f getMouseScreenPos() const;

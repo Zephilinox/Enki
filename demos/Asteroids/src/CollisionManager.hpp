@@ -11,17 +11,16 @@
 class CollisionManager : public enki::Entity
 {
 public:
-	CollisionManager(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window);
+	CollisionManager(enki::EntityInfo info, CustomData* custom_data);
 
-	void onSpawn(enki::Packet& p) final;
+	void onSpawn(enki::Packet p) final;
 
 	void update(float dt) final;
-	void draw(sf::RenderWindow& window) const final;
+	void draw(enki::Renderer* renderer) final;
 
 	void serializeOnTick(enki::Packet& p) final;
 	void deserializeOnTick(enki::Packet& p) final;
 
 private:
-	CustomData* custom_data;
-	sf::RenderWindow* window;
+	CustomData* const custom_data;
 };

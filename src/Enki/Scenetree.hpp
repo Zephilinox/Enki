@@ -165,12 +165,13 @@ public:
 	[[nodiscard]] T* findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const;
 
 	RPCManager rpc_man;
-
-private:
+	
 	//Used by the server when receiving a creation request, sends one packet with all the data
 	void createEntityNetworkedFromRequest(EntityInfo info,
 		const Packet& spawnInfo,
 		const std::vector<EntityChildCreationInfo>& children);
+
+private:
 
 	//used by the above to fill out packet without sending more
 	Entity* createEntityNetworkedFromRequestImpl(EntityInfo info,

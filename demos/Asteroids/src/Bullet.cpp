@@ -6,15 +6,14 @@
 //LIBS
 #include <Enki/Scenetree.hpp>
 
-Bullet::Bullet(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
-	: Entity(info, data)
+Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
+	: Entity(info)
 	, custom_data(custom_data)
-	, window(window)
 {
 	network_tick_rate = 1;
 }
 
-void Bullet::onSpawn([[maybe_unused]]enki::Packet& p)
+void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
 	bullet_tex.loadFromFile("resources/bullet.png");
@@ -58,7 +57,7 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet& p)
 
 void Bullet::update(float dt)
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -70,9 +69,9 @@ void Bullet::update(float dt)
 	if (bullet.getPosition().x + (bullet_tex.getSize().x / 2) <= 0)
 	{
 		warp_count++;
-		bullet.setPosition(window->getView().getSize().x, bullet.getPosition().y);
+		bullet.setPosition(custom_data->window_sfml->getView().getSize().x, bullet.getPosition().y);
 	}
-	else if (bullet.getPosition().x - (bullet_tex.getSize().x / 2) >= window->getView().getSize().x)
+	else if (bullet.getPosition().x - (bullet_tex.getSize().x / 2) >= custom_data->window_sfml->getView().getSize().x)
 	{
 		warp_count++;
 		bullet.setPosition(0, bullet.getPosition().y);
@@ -80,9 +79,9 @@ void Bullet::update(float dt)
 	else if (bullet.getPosition().y + (bullet_tex.getSize().y / 2) <= 0)
 	{
 		warp_count++;
-		bullet.setPosition(bullet.getPosition().x, window->getView().getSize().y);
+		bullet.setPosition(bullet.getPosition().x, custom_data->window_sfml->getView().getSize().y);
 	}
-	else if (bullet.getPosition().y - (bullet_tex.getSize().y / 2) >= window->getView().getSize().y)
+	else if (bullet.getPosition().y - (bullet_tex.getSize().y / 2) >= custom_data->window_sfml->getView().getSize().y)
 	{
 		warp_count++;
 		bullet.setPosition(bullet.getPosition().x, 0);
@@ -95,13 +94,13 @@ void Bullet::update(float dt)
 
 	if (!alive)
 	{
-		game_data->scenetree->deleteEntity(info.ID);
+		custom_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
-void Bullet::draw(sf::RenderWindow& window_) const
+void Bullet::draw(enki::Renderer* renderer)
 {
-	window_.draw(bullet);
+	renderer->draw(&bullet);
 }
 
 void Bullet::serializeOnConnection(enki::Packet& p)
@@ -160,7 +159,7 @@ unsigned int Bullet::getWarpCount() const
 
 void Bullet::handleCollision()
 {
-	if (!isOwner())
+	if (!custom_data->network_manager->isServer())
 	{
 		return;
 	}
@@ -168,6 +167,6 @@ void Bullet::handleCollision()
 	if (alive)
 	{
 		alive = false;
-		game_data->scenetree->deleteEntity(info.ID);
+		custom_data->scenetree->deleteEntity(info.ID);
 	}
 }

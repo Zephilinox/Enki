@@ -6,15 +6,15 @@
 //LIBS
 #include <Enki/Scenetree.hpp>
 
-Player::Player(enki::EntityInfo info, enki::GameData* data, CustomData* custom_data, sf::RenderWindow* window)
-	: Entity(info, data)
+Player::Player(enki::EntityInfo info, CustomData* custom_data)
+	: Entity(info)
 	, custom_data(custom_data)
-	, window(window)
 {
 	network_tick_rate = 1;
 }
 
-void Player::onSpawn([[maybe_unused]]enki::Packet& p)
+//todo: onSpawn isn't called for clients that are receiving the entire entity tree, instead, (de)serializeOnConnection is used, need to fix
+void Player::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
 	if (!ship_tex.loadFromFile("resources/ship.png"))
@@ -30,61 +30,61 @@ void Player::onSpawn([[maybe_unused]]enki::Packet& p)
 
 	if (info.ownerID == 1)
 	{
-		ship.setColor(sf::Color(0, 100, 200)); //blue
-		up = sf::Keyboard::Key::W;
-		down = sf::Keyboard::Key::S;
-		left = sf::Keyboard::Key::A;
-		right = sf::Keyboard::Key::D;
-		slow = sf::Keyboard::Key::LShift;
-		shoot = sf::Keyboard::Key::F;
+		ship.setColor(sf::Color(0, 100, 200));	  //blue
+		up = enki::Keyboard::Key::W;
+		down = enki::Keyboard::Key::S;
+		left = enki::Keyboard::Key::A;
+		right = enki::Keyboard::Key::D;
+		slow = enki::Keyboard::Key::Shift;
+		shoot = enki::Keyboard::Key::F;
 	}
 	else if (info.ownerID == 2)
 	{
-		ship.setColor(sf::Color(200, 60, 60)); //red
+		ship.setColor(sf::Color(200, 60, 60));	  //red
 		//hardcoded for local control for demo
-		up = sf::Keyboard::Key::Up;
-		down = sf::Keyboard::Key::Down;
-		left = sf::Keyboard::Key::Left;
-		right = sf::Keyboard::Key::Right;
-		slow = sf::Keyboard::Key::Insert;
-		shoot = sf::Keyboard::Key::RControl;
+		up = enki::Keyboard::Key::Up;
+		down = enki::Keyboard::Key::Down;
+		left = enki::Keyboard::Key::Left;
+		right = enki::Keyboard::Key::Right;
+		slow = enki::Keyboard::Key::Insert;
+		shoot = enki::Keyboard::Key::Control;
 	}
 	else if (info.ownerID == 3)
 	{
-		ship.setColor(sf::Color(60, 200, 60)); //green
-		up = sf::Keyboard::Key::W;
-		down = sf::Keyboard::Key::S;
-		left = sf::Keyboard::Key::A;
-		right = sf::Keyboard::Key::D;
-		slow = sf::Keyboard::Key::LShift;
-		shoot = sf::Keyboard::Key::F;
+		ship.setColor(sf::Color(60, 200, 60));	  //green
+		up = enki::Keyboard::Key::W;
+		down = enki::Keyboard::Key::S;
+		left = enki::Keyboard::Key::A;
+		right = enki::Keyboard::Key::D;
+		slow = enki::Keyboard::Key::Shift;
+		shoot = enki::Keyboard::Key::F;
 	}
 	else if (info.ownerID == 4)
 	{
-		ship.setColor(sf::Color(200, 160, 60)); //orange
-		up = sf::Keyboard::Key::W;
-		down = sf::Keyboard::Key::S;
-		left = sf::Keyboard::Key::A;
-		right = sf::Keyboard::Key::D;
-		slow = sf::Keyboard::Key::LShift;
-		shoot = sf::Keyboard::Key::F;
+		ship.setColor(sf::Color(200, 160, 60));	   //orange
+		up = enki::Keyboard::Key::W;
+		down = enki::Keyboard::Key::S;
+		left = enki::Keyboard::Key::A;
+		right = enki::Keyboard::Key::D;
+		slow = enki::Keyboard::Key::Shift;
+		shoot = enki::Keyboard::Key::F;
 	}
 
-	view = window->getDefaultView();
+	view = custom_data->window_sfml->getDefaultView();
 }
 
 void Player::update(float dt)
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
 
-	auto input_manager = custom_data->input_manager;
+	auto* input_manager = custom_data->input_manager;
 		
-	float ship_rot_rads = ship.getRotation() * (3.1415f / 180.0f);
-	float ship_sin = std::sin(ship_rot_rads);
-	float ship_cos = std::cos(ship_rot_rads);
+	const float ship_rot_rads = ship.getRotation() * (3.1415f / 180.0f);
+	const float ship_sin = std::sin(ship_rot_rads);
+	const float ship_cos = std::cos(ship_rot_rads);
 
 	if (input_manager->isKeyDown(up))
 	{
@@ -143,17 +143,17 @@ void Player::update(float dt)
 
 	if (ship.getPosition().x + (ship_tex.getSize().x / 2) <= 0)
 	{
-		ship.setPosition(window->getView().getSize().x, ship.getPosition().y);
+		ship.setPosition(custom_data->window_sfml->getView().getSize().x, ship.getPosition().y);
 	}
-	else if (ship.getPosition().x - (ship_tex.getSize().x / 2) >= window->getView().getSize().x)
+	else if (ship.getPosition().x - (ship_tex.getSize().x / 2) >= custom_data->window_sfml->getView().getSize().x)
 	{
 		ship.setPosition(0, ship.getPosition().y);
 	}
 	else if (ship.getPosition().y + (ship_tex.getSize().y / 2) <= 0)
 	{
-		ship.setPosition(ship.getPosition().x, window->getView().getSize().y);
+		ship.setPosition(ship.getPosition().x, custom_data->window_sfml->getView().getSize().y);
 	}
-	else if (ship.getPosition().y - (ship_tex.getSize().y / 2) >= window->getView().getSize().y)
+	else if (ship.getPosition().y - (ship_tex.getSize().y / 2) >= custom_data->window_sfml->getView().getSize().y)
 	{
 		ship.setPosition(ship.getPosition().x, 0);
 	}
@@ -171,20 +171,20 @@ void Player::update(float dt)
 			<< ship.getColor().r
 			<< ship.getColor().g
 			<< ship.getColor().b;
-		game_data->scenetree->createNetworkedEntity({ "Bullet", "Bullet" }, p);
+		custom_data->scenetree->createEntityNetworkedRequest(hash("Bullet"), "Bullet", 0, p);
 	}
 
 	if (flashing_timer.getElapsedTime() > flashing_duration)
 	{
-		game_data->scenetree->rpc_man.call(&Player::stopInvincible, "stopInvincible", game_data->network_manager, this);
+		custom_data->scenetree->rpc_man.callEntityRPC(&Player::stopInvincible, "stopInvincible", this);
 	}
 }
 
-void Player::draw(sf::RenderWindow& window_) const
+void Player::draw(enki::Renderer* renderer) 
 {
 	if (!was_damaged)
 	{
-		window_.draw(ship);
+		renderer->draw(&ship);
 	}
 	else if (flashing_timer.getElapsedTime() < flashing_duration)
 	{
@@ -193,7 +193,7 @@ void Player::draw(sf::RenderWindow& window_) const
 		int rem_milli = milli % 1000 % (percentage * 10); //ignore seconds and get a percentage of the remainder
 		if (rem_milli < percentage * 5)
 		{
-			window_.draw(ship);
+			renderer->draw(&ship);
 		}
 	}
 }
@@ -246,7 +246,7 @@ void Player::stopInvincible()
 
 void Player::handleCollision()
 {
-	if (!isOwner())
+	if (!isOwner(custom_data->network_manager))
 	{
 		return;
 	}
@@ -257,7 +257,19 @@ void Player::handleCollision()
 		{
 			lives--;
 		}
-
-		game_data->scenetree->rpc_man.call(&Player::startInvincible, "startInvincible", game_data->network_manager, this);
+		
+		custom_data->scenetree->rpc_man.callEntityRPC(&Player::startInvincible, "startInvincible", this);
 	}
+}
+
+
+void Player::serializeOnConnection(enki::Packet& p)
+{
+	serializeOnTick(p);
+}
+
+void Player::deserializeOnConnection(enki::Packet& p)
+{
+	onSpawn(p);
+	deserializeOnTick(p);
 }

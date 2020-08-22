@@ -281,7 +281,7 @@ void RPCManager::callEntityRPCUnsafe(std::string name, T* instance, Args ... arg
 	p << instance->info << name;
 	fillPacket(p, args...);
 
-	auto [local, remote] = RPCInfo(entity_rpcs[instance->info.type].class_rpcs[name].rpctype, instance->isOwner());
+	auto [local, remote] = RPCInfo(entity_rpcs[instance->info.type].class_rpcs[name].rpctype, instance->isOwner(network_manager));
 
 	if (remote &&
 	    network_manager &&
