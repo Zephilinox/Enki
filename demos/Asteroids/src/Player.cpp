@@ -41,13 +41,12 @@ void Player::onSpawn([[maybe_unused]]enki::Packet p)
 	else if (info.ownerID == 2)
 	{
 		ship.setColor(sf::Color(200, 60, 60));	  //red
-		//hardcoded for local control for demo
-		up = enki::Keyboard::Key::Up;
-		down = enki::Keyboard::Key::Down;
-		left = enki::Keyboard::Key::Left;
-		right = enki::Keyboard::Key::Right;
-		slow = enki::Keyboard::Key::Insert;
-		shoot = enki::Keyboard::Key::Control;
+		up = enki::Keyboard::Key::W;
+		down = enki::Keyboard::Key::S;
+		left = enki::Keyboard::Key::A;
+		right = enki::Keyboard::Key::D;
+		slow = enki::Keyboard::Key::Shift;
+		shoot = enki::Keyboard::Key::F;
 	}
 	else if (info.ownerID == 3)
 	{
@@ -135,8 +134,8 @@ void Player::update(float dt)
 
 	if (length > max_velocity_length)
 	{
-		velocity.x *= max_velocity_length / length;
-		velocity.y *= max_velocity_length / length;
+		velocity.x *= (max_velocity_length / length) * (1.0f - dt);
+		velocity.y *= (max_velocity_length / length) * (1.0f - dt);
 	}
 
 	ship.move(velocity * dt);
@@ -163,15 +162,20 @@ void Player::update(float dt)
 	{
 		shoot_timer.restart();
 
-		enki::Packet p;
-		p << ship.getPosition().x
-			<< ship.getPosition().y
-			<< 300.0f
-			<< ship.getRotation() + float(std::rand() % 4)
-			<< ship.getColor().r
-			<< ship.getColor().g
-			<< ship.getColor().b;
-		custom_data->scenetree->createEntityNetworkedRequest(hash("Bullet"), "Bullet", 0, p);
+		int bullets = (std::rand() % 20) + 5;
+		length = std::sqrtf((velocity.x * velocity.x) + (velocity.y * velocity.y));
+		for (int i = 0; i < bullets; ++i)
+		{
+			enki::Packet p;
+			p << ship.getPosition().x
+			  << ship.getPosition().y
+			  << 300.0f + length
+			  << ship.getRotation() + static_cast<float>((std::rand() % 600) / 100.0f)
+			  << ship.getColor().r
+			  << ship.getColor().g
+			  << ship.getColor().b;
+			custom_data->scenetree->createEntityNetworkedRequest(hash("Bullet"), "Bullet", 0, p);
+		}
 	}
 
 	if (flashing_timer.getElapsedTime() > flashing_duration)

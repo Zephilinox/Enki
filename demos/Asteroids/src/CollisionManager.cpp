@@ -49,15 +49,18 @@ void CollisionManager::update(float dt)
 
 		sf::CircleShape bulletCS(5);
 		bulletCS.setOrigin(2.5f, 2.5f);
-		for (auto& b : bullets)
+		if (asteroid->isAlive())
 		{
-			auto bullet = static_cast<Bullet*>(b);
-			bulletCS.setPosition(bullet->getPosition());
-
-			if (circlesColliding(asteroidCS, bulletCS))
+			for (auto& b : bullets)
 			{
-				asteroid->handleCollision();
-				bullet->handleCollision();
+				auto bullet = static_cast<Bullet*>(b);
+				bulletCS.setPosition(bullet->getPosition());
+
+				if (circlesColliding(asteroidCS, bulletCS))
+				{
+					asteroid->handleCollision();
+					bullet->handleCollision();
+				}
 			}
 		}
 

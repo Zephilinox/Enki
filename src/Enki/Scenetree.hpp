@@ -137,6 +137,8 @@ public:
 
 	//Vector will be empty if none found
 	[[nodiscard]] std::vector<Entity*> findEntitiesByType(HashedID type) const;
+	template <typename T>
+	[[nodiscard]] std::vector<T*> findEntitiesByType(HashedID type) const;
 
 	//Vector will be empty if none found
 	[[nodiscard]] std::vector<Entity*> findEntitiesByName(const std::string& name) const;
@@ -326,6 +328,26 @@ T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& pr
 	}
 
 	return nullptr;
+}
+
+template <typename T>
+std::vector<T*> Scenetree::findEntitiesByType(HashedID type) const
+{
+	std::vector<T*> ents;
+
+	for (const auto& [version, entity] : entitiesLocal)
+	{
+		if (entity && entity->info.type == type)
+			ents.push_back(static_cast<T*>(entity.get()));
+	}
+
+	for (const auto& [version, entity] : entitiesNetworked)
+	{
+		if (entity && entity->info.type == type)
+			ents.push_back(static_cast<T*>(entity.get()));
+	}
+
+	return ents;
 }
 
 inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)

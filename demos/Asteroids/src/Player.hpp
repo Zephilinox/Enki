@@ -57,5 +57,5 @@ private:
 	float flashing_duration = 1.0f;
 
 	enki::Timer shoot_timer;
-	float shoot_delay = 0.05f;
+	float shoot_delay = 0.4f;
 };

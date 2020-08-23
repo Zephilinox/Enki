@@ -68,7 +68,7 @@ Game::Game()
 
 void Game::run()
 {
-	custom_data.window_sfml->setFramerateLimit(120);
+	//custom_data.window_sfml->setFramerateLimit(120);
 
 	float dt = 1.0f / 60.0f;
 	enki::Timer display_fps_timer;

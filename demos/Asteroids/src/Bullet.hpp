@@ -8,6 +8,8 @@
 //SELF
 #include "CustomData.hpp"
 
+class Asteroid;
+
 class Bullet : public enki::Entity
 {
 public:
@@ -42,4 +44,9 @@ private:
 
 	unsigned int warp_count = 0;
 	bool alive = true;
+
+	enki::Timer find_asteroid_timer;
+	float find_asteroid_delay = 1.0f;
+	enki::EntityID closest_asteroid_id = 0;
+	sf::Vector2f distance_to_asteroid = {0, 0};
 };

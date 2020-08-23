@@ -6,12 +6,23 @@
 //LIBS
 #include <Enki/Scenetree.hpp>
 
+//SELF
+#include <Asteroid.hpp>
+
 Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)
 	, custom_data(custom_data)
 {
 	network_tick_rate = 1;
 }
+
+
+sf::Vector2f degToVector(float angle)
+{
+	return sf::Vector2f(
+		std::sin(angle * (3.1415 / 180.0f)),
+		-std::cos(angle * 3.1415 / 180.0f));
+};
 
 void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 {
@@ -39,20 +50,24 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 		bullet.setPosition(x, y);
 		bullet.setRotation(rot);
 
-		const auto degToVector = [](float angle) -> sf::Vector2f
-		{
-			return sf::Vector2f(
-				std::sin(angle * (3.1415 / 180.0f)),
-				-std::cos(angle * 3.1415 / 180.0f));
-		};
+		velocity.x = 1 * degToVector(rot).x * speed;
+		velocity.y = 1 * degToVector(rot).y * speed;
 
-		velocity.x *= degToVector(rot).x * speed;
-		velocity.y *= degToVector(rot).y * speed;
+		find_asteroid_delay = 1.0f + (((std::rand() % 100) / 100.0f) - 0.5f);
 	}
 	else
 	{
 		console->error("Couldn't deserialize info for bullet");
 	}
+}
+
+int angle_distance(int a, int b)
+{
+	int wrapped = std::abs(b - a) % 360;
+	int distance = wrapped > 180 ? 360 - wrapped : wrapped;
+	int sign = (a - b >= 0 && a - b <= 180) || (a - b <= -180 && a - b >= -360) ? 1 : -1;
+	distance *= sign;
+	return distance;
 }
 
 void Bullet::update(float dt)
@@ -64,6 +79,44 @@ void Bullet::update(float dt)
 
 	auto input_manager = custom_data->input_manager;
 
+	Asteroid* closest_asteroid = static_cast<Asteroid*>(custom_data->scenetree->findEntity(closest_asteroid_id));
+	
+	if (/*!closest_asteroid || */find_asteroid_timer.getElapsedTime() > find_asteroid_delay)
+	{
+		find_asteroid_timer.restart();
+		
+		float shortest_length = 0;
+		auto asteroids = custom_data->scenetree->findEntitiesByType<Asteroid>(hash("Asteroid"));
+		for (auto asteroid : asteroids)
+		{
+			sf::Vector2f dist{asteroid->getPosition().x - bullet.getPosition().x, asteroid->getPosition().y - bullet.getPosition().y};
+			float our_length = (dist.x * dist.x) + (dist.y * dist.y);
+			if (!closest_asteroid || our_length < shortest_length)
+			{
+				distance_to_asteroid = dist;
+				closest_asteroid_id = asteroid->info.ID;
+				closest_asteroid = asteroid;
+				shortest_length = our_length;
+			}
+		}
+	}
+
+	if (closest_asteroid)
+	{
+		distance_to_asteroid = sf::Vector2f{closest_asteroid->getPosition().x - bullet.getPosition().x, closest_asteroid->getPosition().y - bullet.getPosition().y};
+		float angle = std::atan2(distance_to_asteroid.x, distance_to_asteroid.y * -1.0f);
+		float angle_degrees = angle * (180.0f / 3.1415f);
+		float angle_diff = angle_distance(angle_degrees, bullet.getRotation());
+		float max_distance = 100000; //1000 pixels, squared
+		float min_distance = 10000; //100 pixels, squared
+		float distance = (distance_to_asteroid.x * distance_to_asteroid.x) + (distance_to_asteroid.y * distance_to_asteroid.y);
+		float speed = std::max(1.0f, std::min(max_distance / distance, (max_distance / min_distance) * 0.1f));
+		angle_diff += (((std::rand() % 1000) / 100.0f) - 1.0f) * 10.0f;
+		bullet.setRotation(bullet.getRotation() + (angle_diff * speed * dt));
+	}
+	
+	velocity.x = 1 * degToVector(bullet.getRotation()).x * speed;
+	velocity.y = 1 * degToVector(bullet.getRotation()).y * speed;
 	bullet.move(velocity.x * dt, velocity.y * dt);
 
 	if (bullet.getPosition().x + (bullet_tex.getSize().x / 2) <= 0)
