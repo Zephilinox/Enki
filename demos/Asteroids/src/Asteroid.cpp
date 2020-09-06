@@ -1,5 +1,8 @@
 #include "Asteroid.hpp"
 
+#undef min
+#undef max
+
 //STD
 #include <experimental/vector>
 
