@@ -2,13 +2,13 @@
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(DEMOS "Build all demos" OFF)
-option(TESTS "Build tests" OFF)
+option(ENKI_BUILD_DEMOS "Build all demos" OFF)
+option(ENKI_BUILD_TESTS "Build tests" OFF)
 
-set (CMAKE_MODULE_PATH "${EnkiEngine_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${EnkiEngine_SOURCE_DIR}/cmake")
 
 #Includes library and demos and stuff
-project ("EnkiEngine")
+project("EnkiEngine")
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/MP>")
 
@@ -37,5 +37,16 @@ if (TESTS)
 	add_subdirectory("tests")
 endif()
 
-#exclude from all does something I'm pretty sure
-add_subdirectory ("third_party" EXCLUDE_FROM_ALL)
+add_subdirectory ("third_party")
+
+add_custom_target(EnkiEngine SOURCES
+	"CMakeLists.txt"
+	".clang-format"
+	".gitignore"
+	"LICENSE"
+	"README.md"
+	"cmake/FilesystemSourceGroup.cmake"
+	"cmake/PostTargetSettings.cmake"
+	"cmake/PreTargetSettings.cmake")
+get_target_property(EnkiEngine_SOURCES EnkiEngine SOURCES)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${EnkiEngine_SOURCES})

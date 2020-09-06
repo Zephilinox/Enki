@@ -24,6 +24,6 @@ set_target_properties(
 	LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/Tests/${CONFIGURATION}"
 )
 
-target_link_libraries(Tests Enki)
-
+target_link_libraries(Tests PUBLIC Enki doctest)
+target_include_directories(Tests PUBLIC ${EnkiEngine_BINARY_DIR}/third_party/doctest-src/doctest)
 include_directories(${CMAKE_SOURCE_DIR}/src)

@@ -103,14 +103,17 @@ set (Enki_SRC
 	"Enki/TimerLog.cpp"
 )
 
-include("../cmake/FilesystemSourceGroup.cmake")
-SOURCE_GROUP_BY_FOLDER(Enki)
+#include("../cmake/FilesystemSourceGroup.cmake")
+#SOURCE_GROUP_BY_FOLDER(Enki)
 
 include("../cmake/PreTargetSettings.cmake")
-add_library (Enki
+add_library(Enki
 	${Enki_HEADERS}
 	${Enki_SRC}
 )
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Enki FILES ${Enki_HEADERS} ${Enki_SRC})
+set_property(TARGET Enki PROPERTY CMAKE_CXX_EXTENSIONS OFF)
 
 include("../cmake/PostTargetSettings.cmake")
 

@@ -5,7 +5,7 @@ project(Pong)
 include("${EnkiEngine_SOURCE_DIR}/cmake/PreTargetSettings.cmake")
 
 add_executable(Pong
-"main.cpp"
+"src/main.cpp"
 
 "src/Ball.hpp"
 "src/Ball.cpp"
@@ -26,6 +26,9 @@ add_executable(Pong
 "src/Score.cpp"
 )
 
+get_target_property(Pong_SOURCES Pong SOURCES)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${Pong_SOURCES})
+
 include("${EnkiEngine_SOURCE_DIR}/cmake/PostTargetSettings.cmake")
 
 set_target_properties(
@@ -41,6 +44,8 @@ set_target_properties(
 target_link_libraries(Pong Enki)
 
 include_directories(${EnkiEngine_SOURCE_DIR}/src "src")
+
+set_target_properties(Pong PROPERTIES FOLDER demos)
 
 #remove old resources
 file(REMOVE_RECURSE "${EnkiEngine_SOURCE_DIR}/bin/Pong/Debug/resources/")

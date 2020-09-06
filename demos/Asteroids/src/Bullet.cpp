@@ -1,5 +1,8 @@
 #include "Bullet.hpp"
 
+#undef max
+#undef min
+
 //STD
 #include <experimental/vector>
 

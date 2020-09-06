@@ -5,7 +5,7 @@ project(Asteroids)
 include("${EnkiEngine_SOURCE_DIR}/cmake/PreTargetSettings.cmake")
 
 add_executable(Asteroids
-"main.cpp"
+"src/main.cpp"
 
 "src/Managers/InputManager.hpp"
 "src/Managers/InputManager.cpp"
@@ -31,6 +31,9 @@ add_executable(Asteroids
 "src/PlayerText.cpp"
 )
 
+get_target_property(Asteroids_SOURCES Asteroids SOURCES)
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${Asteroids_SOURCES})
+
 include("${EnkiEngine_SOURCE_DIR}/cmake/PostTargetSettings.cmake")
 
 set_target_properties(
@@ -46,6 +49,8 @@ set_target_properties(
 target_link_libraries(Asteroids Enki)
 
 target_include_directories(Asteroids PRIVATE ${EnkiEngine_SOURCE_DIR}/demos/Asteroids/src/)
+
+set_target_properties(Asteroids PROPERTIES FOLDER demos)
 
 #remove old resources
 file(REMOVE_RECURSE "${EnkiEngine_SOURCE_DIR}/bin/Asteroids/Debug/resources/")

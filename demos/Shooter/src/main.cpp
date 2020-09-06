@@ -2,7 +2,7 @@
 #include <iostream>
 
 //SELF
-#include "src/Game.hpp"
+#include "Game.hpp"
 
 int main()
 {
