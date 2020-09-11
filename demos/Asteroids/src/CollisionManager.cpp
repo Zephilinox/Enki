@@ -27,34 +27,38 @@ void CollisionManager::update(float dt)
 {
 	auto bullets = custom_data->scenetree->findEntitiesByType(hash("Bullet"));
 	auto asteroids = custom_data->scenetree->findEntitiesByType(hash("Asteroid"));
-	auto player1 = custom_data->scenetree->findEntityByName<Player>("Player 1");
-	auto player2 = custom_data->scenetree->findEntityByName<Player>("Player 2");
-	auto player3 = custom_data->scenetree->findEntityByName<Player>("Player 3");
-	auto player4 = custom_data->scenetree->findEntityByName<Player>("Player 4");
+	auto* player1 = custom_data->scenetree->findEntityByName<Player>("Player 1");
+	auto* player2 = custom_data->scenetree->findEntityByName<Player>("Player 2");
+	auto* player3 = custom_data->scenetree->findEntityByName<Player>("Player 3");
+	auto* player4 = custom_data->scenetree->findEntityByName<Player>("Player 4");
 
-	const auto circlesColliding = [](sf::CircleShape& shape_one, sf::CircleShape& shape_two) -> bool
+	struct CircleShape
 	{
-		const sf::Vector2f distance = shape_one.getPosition() - shape_two.getPosition();
-		const float length = std::sqrtf((distance.x * distance.x) + (distance.y * distance.y));
-		return length < shape_one.getRadius() + shape_two.getRadius();
+		sf::Vector2f position{};
+		float radius{};
+	};
+	
+	const auto circlesColliding = [](const CircleShape& shape_one, const CircleShape& shape_two) -> bool
+	{
+		const sf::Vector2f distance = shape_one.position - shape_two.position;
+		const float length = (distance.x * distance.x) + (distance.y * distance.y);
+		return length < (shape_one.radius * shape_one.radius) + (shape_two.radius * shape_two.radius);
 	};
 
-	sf::CircleShape asteroidCS;
-	for (auto& a : asteroids)
+	CircleShape asteroidCS;
+	for (auto* a : asteroids)
 	{
-		auto asteroid = static_cast<Asteroid*>(a);
-		asteroidCS.setRadius(asteroid->getRadius());
-		asteroidCS.setOrigin(asteroid->getRadius() / 2.0f, asteroid->getRadius() / 2.0f);
-		asteroidCS.setPosition(asteroid->getPosition());
+		auto* asteroid = static_cast<Asteroid*>(a);
+		asteroidCS.radius = asteroid->getRadius();
+		asteroidCS.position = asteroid->getPosition();
 
-		sf::CircleShape bulletCS(5);
-		bulletCS.setOrigin(2.5f, 2.5f);
+		CircleShape bulletCS{{}, 5};
 		if (asteroid->isAlive())
 		{
-			for (auto& b : bullets)
+			for (auto* b : bullets)
 			{
-				auto bullet = static_cast<Bullet*>(b);
-				bulletCS.setPosition(bullet->getPosition());
+				auto* bullet = static_cast<Bullet*>(b);
+				bulletCS.position = bullet->getPosition();
 
 				if (circlesColliding(asteroidCS, bulletCS))
 				{
@@ -64,14 +68,13 @@ void CollisionManager::update(float dt)
 			}
 		}
 
-		sf::CircleShape playerCS(16);
-		playerCS.setOrigin(8.0f, 8.0f);
+		CircleShape playerCS{{}, 16};
 
 		const auto playerCheck = [asteroid, &asteroidCS, &playerCS, &circlesColliding](Player* player)
 		{
 			if (player)
 			{
-				playerCS.setPosition(player->getPosition());
+				playerCS.position = player->getPosition();
 				if (circlesColliding(asteroidCS, playerCS))
 				{
 					if (!player->isInvincible())
