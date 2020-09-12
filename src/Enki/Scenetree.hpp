@@ -104,7 +104,7 @@ public:
 
 	[[nodiscard]] std::size_t getEntityCount() const
 	{
-		return entitiesLocal.size() + entitiesNetworked.size();
+		return entities[Local].size() + entities[Networked].size();
 	}
 
 	void forEachEntity(std::function<void(const Entity&)> function);
@@ -126,7 +126,7 @@ public:
 	ErrorCodeRemove removeEntity(const EntityID ID);
 	ErrorCodeRemove removeEntityLocal(const EntityID ID);
 
-	Entity* findEntity(const EntityID ID);
+	Entity* findEntity(const EntityID ID) const;
 	Entity* getEntityUnsafe(const EntityID ID);
 
 	bool registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children);
@@ -195,7 +195,7 @@ private:
 	void draw(Renderer* renderer, EntityID ID);
 
 	//todo: I need a better name for this, help
-	void fillEntitiesFromChildren(std::vector<EntityID> children,
+	void fillEntitiesFromChildren(Entity* parent, std::vector<EntityID> children,
 		std::vector<Entity*>& ents);
 
 	bool checkChildrenValid(std::set<EntityType>& parentTypes,
@@ -212,12 +212,20 @@ private:
 	void receivedEntityCreationFromServer(Packet p);
 	void onNetworkTick();
 
+	template <int tag>
+	Entity* _findEntity(EntityID ID) const;
+	
+	Entity* _findEntity(EntityID ID) const;
+	
 	//////////////////
 
 	std::shared_ptr<spdlog::logger> console;
 
-	std::vector<VersionEntityPair> entitiesLocal;
-	std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>> freeIndicesLocal;
+        const unsigned int Local = 1;
+	const unsigned int Networked = 0;
+
+	std::array<std::vector<VersionEntityPair>, 2> entities;
+	std::array < std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>>, 2> entities_free_indices;
 
 	std::map<EntityType, BuilderFunction> registeredTypes;
 	std::map<EntityType, std::vector<EntityChildCreationInfo>> registeredChildCreationInfo;
@@ -232,8 +240,6 @@ private:
 
 	bool network_ready = false;
 	std::uint32_t total_network_ticks = 0;
-	std::vector<VersionEntityPair> entitiesNetworked;
-	std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>> freeIndicesNetworked;
 };
 
 template <typename T>
@@ -276,7 +282,7 @@ template <typename T>
 T* Scenetree::findEntityByType(HashedID type) const
 {
 	ZoneScopedN("findEntityByType")
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : entities[Local])
 	{
 		if (entity && entity->info.type == type)
 		{
@@ -284,7 +290,7 @@ T* Scenetree::findEntityByType(HashedID type) const
 		}
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : entities[Networked])
 	{
 		if (entity && entity->info.type == type)
 		{
@@ -299,7 +305,7 @@ template <typename T>
 T* Scenetree::findEntityByName(const std::string& name) const
 {
 	ZoneScopedN("findEntityByName")
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : entities[Local])
 	{
 		if (entity && entity->info.name == name)
 		{
@@ -307,7 +313,7 @@ T* Scenetree::findEntityByName(const std::string& name) const
 		}
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : entities[Networked])
 	{
 		if (entity && entity->info.name == name)
 		{
@@ -322,7 +328,7 @@ template <typename T>
 T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 {
 	ZoneScopedN("findEntityByPredicate")
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : entities[Local])
 	{
 		if (entity && predicate(*entity))
 		{
@@ -330,7 +336,7 @@ T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& pr
 		}
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : entities[Networked])
 	{
 		if (entity && predicate(*entity))
 		{
@@ -346,19 +352,45 @@ std::vector<T*> Scenetree::findEntitiesByType(HashedID type) const
 {
 	std::vector<T*> ents;
 
-	for (const auto& [version, entity] : entitiesLocal)
+	for (const auto& [version, entity] : entities[Local])
 	{
 		if (entity && entity->info.type == type)
 			ents.push_back(static_cast<T*>(entity.get()));
 	}
 
-	for (const auto& [version, entity] : entitiesNetworked)
+	for (const auto& [version, entity] : entities[Networked])
 	{
 		if (entity && entity->info.type == type)
 			ents.push_back(static_cast<T*>(entity.get()));
 	}
 
 	return ents;
+}
+
+template <int tag>
+Entity* Scenetree::_findEntity(EntityID ID) const
+{
+	ZoneScopedN("_findEntity")
+	if (ID == 0)
+		return nullptr;
+
+	const auto local = static_cast<bool>(ID >> 63);
+	const auto version = static_cast<std::uint32_t>(ID >> 31);
+	const auto index = static_cast<std::uint32_t>(ID & 0x0000'0000'7FFF'FFFFLL) - 1;
+
+	if (index >= entities[local].size())
+	{
+		spdlog::get("Enki")->warn("tag {}. Entity {} has an index of {} which is beyond {}, the number of existing entities", tag, prettyID(ID), index, entities[local].size());
+		return nullptr;
+	}
+
+	if (entities[local][index].version != version)
+	{
+		spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), entities[local][index].version, version);
+		return nullptr;
+	}
+
+	return entities[local][index].entity.get();
 }
 
 inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
@@ -409,5 +441,6 @@ inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 			}
 		}
 	}
+	
 }
 }	 // namespace enki

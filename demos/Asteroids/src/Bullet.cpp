@@ -82,6 +82,8 @@ void Bullet::update(float dt)
 	auto input_manager = custom_data->input_manager;
 
 	Asteroid* closest_asteroid = static_cast<Asteroid*>(custom_data->scenetree->findEntity(closest_asteroid_id));
+	if (!closest_asteroid)
+		closest_asteroid_id = 0;
 	
 	if (/*!closest_asteroid || */find_asteroid_timer.getElapsedTime() > find_asteroid_delay)
 	{
