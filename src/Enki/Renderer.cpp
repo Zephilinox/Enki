@@ -5,8 +5,12 @@
 #include <execution>
 
 //LIBS
+#ifdef TRACY_ENABLE
+#	undef min
+#	undef max
 #include <Tracy.hpp>
 #include <TracyC.h>
+#endif
 
 namespace enki
 {

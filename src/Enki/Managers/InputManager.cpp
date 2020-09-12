@@ -4,7 +4,11 @@
 #include "Enki/Window/WindowSFML.hpp"
 
 //LIBS
+#ifdef TRACY_ENABLE
+#undef min
+#undef max
 #include <Tracy.hpp>
+#endif
 
 namespace enki
 {

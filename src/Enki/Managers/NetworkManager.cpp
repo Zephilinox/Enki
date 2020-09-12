@@ -4,7 +4,11 @@
 #include <chrono>
 
 //LIBS
+#ifdef TRACY_ENABLE
+#	undef min
+#	undef max
 #include <Tracy.hpp>
+#endif
 
 //SELF
 #include "Enki/Networking/ClientHost.hpp"

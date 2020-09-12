@@ -103,11 +103,11 @@ set (Enki_SRC
 	"Enki/TimerLog.cpp"
 )
 
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Enki FILES ${Enki_HEADERS} ${Enki_SRC})
+
 if (ENKI_TRACY)
 	list(APPEND Enki_SRC "${tracy_SOURCE_DIR}/TracyClient.cpp")
 endif()
-#include("../cmake/FilesystemSourceGroup.cmake")
-#SOURCE_GROUP_BY_FOLDER(Enki)
 
 include("../cmake/PreTargetSettings.cmake")
 add_library(Enki
@@ -115,7 +115,24 @@ add_library(Enki
 	${Enki_SRC}
 )
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/Enki FILES ${Enki_HEADERS} ${Enki_SRC})
+#target_compile_definitions(Enki PUBLIC "NOMINMAX")
+
+if (ENKI_TRACY)
+	target_include_directories(Enki PUBLIC "${tracy_SOURCE_DIR}")
+	target_compile_definitions(Enki PUBLIC TRACY_ENABLE)
+	target_compile_definitions(Enki PUBLIC TRACY_CALLSTACK=5)
+endif()
+
+message(STATUS "############ Adding enetpp")
+target_include_directories(Enki PUBLIC "${EnkiEngine_SOURCE_DIR}/third_party/enetpp/")
+target_include_directories(Enki PUBLIC "${EnkiEngine_SOURCE_DIR}/third_party/enetpp/include/")
+message(STATUS "############ Done")
+
+message(STATUS "############ Adding pcg")
+target_include_directories(Enki PUBLIC "${EnkiEngine_SOURCE_DIR}/third_party/pcg/")
+target_include_directories(Enki PUBLIC "${EnkiEngine_SOURCE_DIR}/third_party/pcg/include/")
+message(STATUS "############ Done")
+
 set_property(TARGET Enki PROPERTY CMAKE_CXX_EXTENSIONS OFF)
 
 include("../cmake/PostTargetSettings.cmake")

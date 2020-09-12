@@ -5,7 +5,11 @@
 #include <iostream>
 
 //LIBS
+#ifdef TRACY_ENABLE
+#	undef min
+#	undef max
 #include <Tracy.hpp>
+#endif
 
 //SELF
 #include "Enki/TimerLog.hpp"

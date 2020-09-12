@@ -23,23 +23,8 @@ endif()
 
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
-include(FetchContent)
-FetchContent_Declare(tracy
-    GIT_REPOSITORY https://github.com/wolfpld/tracy
-    GIT_TAG        v0.6.3
-    SOURCE_DIR     "${FETCHCONTENT_BASE_DIR}/tracy"
-)
-FetchContent_GetProperties(tracy)
-if (NOT tracy_POPULATED)
-    FetchContent_Populate(tracy)
-    set(tracy_SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/tracy")# PARENT_SCOPE)
-endif ()
-
-add_subdirectory ("src")
-
-if (ENKI_TRACY)
-	target_compile_definitions(Enki PUBLIC TRACY_ENABLE)
-endif()
+add_subdirectory("third_party")
+add_subdirectory("src")
 
 set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT Enki)
 
@@ -55,8 +40,6 @@ if (TESTS)
 	add_subdirectory("tests")
 endif()
 
-add_subdirectory ("third_party")
-
 add_custom_target(EnkiEngine SOURCES
 	"CMakeLists.txt"
 	".clang-format"
@@ -68,3 +51,10 @@ add_custom_target(EnkiEngine SOURCES
 	"cmake/PreTargetSettings.cmake")
 get_target_property(EnkiEngine_SOURCES EnkiEngine SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${EnkiEngine_SOURCES})
+
+if (ENKI_TRACY)
+	file(GLOB_RECURSE tracy_FILES LIST_DIRECTORIES false "${tracy_SOURCE_DIR}/*")
+	add_custom_target(tracy SOURCES ${tracy_FILES})
+	source_group(TREE ${tracy_SOURCE_DIR} FILES ${tracy_FILES})
+	set_target_properties(tracy PROPERTIES FOLDER third_party)
+endif()

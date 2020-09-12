@@ -42,21 +42,23 @@ FetchContent_MakeAvailable(doctest)
 set_target_properties(doctest_with_main PROPERTIES FOLDER third_party)
 message(STATUS "############ Done")
 
+if (ENKI_TRACY)
+    message(STATUS "############ Fetching Tracy")
+    include(FetchContent)
+    FetchContent_Declare(tracy
+        GIT_REPOSITORY https://github.com/wolfpld/tracy
+        GIT_TAG        v0.7.1
+        SOURCE_DIR     "${FETCHCONTENT_BASE_DIR}/tracy"
+    )
+    FetchContent_GetProperties(tracy)
+    if (NOT tracy_POPULATED)
+        FetchContent_Populate(tracy)
+        set(tracy_SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/tracy" PARENT_SCOPE)
+    endif()
+    message(STATUS "############ Done")
+endif()
+
 message(STATUS "############ Adding enet")
 add_subdirectory ("enet")
 set_target_properties(enet PROPERTIES FOLDER third_party)
-message(STATUS "############ Done")
-
-message(STATUS "############ Adding enetpp")
-target_include_directories(Enki PUBLIC "enetpp/")
-target_include_directories(Enki PUBLIC "enetpp/include/")
-message(STATUS "############ Done")
-
-message(STATUS "############ Adding pcg")
-target_include_directories(Enki PUBLIC "pcg/")
-target_include_directories(Enki PUBLIC "pcg/include/")
-message(STATUS "############ Done")
-
-message(STATUS "############ Adding Tracy")
-target_include_directories(Enki PUBLIC "${tracy_SOURCE_DIR}")
 message(STATUS "############ Done")

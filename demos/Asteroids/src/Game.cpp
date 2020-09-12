@@ -277,4 +277,5 @@ void Game::draw()
 	renderer.end();
 	ImGui::SFML::Render(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow());
 	window->display();
+	FrameMark
 }

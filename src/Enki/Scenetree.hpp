@@ -12,7 +12,11 @@
 //LIBS
 #include <spdlog/spdlog.h>
 
+#ifdef TRACY_ENABLE
+#	undef min
+#	undef max
 #include <Tracy.hpp>
+#endif
 
 //SELF
 #include "Enki/Entity.hpp"
