@@ -8,6 +8,7 @@
 #include <Enki/Window/Window.hpp>
 #include "Enki/Managers/InputManager.hpp"
 #include "Enki/Managers/FontManager.hpp"
+#include "Enki/Managers/TextureManager.hpp"
 
 struct CustomData
 {
@@ -18,4 +19,5 @@ struct CustomData
 	enki::NetworkManager* network_manager = nullptr;
 	enki::InputManager* input_manager = nullptr;
 	enki::FontManager* font_manager = nullptr;
+	enki::TextureManager* texture_manager = nullptr;
 };

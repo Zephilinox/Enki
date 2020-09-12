@@ -4,6 +4,9 @@ namespace enki
 {
 void TextureManager::registerTexture(const std::string& path)
 {
+	if (textures.count(path))
+		return;
+	
 	textures[path] = std::make_unique<sf::Texture>();
 	textures[path]->loadFromFile(path);
 }

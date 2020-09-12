@@ -21,7 +21,7 @@
 #include "CustomData.hpp"
 
 Game::Game()
-	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", false}))
+	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", true}))
 	, scenetree(&network_manager)
 	, renderer(window->as<enki::WindowSFML>()->getRawWindow())
 {
@@ -35,13 +35,14 @@ Game::Game()
 	custom_data.input_manager = &input_manager;
 
 	auto enki_logger = spdlog::get("Enki");
-	enki_logger->set_level(spdlog::level::info);
+	enki_logger->set_level(spdlog::level::warn);
 
 	custom_data.scenetree = &scenetree;
 	custom_data.network_manager = &network_manager;
 	custom_data.window = window.get();
 	custom_data.window_sfml = window->as<enki::WindowSFML>()->getRawWindow();
 	custom_data.font_manager = &font_manager;
+	custom_data.texture_manager = &texture_manager;
 
 	auto player_children = std::vector<enki::EntityChildCreationInfo>{
 		{hash("PlayerText"), "PlayerText"},

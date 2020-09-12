@@ -16,9 +16,10 @@ Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)
 	, custom_data(custom_data)
 {
+	custom_data->texture_manager->registerTexture("resources/bullet.png");
+	bullet.setTexture(*custom_data->texture_manager->getTexture("resources/bullet.png"));
 	network_tick_rate = 1;
 }
-
 
 sf::Vector2f degToVector(float angle)
 {
@@ -30,8 +31,6 @@ sf::Vector2f degToVector(float angle)
 void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 {
 	auto console = spdlog::get("console");
-	bullet_tex.loadFromFile("resources/bullet.png");
-	bullet.setTexture(bullet_tex);
 	bullet.setOrigin(
 		bullet_tex.getSize().x / 2,
 		bullet_tex.getSize().y / 2);
