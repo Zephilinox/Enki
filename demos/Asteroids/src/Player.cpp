@@ -174,7 +174,7 @@ void Player::update(float dt)
 			  << ship.getColor().r
 			  << ship.getColor().g
 			  << ship.getColor().b;
-			custom_data->scenetree->createEntityNetworkedRequest(hash("Bullet"), "Bullet", 0, p);
+			custom_data->scenetree->createEntityNetworkedRequest(hash("Bullet"), "Bullet", custom_data->scenetree->findEntityByName("Bullets")->info.ID, p);
 		}
 	}
 
@@ -215,6 +215,23 @@ void Player::deserializeOnTick(enki::Packet& p)
 	float y = p.readCompressedFloat(0, 720, 0.01f);
 	ship.setPosition(x, y);
 	ship.setRotation(p.readCompressedFloat(0, 360, 0.01f));
+}
+
+std::vector<std::pair<std::string, std::string>> Player::serializeToStrings() const
+{
+	return {
+		{"Position", fmt::format("{{{}, {}}}", ship.getPosition().x, ship.getPosition().y)},
+		{"Velocity", fmt::format("{{{}, {}}}", velocity.x, velocity.y)},
+		{"Rotation", std::to_string(ship.getRotation())},
+		{"Speed", std::to_string(speed)},
+		{"Was Damaged", was_damaged ? "true" : "false"},
+		{"Lives", std::to_string(lives)},
+		{"Max Velocity Length", std::to_string(max_velocity_length)},
+		{"Flashing Timer", std::to_string(flashing_timer.getElapsedTime())},
+		{"Flashing Duration", std::to_string(flashing_duration)},
+		{"Shooting Timer", std::to_string(shoot_timer.getElapsedTime())},
+		{"Shooting Delay", std::to_string(shoot_delay)},
+	};
 }
 
 sf::Vector2f Player::getPosition() const

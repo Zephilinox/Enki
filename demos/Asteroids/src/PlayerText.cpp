@@ -42,3 +42,10 @@ void PlayerText::draw(enki::Renderer* renderer)
 {
 	renderer->draw(&label);
 }
+
+std::vector<std::pair<std::string, std::string>> PlayerText::serializeToStrings() const
+{
+	return {
+		{"Position", fmt::format("{{{}, {}}}", label.getPosition().x, label.getPosition().y)},
+	};
+}

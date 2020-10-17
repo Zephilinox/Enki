@@ -24,6 +24,7 @@ public:
 	void deserializeOnConnection(enki::Packet& p) final;
 	void serializeOnTick(enki::Packet& p) final;
 	void deserializeOnTick(enki::Packet& p) final;
+	std::vector<std::pair<std::string, std::string>> serializeToStrings() const final;
 	
 	void handleCollision();
 	sf::Vector2f getPosition() const;

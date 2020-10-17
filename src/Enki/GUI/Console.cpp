@@ -6,11 +6,12 @@
 //SELF
 #include "Enki/Scenetree.hpp"
 #include "IMGUI/imgui_SFML.h"
+#include "ScenetreeGUI.hpp"
 
 namespace enki
 {
 Console::Console(EntityInfo info, Scenetree* scenetree)
-	: Entity(info)
+	: Entity(std::move(info))
 	, scenetree(scenetree)
 {
 	user_input.resize(256);
@@ -78,6 +79,25 @@ Console::Console(EntityInfo info, Scenetree* scenetree)
 			printTree(this->scenetree);
 		}});
 
+	commands.emplace_back(Command{
+		"gui",
+		"open a gui",
+		[this](std::vector<std::string> tokens) {
+			if (tokens[0] == "scenetree")
+			{
+				auto* scenetree_gui = this->scenetree->findEntityByType<ScenetreeGUI>(hash("ScenetreeGUI"));
+				if (scenetree_gui)
+				{
+					scenetree_gui->show = true;
+					return;
+				}
+
+				scenetree_gui = static_cast<ScenetreeGUI*>(this->scenetree->createEntityLocal(hash("ScenetreeGUI"), "ScenetreeGUI"));
+				if (scenetree_gui)
+					scenetree_gui->show = true;
+			}
+		}});
+	
 	commands.emplace_back(Command{
 		"delete",
 		"delete an entity with the given ID if it exists",

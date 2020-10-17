@@ -10,6 +10,7 @@
 #include <Enki/Messages/MessageFunction.hpp>
 #include <Enki/GUI/IMGUI/imgui_SFML.h> //todo: rename to .hpp so clang format can sort it properly
 #include <Enki/GUI/Console.hpp>
+#include <Enki/GUI/ScenetreeGUI.hpp>
 #include <Enki/Entity.hpp>
 
 //SELF
@@ -54,6 +55,8 @@ Game::Game()
 	custom_data.scenetree->registerEntity<CollisionManager>(hash("CollisionManager"), {}, &custom_data);
 	custom_data.scenetree->registerEntity<PlayerText>(hash("PlayerText"), {}, &custom_data);
 	scenetree.registerEntity<enki::Console>(hash("Console"), {}, &scenetree);
+	scenetree.registerEntity<enki::ScenetreeGUI>(hash("ScenetreeGUI"), {}, &scenetree);
+	scenetree.registerEntity<enki::Entity>(hash("Group"), {});
 
 	custom_data.scenetree->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Player"), "startInvincible", &Player::startInvincible);
 	custom_data.scenetree->rpc_man.registerEntityRPC(enki::RPCType::REMOTE_AND_LOCAL, hash("Player"), "stopInvincible", &Player::stopInvincible);
@@ -63,6 +66,8 @@ Game::Game()
 	});
 
 	scenetree.createEntityLocal(hash("Console"), "Console");
+	scenetree.createEntityLocal(hash("Group"), "Asteroids");
+	scenetree.createEntityLocal(hash("Group"), "Bullets");
 	
 	run();
 }
@@ -182,7 +187,7 @@ void Game::update(float dt)
 			  << pos.x
 			  << pos.y
 			  << static_cast<float>((std::rand() % 200) + 50);
-			scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p, {});
+			scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", scenetree.findEntityByName("Asteroids")->info.ID, p, {});
 			asteroid_spawn_timer.restart();
 		}
 		ImGui::End();
@@ -205,7 +210,7 @@ void Game::update(float dt)
 				  << pos.x
 				  << pos.y
 				  << static_cast<float>((std::rand() % 200) + 50);
-				scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
+				scenetree.createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", scenetree.findEntityByName("Asteroids")->info.ID, p);
 			}
 
 			mc1 = network_manager.server->on_packet_received.connect([this](enki::Packet p) {

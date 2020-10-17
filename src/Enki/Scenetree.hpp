@@ -84,6 +84,7 @@ public:
 
 	Scenetree(NetworkManager* network_manager);
 	void enableNetworking();
+	NetworkManager* getNetworkManager() const;
 
 	template <typename T>
 	bool registerEntity(EntityType type, std::vector<EntityChildCreationInfo> children);

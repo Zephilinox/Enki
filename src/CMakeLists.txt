@@ -37,6 +37,7 @@ set(Enki_HEADERS
 	"Enki/GUI/IMGUI/imstb_textedit.h"
 	
 	"Enki/GUI/Console.hpp"
+	"Enki/GUI/ScenetreeGUI.hpp"
 
 	"Enki/Input/Keys.hpp"
 	"Enki/Input/Events.hpp"
@@ -87,6 +88,7 @@ set (Enki_SRC
 	"Enki/GUI/IMGUI/imgui_widgets.cpp"
 	
 	"Enki/GUI/Console.cpp"
+	"Enki/GUI/ScenetreeGUI.cpp"
 
 	"Enki/Input/Keys.cpp"
 

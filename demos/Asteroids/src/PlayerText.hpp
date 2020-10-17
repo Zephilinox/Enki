@@ -17,6 +17,7 @@ public:
 	void onSpawn(enki::Packet p) final;
 	void update(float dt) final;
 	void draw(enki::Renderer* renderer) final;
+	std::vector<std::pair<std::string, std::string>> serializeToStrings() const final;
 
 private:
 	CustomData* const custom_data;

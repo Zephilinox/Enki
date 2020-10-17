@@ -97,6 +97,19 @@ void Asteroid::deserializeOnTick(enki::Packet& p)
 	shape.setRotation(p.readCompressedFloat(0, 360, 0.01f));
 }
 
+std::vector<std::pair<std::string, std::string>> Asteroid::serializeToStrings() const
+{
+	return {
+		{"Position", fmt::format("{{{}, {}}}", shape.getPosition().x, shape.getPosition().y)},
+		{"Velocity", fmt::format("{{{}, {}}}", velocity.x, velocity.y)},
+		{"Rotation", std::to_string(shape.getRotation())},
+		{"Sides", std::to_string(shape.getPointCount())},
+		{"Speed", std::to_string(speed)},
+		{"Rotation Speed", std::to_string(rotation_speed)},
+		{"Alive", alive ? "true" : "false"},
+	};
+}
+
 bool Asteroid::isAlive() const
 {
 	return alive;
@@ -195,7 +208,7 @@ void Asteroid::split()
 				<< x
 				<< y
 				<< speed + (std::rand() % 200 + 50);
-			custom_data->scenetree->createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", 0, p);
+			custom_data->scenetree->createEntityNetworkedRequest(hash("Asteroid"), "Asteroid", info.parentID, p);
 		};
 
 		newAsteroid();

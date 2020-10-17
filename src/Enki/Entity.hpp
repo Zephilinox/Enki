@@ -105,6 +105,15 @@ inline std::string prettyID(EntityID ID)
 		indexFromID(ID));
 }
 
+inline std::string prettyHash(HashedID hash)
+{
+#if !defined(ENKI_RUNTIME_HASH_FAST) || defined(ENKI_HASH_DEBUG)
+	return hashToString(hash);
+#else
+	return std::to_string(hash);
+#endif
+}
+
 struct EntityInfo
 {
 	HashedID type{};
@@ -140,11 +149,7 @@ inline std::ostream& operator<<(std::ostream& os, const EntityInfo& info)
 {
 	std::stringstream ss;
 
-#if !defined(ENKI_RUNTIME_HASH_FAST) || defined(ENKI_HASH_DEBUG)
-	ss << "Type: " << hashToString(info.type)
-#else
-	ss << "Type: " << info.type
-#endif
+	ss << "Type: " << prettyHash(info.type)
 	   << ", Name: " << info.name
 	   << ", ID: " << prettyID(info.ID)
 	   << ", ownerID: " << info.ownerID
@@ -222,6 +227,11 @@ public:
 	//Called when receiving an entity update from a network tick
 	virtual void deserializeOnTick([[maybe_unused]] Packet& p) {}
 
+	//todo: change this to json/toml/whatever and combine this and serializeOnConnection in to a single function
+	//then it's easy to switch, e.g. binary for network/compressed saves, json for readable/easily modifiable data
+	virtual std::vector<std::pair<std::string, std::string>> serializeToStrings() const { return {}; };
+	//todo: deserialise;
+	
 	[[nodiscard]] inline bool isNetworked() const
 	{
 		//todo: better than localFromID?

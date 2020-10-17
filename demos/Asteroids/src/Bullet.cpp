@@ -187,6 +187,22 @@ void Bullet::deserializeOnTick(enki::Packet& p)
 	bullet.setRotation(p.readCompressedFloat(0, 360, 0.01f));
 }
 
+std::vector<std::pair<std::string, std::string>> Bullet::serializeToStrings() const
+{
+	return {
+		{"Position", fmt::format("{{{}, {}}}", bullet.getPosition().x, bullet.getPosition().y)},
+		{"Velocity", fmt::format("{{{}, {}}}", velocity.x, velocity.y)},
+		{"Rotation", std::to_string(bullet.getRotation())},
+		{"Speed", std::to_string(speed)},
+		{"Alive", alive ? "true" : "false"},
+		{"Warp Count", std::to_string(warp_count)},
+		{"Find Asteroid Timer", std::to_string(find_asteroid_timer.getElapsedTime())},
+		{"Find Asteroid Delay", std::to_string(find_asteroid_delay)},
+		{"Closest Asteroid", enki::prettyID(closest_asteroid_id)},
+		{"Closest Asteroid Distance", fmt::format("{{{}, {}}}", distance_to_asteroid.x, distance_to_asteroid.y)},
+	};
+}
+
 bool Bullet::isAlive() const
 {
 	return alive;

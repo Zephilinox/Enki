@@ -13,6 +13,17 @@ namespace enki
 //todo: change it to std::uint8_t and fix enetpp to stop warnings
 using ClientID = unsigned int;
 
+inline std::string prettyClientID(ClientID our_id, ClientID id)
+{
+	if (id == 0)
+		return "None";
+	
+	if (id == our_id)
+		return "Us (Client " + std::to_string(id) + ")";
+
+	return "Client " + std::to_string(id);
+}
+
 enum PacketType : std::uint8_t
 {
 	//Default type. Unused by Enki

@@ -50,6 +50,11 @@ void Scenetree::enableNetworking()
 	}
 }
 
+NetworkManager* Scenetree::getNetworkManager() const
+{
+	return network_manager;
+}
+
 void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 {
 	for (const auto& [version, ent] : entitiesLocal)
@@ -587,7 +592,15 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	info.ID = generateEntityID(false, version, index);
 
 	if (info.parentID == Entity::InvalidID)
+	{
 		entitiesParentless.push_back(info.ID);
+	}
+	else
+	{
+		auto* parent = findEntity(info.parentID);
+		assert(parent);
+		parent->info.childIDs.push_back(info.ID);
+	}
 
 	Entity* entity;
 
@@ -609,19 +622,17 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 			child.spawnInfo,
 			child.children,
 			p);
-		entity->info.childIDs.push_back(c->info.ID);
 		p << c->info;
 		p << child.spawnInfo;
 	}
 
-	for (auto& child : children)
+	for (const auto& child : children)
 	{
-		auto c = createEntityNetworkedFromRequestImpl(
+		auto* c = createEntityNetworkedFromRequestImpl(
 			{child.type, child.name, Entity::InvalidID, info.ownerID, info.ID},
 			child.spawnInfo,
 			child.children,
 			p);
-		entity->info.childIDs.push_back(c->info.ID);
 		p << c->info;
 		p << child.spawnInfo;
 	}
@@ -649,7 +660,15 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 		auto type = info.type;
 
 		if (info.parentID == Entity::InvalidID)
+		{
 			entitiesParentless.push_back(info.ID);
+		}
+		else
+		{
+			auto* parent = findEntity(info.parentID);
+			assert(parent);
+			parent->info.childIDs.push_back(info.ID);
+		}
 
 		auto e = registeredTypes[type](std::move(info));
 		auto entity = e.get();
