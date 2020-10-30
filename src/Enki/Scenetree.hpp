@@ -42,10 +42,7 @@ struct EntityChildCreationInfo
 
 inline Packet& operator<<(Packet& p, EntityChildCreationInfo& e)
 {
-	p << e.type
-	  << e.name
-	  << e.spawnInfo
-	  << e.children;
+	p << e.type << e.name << e.spawnInfo << e.children;
 	return p;
 }
 
@@ -103,28 +100,27 @@ public:
 	}
 
 	void forEachEntity(std::function<void(const Entity&)> function);
-	void forEachEntity(std::function<void(const Entity&)> function,
-		const std::vector<EntityID> ids);
+	void forEachEntity(std::function<void(const Entity&)> function, std::vector<EntityID> ids);
 
-	Entity* createEntityLocal(const EntityType type,
+	Entity* createEntityLocal(EntityType type,
 		std::string name = "",
-		const EntityID parentID = 0,
+		EntityID parentID = 0,
 		Packet spawnInfo = {},
 		const std::vector<EntityChildCreationInfo>& children = {});
 
-	void createEntityNetworkedRequest(const EntityType type,
+	void createEntityNetworkedRequest(EntityType type,
 		std::string name = "",
-		const EntityID parentID = 0,
+		EntityID parentID = 0,
 		Packet spawnInfo = {},
 		const std::vector<EntityChildCreationInfo>& children = {});
 
-	ErrorCodeRemove removeEntity(const EntityID ID);
-	ErrorCodeRemove removeEntityLocal(const EntityID ID);
+	ErrorCodeRemove removeEntity(EntityID ID);
+	ErrorCodeRemove removeEntityLocal(EntityID ID);
 
-	Entity* findEntity(const EntityID ID);
-	Entity* getEntityUnsafe(const EntityID ID);
+	Entity* findEntity(EntityID ID);
+	Entity* getEntityUnsafe(EntityID ID);
 
-	bool registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children);
+	bool registerChildren(EntityType type, std::vector<EntityChildCreationInfo> children);
 
 	std::vector<Entity*> getEntitiesFromRoot(EntityID ID = 0);
 
@@ -133,7 +129,7 @@ public:
 	void draw(Renderer* renderer);
 
 	/*Mark the entity for deletion next frame
-		Will be sent across the network if not a local entity*/
+	Will be sent across the network if not a local entity*/
 	void deleteEntity(EntityID ID);
 
 	//Vector will be empty if none found
@@ -151,11 +147,10 @@ public:
 	[[nodiscard]] std::vector<Entity*> findEntitiesByParent(EntityID parent) const;
 
 	//Vector will be empty if none found
-	[[nodiscard]] std::vector<Entity*> findEntitiesByPredicate(
-		const std::function<bool(const Entity&)>& predicate) const;
+	[[nodiscard]] std::vector<Entity*> findEntitiesByPredicate(const std::function<bool(const Entity&)>& predicate) const;
 
 	/*nullptr if not found.
-		Returns first entity found after static_cast to template type*/
+	Returns first entity found after static_cast to template type*/
 	template <typename T = Entity>
 	[[nodiscard]] T* findEntityByType(HashedID type) const;
 
@@ -238,7 +233,7 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 		return std::make_unique<T>(std::move(info));
 	};
 
-	bool valid = registerChildren(type, std::move(children));
+	const bool valid = registerChildren(type, std::move(children));
 	if (!valid)
 	{
 		registeredTypes[type] = {};
@@ -255,7 +250,7 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 		return std::make_unique<T>(std::move(info), args...);
 	};
 
-	bool valid = registerChildren(type, std::move(children));
+	const bool valid = registerChildren(type, std::move(children));
 	if (!valid)
 	{
 		registeredTypes[type] = {};
@@ -271,17 +266,13 @@ T* Scenetree::findEntityByType(HashedID type) const
 	for (const auto& [version, entity] : entitiesLocal)
 	{
 		if (entity && entity->info.type == type)
-		{
 			return static_cast<T*>(entity.get());
-		}
 	}
 
 	for (const auto& [version, entity] : entitiesNetworked)
 	{
 		if (entity && entity->info.type == type)
-		{
 			return static_cast<T*>(entity.get());
-		}
 	}
 
 	return nullptr;
@@ -293,17 +284,13 @@ T* Scenetree::findEntityByName(const std::string& name) const
 	for (const auto& [version, entity] : entitiesLocal)
 	{
 		if (entity && entity->info.name == name)
-		{
 			return static_cast<T*>(entity.get());
-		}
 	}
 
 	for (const auto& [version, entity] : entitiesNetworked)
 	{
 		if (entity && entity->info.name == name)
-		{
 			return static_cast<T*>(entity.get());
-		}
 	}
 
 	return nullptr;
@@ -315,17 +302,13 @@ T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& pr
 	for (const auto& [version, entity] : entitiesLocal)
 	{
 		if (entity && predicate(*entity))
-		{
 			return static_cast<T*>(entity.get());
-		}
 	}
 
 	for (const auto& [version, entity] : entitiesNetworked)
 	{
 		if (entity && predicate(*entity))
-		{
 			return static_cast<T*>(entity.get());
-		}
 	}
 
 	return nullptr;
@@ -361,41 +344,28 @@ inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)
 		std::cout << "Scenetree:\n";
 		auto parentlessIDs = tree->getRootEntitiesIDs();
 		for (auto id : parentlessIDs)
-		{
 			printTree(tree, id, depth + 1);
-		}
 	}
 	else
 	{
-		auto e = tree->findEntity(root);
+		const auto* e = tree->findEntity(root);
 		if (e)
 		{
 			std::string prefix;
 			prefix.reserve(8ULL * (static_cast<std::size_t>(depth) + 1ULL));
-						
+			
 			for (int i = 0; i < depth - 1; ++i)
-			{
 				prefix += "|       ";
-			}
 
 			prefix += "\\_______";
 
-			#if !defined(ENKI_RUNTIME_HASH_FAST) || defined(ENKI_HASH_DEBUG)
-				std::cout << prefix << fmt::format("{} {} {}\n",
-				hashToString(e->info.type),
-					e->info.name,
-					prettyID(e->info.ID));
-			#else
-				std::cout << prefix << fmt::format("{} {} {}\n",
-					e->info.type,
-					e->info.name,
-					prettyID(e->info.ID));
-			#endif
+			std::cout << prefix << fmt::format("{} {} {}\n",
+				prettyHash(e->info.type),
+				e->info.name,
+				prettyID(e->info.ID));
 
 			for (auto id : e->info.childIDs)
-			{
 				printTree(tree, id, depth + 1);
-			}
 		}
 	}
 }

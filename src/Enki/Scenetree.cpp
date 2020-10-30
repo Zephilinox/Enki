@@ -35,18 +35,12 @@ void Scenetree::enableNetworking()
 	network_ready = true;
 
 	if (network_manager->server)
-	{
-		mc1 = network_manager->server->on_packet_received.connect(
-			this, &Scenetree::receivedPacketFromClient);
-	}
+		mc1 = network_manager->server->on_packet_received.connect(this, &Scenetree::receivedPacketFromClient);
 
 	if (network_manager->client)
 	{
-		mc2 = network_manager->client->on_packet_received.connect(
-			this, &Scenetree::receivedPacketFromServer);
-
-		mc3 = network_manager->on_network_tick.connect(
-			this, &Scenetree::onNetworkTick);
+		mc2 = network_manager->client->on_packet_received.connect(this, &Scenetree::receivedPacketFromServer);
+		mc3 = network_manager->on_network_tick.connect(this, &Scenetree::onNetworkTick);
 	}
 }
 
@@ -60,36 +54,24 @@ void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 	for (const auto& [version, ent] : entitiesLocal)
 	{
 		if (ent)
-		{
 			function(*ent);
-		}
 	}
 
 	for (const auto& [version, ent] : entitiesNetworked)
 	{
 		if (ent)
-		{
 			function(*ent);
-		}
 	}
 }
 
-void Scenetree::forEachEntity(std::function<void(const Entity&)> function,
-	const std::vector<EntityID> ids)
+void Scenetree::forEachEntity(std::function<void(const Entity&)> function, const std::vector<EntityID> ids)
 {
 	std::vector<Entity*> ents;
 	for (auto id : ids)
 	{
-		auto e = findEntity(id);
+		auto* e = findEntity(id);
 		if (e)
-		{
-			ents.push_back(e);
-		}
-	}
-
-	for (auto e : ents)
-	{
-		function(*e);
+			function(*e);
 	}
 }
 
@@ -101,6 +83,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 {
 	if (parentID != Entity::InvalidID && findEntity(parentID) == nullptr)
 		return nullptr;
+	
 	if (registeredTypes[type] == nullptr)
 		return nullptr;
 
@@ -146,7 +129,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 
 	for (const auto& child : registeredChildCreationInfo[type])
 	{
-		const auto c = createEntityLocal(child.type, child.name, entity->info.ID, child.spawnInfo, child.children);
+		const auto* c = createEntityLocal(child.type, child.name, entity->info.ID, child.spawnInfo, child.children);
 		entity->info.childIDs.push_back(c->info.ID);
 	}
 
@@ -154,7 +137,7 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 	{
 		//todo: all of this copying is expensive, maybe we can move it out instead of taking a const ref?
 		//not sure how well that would fit in to the usecases of passing spawninfo on construction, we'll see
-		auto c = createEntityLocal(child.type, child.name, entity->info.ID, child.spawnInfo, child.children);
+		auto* c = createEntityLocal(child.type, child.name, entity->info.ID, child.spawnInfo, child.children);
 		entity->info.childIDs.push_back(c->info.ID);
 	}
 
@@ -263,7 +246,8 @@ Entity* Scenetree::findEntity(const EntityID ID)
 
 	if (local && index < entitiesLocal.size() && entitiesLocal[index].version == version)
 		return entitiesLocal[index].entity.get();
-	else if (!local && index < entitiesNetworked.size() && entitiesNetworked[index].version == version)
+	
+	if (!local && index < entitiesNetworked.size() && entitiesNetworked[index].version == version)
 		return entitiesNetworked[index].entity.get();
 
 	return nullptr;
@@ -273,8 +257,8 @@ Entity* Scenetree::getEntityUnsafe(const EntityID ID)
 {
 	if (ID < 0)
 		return entitiesLocal[indexFromID(ID)].entity.get();
-	else
-		return entitiesNetworked[indexFromID(ID)].entity.get();
+	
+	return entitiesNetworked[indexFromID(ID)].entity.get();
 }
 
 bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children)
@@ -302,7 +286,7 @@ std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 	}
 	else
 	{
-		auto e = findEntity(ID);
+		auto* e = findEntity(ID);
 		if (e)
 			fillEntitiesFromChildren(e->info.childIDs, ents);
 	}
@@ -327,7 +311,7 @@ void Scenetree::update(float dt)
 	//todo: handle removing child from parent child ids
 
 	//from parents to children
-	for (auto e : entities)
+	for (auto* e : entities)
 	{
 		if (e && e->remove)
 		{
@@ -345,7 +329,7 @@ void Scenetree::update(float dt)
 	//from children to parents
 	for (auto it = entitiesToRemove.rbegin(); it != entitiesToRemove.rend(); ++it)
 	{
-		auto e = *it;
+		auto* e = *it;
 		auto [local, version, index] = splitID(e->info.ID);
 
 		std::erase_if(entitiesParentless, [removedID = e->info.ID](EntityID id) {
@@ -380,7 +364,7 @@ void Scenetree::draw(Renderer* renderer)
 
 void Scenetree::deleteEntity(EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto* e = findEntity(ID);
 
 	if (!e)
 	{
@@ -617,7 +601,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	//todo: both of these for loops have the same body
 	for (auto& child : registeredChildCreationInfo[info.type])
 	{
-		auto c = createEntityNetworkedFromRequestImpl(
+		auto* c = createEntityNetworkedFromRequestImpl(
 			{child.type, child.name, Entity::InvalidID, info.ownerID, info.ID},
 			child.spawnInfo,
 			child.children,
@@ -654,10 +638,10 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 	try
 	{
 		auto info = p.read<EntityInfo>();
-		auto spawnInfo = p.read<Packet>();
+		const auto spawnInfo = p.read<Packet>();
 
 		auto [local, version, index] = splitID(info.ID);
-		auto type = info.type;
+		const auto type = info.type;
 
 		if (info.parentID == Entity::InvalidID)
 		{
@@ -671,7 +655,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 		}
 
 		auto e = registeredTypes[type](std::move(info));
-		auto entity = e.get();
+		auto* entity = e.get();
 
 		if (index >= entitiesNetworked.size())	  //need to create a new one
 		{
@@ -723,34 +707,34 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 
 void Scenetree::input(Event& event, EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto* e = findEntity(ID);
 	if (!e)
 		return;
 	
 	e->input(event);
-	for (auto childID : e->info.childIDs)
+	for (const auto childID : e->info.childIDs)
 		input(event, childID);
 }
 
 void Scenetree::update(float dt, EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto* e = findEntity(ID);
 	if (!e)
 		return;
 
 	e->update(dt);
-	for (auto childID : e->info.childIDs)
+	for (const auto childID : e->info.childIDs)
 		update(dt, childID);
 }
 
 void Scenetree::draw(Renderer* renderer, EntityID ID)
 {
-	auto e = findEntity(ID);
+	auto* e = findEntity(ID);
 	if (!e)
 		return;
 	
 	e->draw(renderer);
-	for (auto childID : e->info.childIDs)
+	for (const auto childID : e->info.childIDs)
 		draw(renderer, childID);
 }
 
@@ -758,7 +742,7 @@ void Scenetree::fillEntitiesFromChildren(std::vector<EntityID> children, std::ve
 {
 	for (auto id : children)
 	{
-		auto e = findEntity(id);
+		auto* e = findEntity(id);
 		if (e)
 		{
 			ents.push_back(e);
@@ -779,7 +763,7 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 		if (!registeredChildCreationInfo[child.type].empty())
 		{
 			parentTypes.insert(child.type);
-			bool valid = checkChildrenValid(parentTypes, registeredChildCreationInfo[child.type]);
+			const bool valid = checkChildrenValid(parentTypes, registeredChildCreationInfo[child.type]);
 			parentTypes.erase(child.type);
 			if (!valid)
 				return false;
@@ -789,7 +773,7 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 		if (!child.children.empty())
 		{
 			parentTypes.insert(child.type);
-			bool valid = checkChildrenValid(parentTypes, child.children);
+			const bool valid = checkChildrenValid(parentTypes, child.children);
 			parentTypes.erase(child.type);
 			if (!valid)
 				return false;
@@ -816,7 +800,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 	//flat tree structure
 	auto ents = getEntitiesFromRoot();
 
-	for (auto ent : ents)
+	for (auto* ent : ents)
 	{
 		auto& info = ent->info;
 		
@@ -892,13 +876,13 @@ void Scenetree::receivedPacketFromClient(Packet p)
 			const auto type = p.read<EntityType>();
 			auto name = p.read<std::string>();
 			const auto parentID = p.read<EntityID>();
-			auto spawnInfo = p.read<Packet>();
-			auto children = p.read<std::vector<EntityChildCreationInfo>>();
+			const auto spawnInfo = p.read<Packet>();
+			const auto children = p.read<std::vector<EntityChildCreationInfo>>();
 
 			createEntityNetworkedFromRequest(
 				{type, std::move(name), 0, p.info.senderID, parentID},
-				std::move(spawnInfo),
-				std::move(children));
+				spawnInfo,
+				children);
 			break;
 		}
 
@@ -934,7 +918,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 	const auto name = p.read<std::string>();
 	const auto rpctype = rpc_man.getEntityRPCType(info.type, name);
 
-	const auto ent = findEntity(info.ID);
+	const auto* ent = findEntity(info.ID);
 	if (!ent)
 	{
 		console->error(
@@ -1041,7 +1025,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 {
 	const auto entID = p.read<EntityID>();
-	const auto ent = findEntity(entID);
+	const auto* ent = findEntity(entID);
 	if (!ent)
 	{
 		console->error(
@@ -1082,7 +1066,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 		case ENTITY_RPC:
 		{
 			auto info = p.read<EntityInfo>();
-			auto ent = findEntity(info.ID);
+			auto* ent = findEntity(info.ID);
 
 			if (!ent)
 			{
@@ -1152,7 +1136,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 				}
 
 				auto e = registeredTypes[info.type](info);
-				auto entity = e.get();
+				auto* entity = e.get();
 
 				if (index >= entitiesNetworked.size())	  //need to create a new one
 				{
@@ -1220,7 +1204,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 				return;
 			}
 
-			auto ent = findEntity(info.ID);
+			auto* ent = findEntity(info.ID);
 			if (!ent)
 			{
 				console->error(
@@ -1250,7 +1234,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 		case ENTITY_DELETION:
 		{
 			auto entID = p.read<EntityID>();
-			auto ent = findEntity(entID);
+			auto* ent = findEntity(entID);
 			if (ent)
 			{
 				ent->remove = true;
@@ -1329,7 +1313,7 @@ void Scenetree::onNetworkTick()
 	//e.g. A->B becomes A|B, but this happened while processing A so it's okay. if there's B->C, sibling A, and we make C a child of A when we run update on B, then an update on C will not run that frame
 	//I dunno, maybe that makes sense
 
-	for (auto ent : entities)
+	for (auto* ent : entities)
 	{
 		//Serialize our entities based on their specific tick rates
 		if (ent->isOwner(network_manager) &&
