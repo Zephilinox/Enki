@@ -40,7 +40,8 @@ void AnimatedSprite::update(float dt)
 
 void AnimatedSprite::draw(Renderer* renderer)
 {
-	renderer->draw({&sprite, layer, order});
+	//todo:
+	//renderer->queue({&sprite, layer, order});
 }
 
 void AnimatedSprite::play()
@@ -94,8 +95,9 @@ void AnimatedSprite::nextFrame()
 	else	//stay on last frame
 		return;
 
-	sf::Texture* texture = texture_manager->getTexture(frames[current_frame].texture_path);
-	sprite.setTexture(*texture, true);
+	//todo:
+	Texture* texture = texture_manager->getTexture(frames[current_frame].texture_path);
+	//sprite.setTexture(texture, true);
 
 	if (frames[current_frame].subtexture_rect != sf::IntRect{})
 		sprite.setTextureRect(frames[current_frame].subtexture_rect);

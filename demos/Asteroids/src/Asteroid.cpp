@@ -8,6 +8,7 @@
 
 //LIBS
 #include <Enki/Scenetree.hpp>
+#include <Enki/Renderer/RendererSFML.hpp>
 
 Asteroid::Asteroid(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(std::move(info))
@@ -40,17 +41,17 @@ void Asteroid::update(float dt)
 
 	if (shape.getPosition().x + radius <= 0)
 	{
-		shape.setPosition(custom_data->window_sfml->getView().getSize().x + radius, shape.getPosition().y);
+		shape.setPosition(custom_data->window->getWidth() + radius, shape.getPosition().y);
 	}
-	else if (shape.getPosition().x - radius >= custom_data->window_sfml->getView().getSize().x)
+	else if (shape.getPosition().x - radius >= custom_data->window->getWidth())
 	{
 		shape.setPosition(0 - radius, shape.getPosition().y);
 	}
 	else if (shape.getPosition().y + radius <= 0)
 	{
-		shape.setPosition(shape.getPosition().x, custom_data->window_sfml->getView().getSize().y + radius);
+		shape.setPosition(shape.getPosition().x, custom_data->window->getHeight() + radius);
 	}
-	else if (shape.getPosition().y - radius >= custom_data->window_sfml->getView().getSize().y)
+	else if (shape.getPosition().y - radius >= custom_data->window->getHeight())
 	{
 		shape.setPosition(shape.getPosition().x, 0 - radius);
 	}
@@ -63,7 +64,7 @@ void Asteroid::update(float dt)
 
 void Asteroid::draw(enki::Renderer* renderer)
 {
-	custom_data->window_sfml->draw(shape);
+	renderer->as<enki::RendererSFML>()->queue(&shape);
 }
 
 void Asteroid::serializeOnConnection(enki::Packet& p)
@@ -120,9 +121,9 @@ bool Asteroid::canSplit() const
 	return shape.getPointCount() - 2 >= 5;
 }
 
-sf::Vector2f Asteroid::getPosition() const
+enki::Vector2 Asteroid::getPosition() const
 {
-	return shape.getPosition();
+	return {shape.getPosition().x, shape.getPosition().y};
 }
 
 float Asteroid::getRadius() const

@@ -5,6 +5,7 @@
 
 namespace enki
 {
+
 WindowSFML::WindowSFML(Properties properties)
 	: Window(type, std::move(properties))
 	, window(sf::VideoMode{properties.width, properties.height}, properties.title)
@@ -15,7 +16,7 @@ WindowSFML::WindowSFML(Properties properties)
 bool WindowSFML::poll(Event& e)
 {
 	sf::Event event;
-	bool more_available = window.pollEvent(event);
+	const bool more_available = window.pollEvent(event);
 
 	switch (event.type)
 	{
@@ -151,14 +152,24 @@ bool WindowSFML::poll(Event& e)
 	return more_available;
 }
 
-bool WindowSFML::isOpen()
+unsigned int WindowSFML::getWidth() const
+{
+	return properties.width;
+}
+
+unsigned int WindowSFML::getHeight() const
+{
+	return properties.height;
+}
+
+bool WindowSFML::isOpen() const
 {
 	return window.isOpen();
 }
 
-bool WindowSFML::isVerticalSyncEnabled()
+bool WindowSFML::isVerticalSyncEnabled() const
 {
-	return vsync;
+	return properties.vsync;
 }
 
 void WindowSFML::close()
@@ -178,8 +189,20 @@ void WindowSFML::display()
 
 void WindowSFML::setVerticalSyncEnabled(bool enabled)
 {
-	vsync = enabled;
+	properties.vsync = enabled;
 	window.setVerticalSyncEnabled(enabled);
+}
+
+void WindowSFML::setWidth(unsigned int width)
+{
+	properties.width = width;
+	window.setSize({properties.height, properties.width});
+}
+
+void WindowSFML::setHeight(unsigned int height)
+{
+	properties.height = height;
+	window.setSize({properties.height, properties.width});
 };
 
 sf::RenderWindow* WindowSFML::getRawWindow()

@@ -372,17 +372,10 @@ std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entities[Local])
-	{
-		if (entity && entity->info.type == type)
-			ents.push_back(entity.get());
-	}
-
-	for (const auto& [version, entity] : entities[Networked])
-	{
-		if (entity && entity->info.type == type)
-			ents.push_back(entity.get());
-	}
+	for (const auto& group : entities)
+		for (const auto& [version, entity] : group)
+			if (entity && entity->info.type == type)
+				ents.push_back(entity.get());
 
 	return ents;
 }
@@ -391,17 +384,10 @@ std::vector<Entity*> Scenetree::findEntitiesByName(const std::string& name) cons
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entities[Local])
-	{
-		if (entity && entity->info.name == name)
-			ents.push_back(entity.get());
-	}
-
-	for (const auto& [version, entity] : entities[Networked])
-	{
-		if (entity && entity->info.name == name)
-			ents.push_back(entity.get());
-	}
+	for (const auto& group : entities)
+		for (const auto& [version, entity] : group)
+			if (entity && entity->info.name == name)
+				ents.push_back(entity.get());
 
 	return ents;
 }
@@ -410,17 +396,10 @@ std::vector<Entity*> Scenetree::findEntitiesByOwner(ClientID owner) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entities[Local])
-	{
-		if (entity && entity->info.ownerID == owner)
-			ents.push_back(entity.get());
-	}
-
-	for (const auto& [version, entity] : entities[Networked])
-	{
-		if (entity && entity->info.ownerID == owner)
-			ents.push_back(entity.get());
-	}
+	for (const auto& group : entities)
+		for (const auto& [version, entity] : group)
+			if (entity && entity->info.ownerID == owner)
+				ents.push_back(entity.get());
 
 	return ents;
 }
@@ -429,18 +408,11 @@ std::vector<Entity*> Scenetree::findEntitiesByParent(EntityID parent) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entities[Local])
-	{
-		if (entity && entity->info.parentID == parent)
-			ents.push_back(entity.get());
-	}
-
-	for (const auto& [version, entity] : entities[Networked])
-	{
-		if (entity && entity->info.parentID == parent)
-			ents.push_back(entity.get());
-	}
-
+	for (const auto& group : entities)
+		for (const auto& [version, entity] : group)
+			if (entity && entity->info.parentID == parent)
+				ents.push_back(entity.get());
+	
 	return ents;
 }
 
@@ -448,17 +420,10 @@ std::vector<Entity*> Scenetree::findEntitiesByPredicate(const std::function<bool
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& [version, entity] : entities[Local])
-	{
-		if (entity && predicate(*entity))
-			ents.push_back(entity.get());
-	}
-
-	for (const auto& [version, entity] : entities[Networked])
-	{
-		if (entity && predicate(*entity))
-			ents.push_back(entity.get());
-	}
+	for (const auto& group : entities)
+		for (const auto& [version, entity] : group)
+			if (entity && predicate(*entity))
+				ents.push_back(entity.get());
 
 	return ents;
 }
@@ -727,7 +692,7 @@ void Scenetree::fillEntitiesFromChildren(Entity* parent, std::vector<EntityID> c
 		}
 		else
 		{
-			if (parent)
+			/*if (parent)
 			{
 				spdlog::get("Enki")->warn("Entity {} no longer exists, but is a child of another entity.\n{}",
 					prettyID(id),
@@ -737,7 +702,7 @@ void Scenetree::fillEntitiesFromChildren(Entity* parent, std::vector<EntityID> c
 			{
 				spdlog::get("Enki")->warn("Entity {} no longer exists\n",
 					prettyID(id));
-			}
+			}*/
 		}
 	}
 }

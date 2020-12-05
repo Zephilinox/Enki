@@ -3,7 +3,6 @@
 //LIBS
 #include <Enki/Entity.hpp>
 #include <Enki/Signals/Signal.hpp>
-#include <SFML/Graphics.hpp>
 
 //SELF
 #include "CustomData.hpp"
@@ -26,10 +25,10 @@ public:
 	
 	void handleCollision();
 
-	sf::Vector2f getPosition() const;
+	enki::Vector2 getPosition() const;
 	bool isInvincible() const;
 	int getLives() const;
-	sf::Color getColour() const;
+	enki::Colour getColour() const;
 
 	void startInvincible();
 	void stopInvincible();
@@ -43,12 +42,11 @@ private:
 	enki::Keyboard::Key slow;
 
 	CustomData* const custom_data;
-	sf::View view;
 
-	sf::Texture ship_tex;
-	sf::Sprite ship;
+	std::unique_ptr<enki::Texture> ship_tex;
+	std::unique_ptr<enki::Sprite> ship;
 
-	sf::Vector2f velocity;
+	enki::Vector2 velocity;
 	float speed = 300;
 	float max_velocity_length = 600;
 	int lives = 10;

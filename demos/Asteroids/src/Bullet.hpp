@@ -3,7 +3,6 @@
 //LIBS
 #include <Enki/Entity.hpp>
 #include <Enki/Signals/Signal.hpp>
-#include <SFML/Graphics.hpp>
 
 //SELF
 #include "CustomData.hpp"
@@ -27,9 +26,9 @@ public:
 	std::vector<std::pair<std::string, std::string>> serializeToStrings() const final;
 	
 	void handleCollision();
-	sf::Vector2f getPosition() const;
+	enki::Vector2 getPosition() const;
 	float getRotation() const;
-	sf::Color getColour() const;
+	enki::Colour getColour() const;
 	unsigned int getWarpCount() const;
 
 	bool isAlive() const;
@@ -37,11 +36,11 @@ public:
 private:
 	CustomData* const custom_data;
 
-	sf::Texture bullet_tex;
-	sf::Sprite bullet;
+	enki::Texture* bullet_tex;
+	std::unique_ptr<enki::Sprite> bullet;
 
 	float speed = 300;
-	sf::Vector2f velocity = { 1, 1 };
+	enki::Vector2 velocity = { 1, 1 };
 
 	unsigned int warp_count = 0;
 	bool alive = true;
@@ -49,5 +48,5 @@ private:
 	enki::Timer find_asteroid_timer;
 	float find_asteroid_delay = 1.0f;
 	enki::EntityID closest_asteroid_id = 0;
-	sf::Vector2f distance_to_asteroid = {0, 0};
+	enki::Vector2 distance_to_asteroid = {0, 0};
 };

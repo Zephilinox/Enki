@@ -7,6 +7,7 @@
 #include <Enki/Networking/ServerHost.hpp>
 #include <Enki/Window/Window.hpp>
 #include <Enki/Window/WindowSFML.hpp>
+#include <Enki/Renderer/RendererSFML.hpp>
 #include <Enki/Messages/MessageFunction.hpp>
 #include <Enki/GUI/IMGUI/imgui_SFML.h> //todo: rename to .hpp so clang format can sort it properly
 #include <Enki/GUI/Console.hpp>
@@ -24,7 +25,7 @@
 Game::Game()
 	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", true}))
 	, scenetree(&network_manager)
-	, renderer(window->as<enki::WindowSFML>()->getRawWindow())
+	, renderer(std::make_unique<enki::RendererSFML>(window.get()))
 {
 	ImGui::SFML::Init(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow());
 	
@@ -41,9 +42,9 @@ Game::Game()
 	custom_data.scenetree = &scenetree;
 	custom_data.network_manager = &network_manager;
 	custom_data.window = window.get();
-	custom_data.window_sfml = window->as<enki::WindowSFML>()->getRawWindow();
 	custom_data.font_manager = &font_manager;
 	custom_data.texture_manager = &texture_manager;
+	custom_data.renderer = renderer.get();
 
 	auto player_children = std::vector<enki::EntityChildCreationInfo>{
 		{hash("PlayerText"), "PlayerText"},
@@ -278,8 +279,8 @@ void Game::update(float dt)
 void Game::draw()
 {
 	window->clear(40, 40, 40);
-	scenetree.draw(&renderer);
-	renderer.end();
+	scenetree.draw(renderer.get());
+	renderer->render();
 	ImGui::SFML::Render(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow());
 	window->display();
 }

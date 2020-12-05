@@ -1,9 +1,6 @@
 #pragma once
 
 //LIBS
-#include <SFML/Graphics.hpp>
-
-//LIBS
 #include <Enki/Entity.hpp>
 
 //SELF
@@ -21,5 +18,5 @@ public:
 
 private:
 	CustomData* const custom_data;
-	sf::Text label;
+	std::unique_ptr<enki::Text> label;
 };

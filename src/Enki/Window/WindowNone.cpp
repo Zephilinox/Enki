@@ -1,14 +1,17 @@
 #include "WindowNone.hpp"
 
-//SELF
-#include "Enki/Input/SFML/KeyConversion.hpp"
-
 namespace enki
 {
-WindowNone::WindowNone(Properties properties)
-	: Window(std::move(properties))
+
+WindowNone::WindowNone()
+	: Window(type, {})
 {
-	vsync = properties.vsync;
+}
+
+WindowNone::WindowNone(Properties properties)
+	: Window(type, std::move(properties))
+{
+	
 }
 
 bool WindowNone::poll(Event& e)
@@ -16,14 +19,24 @@ bool WindowNone::poll(Event& e)
 	return false;
 }
 
-bool WindowNone::isOpen()
+bool WindowNone::isOpen() const
 {
 	return open;
 }
 
-bool WindowNone::isVerticalSyncEnabled()
+bool WindowNone::isVerticalSyncEnabled() const
 {
-	return vsync;
+	return properties.vsync;
+}
+
+unsigned int WindowNone::getWidth() const
+{
+	return 0;
+}
+
+unsigned int WindowNone::getHeight() const
+{
+	return 0;
 }
 
 void WindowNone::close()
@@ -43,7 +56,9 @@ void WindowNone::display()
 
 void WindowNone::setVerticalSyncEnabled(bool enabled)
 {
-	vsync = enabled;
-};
+	properties.vsync = enabled;
+}
+void WindowNone::setWidth(unsigned int width) {}
+void WindowNone::setHeight(unsigned int height){};
 
 }	 // namespace enki

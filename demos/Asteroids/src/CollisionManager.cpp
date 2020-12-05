@@ -34,13 +34,16 @@ void CollisionManager::update(float dt)
 
 	struct CircleShape
 	{
-		sf::Vector2f position{};
+		enki::Vector2 position{};
 		float radius{};
 	};
 	
 	const auto circlesColliding = [](const CircleShape& shape_one, const CircleShape& shape_two) -> bool
 	{
-		const sf::Vector2f distance = shape_one.position - shape_two.position;
+		const enki::Vector2 distance = {
+			shape_one.position.x - shape_two.position.x,
+			shape_one.position.y - shape_two.position.y,
+		};
 		const float length = (distance.x * distance.x) + (distance.y * distance.y);
 		return length < (shape_one.radius * shape_one.radius) + (shape_two.radius * shape_two.radius);
 	};

@@ -2,9 +2,10 @@
 
 namespace enki
 {
-sf::Font* FontManager::registerFont(const std::string& path, HashedID name)
+
+Font* FontManager::registerFont(Renderer* renderer, const std::string& path, HashedID name)
 {
-	auto f = std::make_unique<sf::Font>();
+	auto f = renderer->createFont();
 	f->loadFromFile(path);
 
 	const auto pair_font = fonts.emplace(name, std::move(f));
@@ -63,7 +64,7 @@ sf::Font* FontManager::registerFont(const std::string& path, HashedID name)
 	}
 }
 
-sf::Font* FontManager::getFont(HashedID name) const
+Font* FontManager::getFont(HashedID name) const
 {
 	const auto font_it = fonts.find(name);
 	if (font_it != fonts.end())

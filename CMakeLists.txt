@@ -26,13 +26,13 @@ add_subdirectory ("src")
 set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT Enki)
 
 #all the demo projects
-if (DEMOS)
+if (ENKI_BUILD_DEMOS)
 	message(STATUS "Building Demos")
 	add_subdirectory ("demos")
 endif()
 
 #the enkinet library tests
-if (TESTS)
+if (ENKI_BUILD_TESTS)
 	message(STATUS "Building Tests")
 	add_subdirectory("tests")
 endif()

@@ -29,7 +29,7 @@ public:
 
 	bool isAlive() const;
 	bool canSplit() const;
-	sf::Vector2f getPosition() const;
+	enki::Vector2 getPosition() const;
 	float getRadius() const;
 	float getRotation() const;
 
@@ -44,6 +44,6 @@ private:
 	float speed = 300;
 	float radius = 10;
 	float rotation_speed = 200;
-	sf::Vector2f velocity = {1, 1};
+	enki::Vector2 velocity = {1, 1};
 	bool alive = true;
 };

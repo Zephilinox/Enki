@@ -6,41 +6,43 @@
 
 //LIBS
 #include <spdlog/spdlog.h>
-#include <SFML/Graphics.hpp>
 
 //SELF
 #include "Enki/Hash.hpp"
+#include "Enki/Graphics/Font.hpp"
+#include "Enki/Renderer/Renderer.hpp"
 
 namespace enki
 {
+
 class FontManager
 {
 public:
-	sf::Font* registerFont(const std::string& path, HashedID name);
+	Font* registerFont(Renderer* renderer, const std::string& path, HashedID name);
 
-	[[nodiscard]] sf::Font* getFont(HashedID name) const;
+	[[nodiscard]] Font* getFont(HashedID name) const;
 
 	[[nodiscard]] std::string getFontPath(HashedID name) const;
 
 	template <size_t N>
-	sf::Font* registerFont(const std::string& path, const char (&name)[N]);
+	Font* registerFont(Renderer* renderer, const std::string& path, const char (&name)[N]);
 
 	template <size_t N>
-	[[nodiscard]] sf::Font* getFont(const char (&name)[N]) const;
+	[[nodiscard]] Font* getFont(const char (&name)[N]) const;
 
 	template <size_t N>
 	[[nodiscard]] std::string getFontPath(const char (&name)[N]) const;
 
 private:
-	std::unordered_map<HashedID, std::unique_ptr<sf::Font>> fonts;
+	std::unordered_map<HashedID, std::unique_ptr<Font>> fonts;
 	std::unordered_map<HashedID, std::string> font_paths;
 	std::unordered_map<HashedID, std::string> font_names;
 };
 
 template <size_t N>
-sf::Font* FontManager::registerFont(const std::string& path, const char (&name)[N])
+Font* FontManager::registerFont(Renderer* renderer, const std::string& path, const char (&name)[N])
 {
-	auto font = registerFont(std::forward<const std::string&>(path), hash(name));
+	auto font = registerFont(renderer, std::forward<const std::string&>(path), hash(name));
 
 	if (font)
 	{
@@ -79,7 +81,7 @@ sf::Font* FontManager::registerFont(const std::string& path, const char (&name)[
 }
 
 template <size_t N>
-sf::Font* FontManager::getFont(const char (&name)[N]) const
+Font* FontManager::getFont(const char (&name)[N]) const
 {
 	auto font = getFont(hash(name));
 
@@ -125,4 +127,5 @@ std::string FontManager::getFontPath(const char (&name)[N]) const
 
 	return path;
 }
+
 }	// namespace enki

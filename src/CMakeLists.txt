@@ -43,21 +43,45 @@ set(Enki_HEADERS
 	"Enki/Input/Events.hpp"
 
 	"Enki/Window/Window.hpp"
+	"Enki/Window/WindowLog.hpp"
+	"Enki/Window/WindowNone.hpp"
+
+	"Enki/Renderer/Renderer.hpp"
+	"Enki/Renderer/RendererLog.hpp"
+	"Enki/Renderer/RendererNone.hpp"
+	
+	"Enki/Graphics/Font.hpp"
+	"Enki/Graphics/FontLog.hpp"
+	"Enki/Graphics/FontNone.hpp"
+	"Enki/Graphics/Sprite.hpp"
+	"Enki/Graphics/SpriteLog.hpp"
+	"Enki/Graphics/SpriteNone.hpp"
+	"Enki/Graphics/Text.hpp"
+	"Enki/Graphics/TextLog.hpp"
+	"Enki/Graphics/TextNone.hpp"
+	"Enki/Graphics/Texture.hpp"
+	"Enki/Graphics/TextureLog.hpp"
+	"Enki/Graphics/TextureNone.hpp"
+	"Enki/Graphics/Colour.hpp"
+	"Enki/Graphics/Vector2.hpp"
 
 	#todo: detect SFML is available
 	"Enki/Input/SFML/KeyConversion.hpp"
 	"Enki/Window/WindowSFML.hpp"
+	"Enki/Renderer/RendererSFML.hpp"
+	"Enki/Graphics/FontSFML.hpp"
+	"Enki/Graphics/SpriteSFML.hpp"
+	"Enki/Graphics/TextSFML.hpp"
+	"Enki/Graphics/TextureSFML.hpp"
 
 	"Enki/Timer.hpp"
 	"Enki/TimerTrigger.hpp"
 	"Enki/Scenetree.hpp"
 	"Enki/Entity.hpp"
-	"Enki/Renderer.hpp"
 	"Enki/RNG.hpp"
 	"Enki/Hash.hpp"
 	"Enki/AnimatedSprite.hpp"
 	"Enki/TimerLog.hpp"
-	"Enki/NonCopyable.hpp"
 	"Enki/MustMove.hpp"
 )
 
@@ -91,15 +115,34 @@ set (Enki_SRC
 	"Enki/GUI/ScenetreeGUI.cpp"
 
 	"Enki/Input/Keys.cpp"
+	
+	"Enki/Window/WindowLog.cpp"
+	"Enki/Window/WindowNone.cpp"
+	
+	"Enki/Renderer/RendererLog.cpp"
+	"Enki/Renderer/RendererNone.cpp"
+	
+	"Enki/Graphics/FontLog.cpp"
+	"Enki/Graphics/FontNone.cpp"
+	"Enki/Graphics/SpriteLog.cpp"
+	"Enki/Graphics/SpriteNone.cpp"
+	"Enki/Graphics/TextureLog.cpp"
+	"Enki/Graphics/TextureNone.cpp"
+	"Enki/Graphics/TextLog.cpp"
+	"Enki/Graphics/TextNone.cpp"
 
 	#todo: detect SFML is available
 	"Enki/Input/SFML/KeyConversion.cpp"
 	"Enki/Window/WindowSFML.cpp"
+	"Enki/Renderer/RendererSFML.cpp"
+	"Enki/Graphics/FontSFML.cpp"
+	"Enki/Graphics/SpriteSFML.cpp"
+	"Enki/Graphics/TextSFML.cpp"
+	"Enki/Graphics/TextureSFML.cpp"
 
 	"Enki/Timer.cpp"
 	"Enki/TimerTrigger.cpp"
 	"Enki/Scenetree.cpp"
-	"Enki/Renderer.cpp"
 	"Enki/RNG.cpp"
 	"Enki/AnimatedSprite.cpp"
 	"Enki/TimerLog.cpp"

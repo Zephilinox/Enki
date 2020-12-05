@@ -3,7 +3,6 @@
 //LIBS
 #include <Enki/Entity.hpp>
 #include <Enki/Signals/Signal.hpp>
-#include <SFML/Graphics.hpp>
 
 //SELF
 #include "CustomData.hpp"

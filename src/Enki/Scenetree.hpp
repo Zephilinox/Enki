@@ -18,7 +18,7 @@
 #include "Enki/Input/Events.hpp"
 #include "Enki/Networking/RPC.hpp"
 #include "Enki/Networking/RPCManager.hpp"
-#include "Enki/Renderer.hpp"
+#include "Enki/Renderer/Renderer.hpp"
 
 namespace enki
 {
@@ -358,7 +358,7 @@ Entity* Scenetree::_findEntity(EntityID ID) const
 
 	if (entities[local][index].version != version)
 	{
-		spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), entities[local][index].version, version);
+		//spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), entities[local][index].version, version);
 		return nullptr;
 	}
 

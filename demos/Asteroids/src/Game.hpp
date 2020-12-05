@@ -27,7 +27,7 @@ private:
 	enki::NetworkManager network_manager;
 	enki::Scenetree scenetree;
 	enki::InputManager input_manager;
-	enki::Renderer renderer;
+	std::unique_ptr<enki::Renderer> renderer;
 	enki::MessageQueue message_queue;
 	enki::FontManager font_manager;
 	enki::TextureManager texture_manager;

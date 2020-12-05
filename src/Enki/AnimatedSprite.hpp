@@ -6,7 +6,7 @@
 //SELF
 #include "Enki/Hash.hpp"
 #include "Enki/Managers/TextureManager.hpp"
-#include "Enki/Renderer.hpp"
+#include "Enki/Renderer/Renderer.hpp"
 #include "Enki/TimerTrigger.hpp"
 
 namespace enki

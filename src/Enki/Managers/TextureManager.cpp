@@ -2,16 +2,16 @@
 
 namespace enki
 {
-void TextureManager::registerTexture(const std::string& path)
+void TextureManager::registerTexture(Renderer* renderer, const std::string& path)
 {
 	if (textures.count(path))
 		return;
 	
-	textures[path] = std::make_unique<sf::Texture>();
+	textures[path] = renderer->createTexture();
 	textures[path]->loadFromFile(path);
 }
 
-sf::Texture* TextureManager::getTexture(const std::string& path)
+Texture* TextureManager::getTexture(const std::string& path)
 {
 	if (textures.count(path))
 		return textures[path].get();
