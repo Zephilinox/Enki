@@ -358,7 +358,12 @@ Entity* Scenetree::_findEntity(EntityID ID) const
 
 	if (entities[local][index].version != version)
 	{
-		//spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), entities[local][index].version, version);
+		//todo: should we warn users when we fail to find an entity because of a different version?
+		//tag 1 is internal find entity calls, e.g. as a result of calling scenetree->update(), so it ensures children/parent ids are valid
+		if constexpr (tag == 1)
+		{
+			spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), entities[local][index].version, version);
+		}
 		return nullptr;
 	}
 

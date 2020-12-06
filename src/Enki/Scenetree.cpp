@@ -249,7 +249,7 @@ Entity* Scenetree::_findEntity(EntityID ID) const
 
 Entity* Scenetree::getEntityUnsafe(const EntityID ID)
 {
-        return entities[ID < 0][indexFromID(ID)].entity.get();
+	return entities[ID < 0][indexFromID(ID)].entity.get();
 }
 
 bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children)
@@ -299,7 +299,6 @@ void Scenetree::update(float dt)
 
 	//todo: does not handle deleting children of deleted entities
 	//mark as deleted automatically when doing the deletion?
-	//todo: handle removing child from parent child ids
 
 	//from parents to children
 	for (auto* e : entities)
@@ -318,6 +317,15 @@ void Scenetree::update(float dt)
 		auto* e = *it;
 		auto [local, version, index] = splitID(e->info.ID);
 
+		//todo: faster/correct place?
+		auto* parent = _findEntity(e->info.parentID);
+		if (parent)
+		{
+			std::erase_if(parent->info.childIDs, [removedID = e->info.ID](EntityID id) {
+				return id == removedID;
+			});
+		}
+		
 		std::erase_if(entitiesParentless, [removedID = e->info.ID](EntityID id) {
 			return id == removedID;
 		});
@@ -692,7 +700,7 @@ void Scenetree::fillEntitiesFromChildren(Entity* parent, std::vector<EntityID> c
 		}
 		else
 		{
-			/*if (parent)
+			if (parent)
 			{
 				spdlog::get("Enki")->warn("Entity {} no longer exists, but is a child of another entity.\n{}",
 					prettyID(id),
@@ -702,7 +710,7 @@ void Scenetree::fillEntitiesFromChildren(Entity* parent, std::vector<EntityID> c
 			{
 				spdlog::get("Enki")->warn("Entity {} no longer exists\n",
 					prettyID(id));
-			}*/
+			}
 		}
 	}
 }
