@@ -18,4 +18,5 @@ struct CustomData
 	enki::InputManager* input_manager = nullptr;
 	enki::FontManager* font_manager = nullptr;
 	enki::TextureManager* texture_manager = nullptr;
+	float time_multiplier = 1.0f;
 };

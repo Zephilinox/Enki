@@ -84,7 +84,8 @@ void Game::run()
 	while (window->isOpen())
 	{
 		input();
-		update(dt);
+		ImGui::SFML::Update(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow(), dt);
+		update(dt * custom_data.time_multiplier);
 		draw();
 
 		if (display_fps_timer.getElapsedTime() > 5.0f)
@@ -115,6 +116,23 @@ void Game::input()
 			},
 			[&](enki::EventFocus e) {
 				custom_data.window_active = e.focused;
+			},
+			[&](enki::EventKey e){
+				if (e.down && e.key == enki::Keyboard::Key::F6)
+				{
+					static float old_time_multiplier = custom_data.time_multiplier;
+
+					if (custom_data.time_multiplier != 0)
+					{
+						old_time_multiplier = custom_data.time_multiplier;
+						custom_data.time_multiplier = 0;
+					}
+					else
+					{
+						custom_data.time_multiplier = old_time_multiplier;
+						old_time_multiplier = 0;
+					}
+				}
 			},
 			[](auto&) {
 
@@ -163,9 +181,7 @@ sf::Vector2f asteroidPos()
 	return {x, y};
 }
 void Game::update(float dt)
-{
-	ImGui::SFML::Update(*static_cast<enki::WindowSFML*>(window.get())->getRawWindow(), dt);
-	
+{	
 	network_manager.update();
 	input_manager.update();
 

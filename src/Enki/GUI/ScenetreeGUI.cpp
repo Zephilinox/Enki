@@ -14,8 +14,28 @@ void ScenetreeGUI::input(Event& e)
 {
 }
 
-void treenode(Scenetree* scenetree, const Entity* ent)
+void missing_child(EntityID id)
 {
+	std::string pretty_id = prettyID(id);
+	std::string combined = std::string("MISSING! ") + pretty_id;
+	ImGui::PushStyleColor(ImGuiCol_Text, {1, 0.2, 0.2, 1});
+	const bool node = ImGui::TreeNode(combined.c_str());
+	ImGui::PopStyleColor();
+
+	if (node)
+	{
+		std::string id_txt = "ID: " + pretty_id;
+		std::string local = "Local: " + std::string(localFromID(id) ? "true" : "false");
+
+		ImGui::Text(id_txt.c_str());
+		ImGui::Text(local.c_str());
+		ImGui::Text("Error: this entity is registered as a child, but doesn't exist anywhere.");
+		ImGui::TreePop();
+	}
+}
+
+void treenode(Scenetree* scenetree, const Entity* ent)
+{	
 	std::string pretty_id = prettyID(ent->info.ID);
 	std::string combined = ent->info.name + " " + pretty_id;
 
@@ -48,15 +68,19 @@ void treenode(Scenetree* scenetree, const Entity* ent)
 		}
 		
 		if (!ent->info.childIDs.empty())
+		{
+			std::string children_count = fmt::format("Children: {}", ent->info.childIDs.size());
+			ImGui::Text(children_count.c_str());
 			ImGui::Separator();
+		}
 
 		for (const auto& child_id : ent->info.childIDs)
 		{
 			const auto* child_ent = scenetree->findEntity(child_id);
-			if (!child_ent)
-				continue;
-
-			treenode(scenetree, child_ent);
+			if (child_ent)
+				treenode(scenetree, child_ent);
+			else
+				missing_child(child_id);
 		}
 		
 		ImGui::TreePop();
@@ -79,10 +103,10 @@ void ScenetreeGUI::update(float dt)
 	for (const auto root_ent_id : root_ent_ids)
 	{
 		const auto* ent = scenetree->findEntity(root_ent_id);
-		if (!ent)
-			continue;
-
-		treenode(scenetree, ent);
+		if (ent)
+			treenode(scenetree, ent);
+		else
+			missing_child(root_ent_id);
 	}
 
 	ImGui::SetWindowSize({200, 200}, ImGuiCond_FirstUseEver);
