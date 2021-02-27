@@ -23,6 +23,7 @@ public:
 	
 	void queue(const Sprite* sprite) final;
 	void queue(const Text* text) final;
+	void queue(Line line) final;
 	void render() final;
 
 	static constexpr HashedID type = hash_constexpr("SFML");

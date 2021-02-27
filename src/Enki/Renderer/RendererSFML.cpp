@@ -59,6 +59,17 @@ void RendererSFML::queue(const Text*)
 	
 }
 
+void RendererSFML::queue(Line line)
+{
+	static sf::Vertex sf_line[2];
+	
+	sf_line[0].position = {line.points[0].x, line.points[0].y};
+	sf_line[0].color = {line.colour.r, line.colour.g, line.colour.b, line.colour.a};
+	sf_line[1].position = {line.points[1].x, line.points[1].y};
+	sf_line[1].color = {line.colour.r, line.colour.g, line.colour.b, line.colour.a};
+	sfml->draw(sf_line, 3, sf::Lines);
+}
+
 void RendererSFML::render()
 {
 }

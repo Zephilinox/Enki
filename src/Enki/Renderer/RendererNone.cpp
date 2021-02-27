@@ -42,6 +42,10 @@ void RendererNone::queue(const Text*)
 {
 }
 
+void RendererNone::queue(Line line)
+{
+}
+
 void RendererNone::render()
 {
 }

@@ -57,6 +57,12 @@ void RendererLog::queue(const Text* text)
 	spdlog::info("queue text");
 }
 
+void RendererLog::queue(Line line)
+{
+	renderer->queue(line);
+	spdlog::info("queue line");
+}
+
 void RendererLog::render()
 {
 	renderer->render();

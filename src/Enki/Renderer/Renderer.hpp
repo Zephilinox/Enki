@@ -18,6 +18,12 @@ struct SpriteOrderInfo
 	float order = 0;
 };
 
+struct Line
+{
+	std::array<Vector2, 2> points;
+	Colour colour;
+};
+
 class Renderer
 {
 public:
@@ -41,6 +47,7 @@ public:
 	
 	virtual void queue(const Sprite* sprite) = 0;
 	virtual void queue(const Text* text) = 0;
+	virtual void queue(Line line) = 0;
 	virtual void render() = 0;
 
 	[[nodiscard]] HashedID getType() const { return type; }
