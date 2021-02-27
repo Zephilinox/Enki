@@ -20,5 +20,16 @@ if (MSVC)
 	if (CMAKE_CXX_FLAGS MATCHES "/WX")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
 	endif()
-	target_compile_options(${PROJECT_NAME} PUBLIC "/permissive-")
+
+	target_compile_options(${PROJECT_NAME} PUBLIC
+		"/permissive-"
+		"/Zc:__cplusplus"
+	)
+endif()
+
+if (WIN32)
+	target_compile_definitions(${PROJECT_NAME} PUBLIC
+		NOMINMAX
+		WIN32_LEAN_AND_MEAN
+	)
 endif()
