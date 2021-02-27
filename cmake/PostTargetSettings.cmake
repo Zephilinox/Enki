@@ -23,6 +23,9 @@ if (MSVC)
 	target_compile_options(${PROJECT_NAME} PUBLIC
 		"/permissive-"
 		"/Zc:__cplusplus"
+		"/experimental:external"
+		"/external:W0"
+		"/external:anglebrackets"
 	)
 endif()
 
