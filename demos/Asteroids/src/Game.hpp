@@ -1,5 +1,8 @@
 #pragma once
 
+//SELF
+#include "CustomData.hpp"
+
 //LIBS
 #include <Enki/Scenetree.hpp>
 #include <Enki/Timer.hpp>
@@ -7,9 +10,6 @@
 #include <Enki/Managers/InputManager.hpp>
 #include <Enki/Managers/TextureManager.hpp>
 #include <Enki/Messages/MessageQueue.hpp>
-
-//SELF
-#include "CustomData.hpp"
 
 class Game
 {

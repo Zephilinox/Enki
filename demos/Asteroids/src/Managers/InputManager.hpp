@@ -1,14 +1,14 @@
 #pragma once
 
+//LIBS
+#include <SFML/Graphics.hpp>
+
 //STD
 #include <array>
 #include <mutex>
 #include <string>
 #include <map>
 #include <experimental/map>
-
-//LIBS
-#include <SFML/Graphics.hpp>
 
 enum InputState
 {

@@ -1,5 +1,13 @@
 #include "Game.hpp"
 
+//SELF
+#include "Player.hpp"
+#include "Asteroid.hpp"
+#include "Bullet.hpp"
+#include "CollisionManager.hpp"
+#include "PlayerText.hpp"
+#include "CustomData.hpp"
+
 //LIBS
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -13,14 +21,6 @@
 #include <Enki/GUI/Console.hpp>
 #include <Enki/GUI/ScenetreeGUI.hpp>
 #include <Enki/Entity.hpp>
-
-//SELF
-#include "Player.hpp"
-#include "Asteroid.hpp"
-#include "Bullet.hpp"
-#include "CollisionManager.hpp"
-#include "PlayerText.hpp"
-#include "CustomData.hpp"
 
 Game::Game()
 	: window(std::make_unique<enki::WindowSFML>(enki::Window::Properties{1280, 720, "Enki Asteroids Demo", true}))

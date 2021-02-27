@@ -1,11 +1,11 @@
 #pragma once
 
+//SELF
+#include "CustomData.hpp"
+
 //LIBS
 #include <Enki/Entity.hpp>
 #include <Enki/Signals/Signal.hpp>
-
-//SELF
-#include "CustomData.hpp"
 
 class Player : public enki::Entity
 {

@@ -1,15 +1,15 @@
 #include "CollisionManager.hpp"
 
-//STD
-#include <experimental/vector>
-
-//LIBS
-#include <Enki/Scenetree.hpp>
-
 //SELF
 #include "Bullet.hpp"
 #include "Asteroid.hpp"
 #include "Player.hpp"
+
+//LIBS
+#include <Enki/Scenetree.hpp>
+
+//STD
+#include <experimental/vector>
 
 CollisionManager::CollisionManager(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(std::move(info))

@@ -3,12 +3,12 @@
 #undef min
 #undef max
 
-//STD
-#include <experimental/vector>
-
 //LIBS
 #include <Enki/Scenetree.hpp>
 #include <Enki/Renderer/RendererSFML.hpp>
+
+//STD
+#include <experimental/vector>
 
 Asteroid::Asteroid(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(std::move(info))

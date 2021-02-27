@@ -1,12 +1,12 @@
 #pragma once
 
-//STD
+//SELF
+#include "Window.hpp"
 
 //LIBS
 #include <SFML/Graphics/RenderWindow.hpp>
 
-//SELF
-#include "Window.hpp"
+//STD
 
 //todo: I want this to be optionally available only when SFML is available. So it needs to be header-only I think.
 

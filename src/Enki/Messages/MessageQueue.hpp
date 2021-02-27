@@ -1,12 +1,12 @@
 #pragma once
 
-//STD
-#include <queue>
-
 //SELF
 #include "Enki/Signals/Signal.hpp"
 #include "Enki/Timer.hpp"
 #include "Message.hpp"
+
+//STD
+#include <queue>
 
 namespace enki
 {

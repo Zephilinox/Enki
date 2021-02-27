@@ -1,16 +1,16 @@
 #pragma once
 
-//STD
-#include <iostream>
-
-//LIB
-#include <enetpp/client.h>
-#include <spdlog/spdlog.h>
-
 //SELF
 #include "Enki/Networking/Packet.hpp"
 #include "Enki/Signals/Signal.hpp"
 #include "Enki/Timer.hpp"
+
+//LIBS
+#include <enetpp/client.h>
+#include <spdlog/spdlog.h>
+
+//STD
+#include <iostream>
 
 namespace enki
 {

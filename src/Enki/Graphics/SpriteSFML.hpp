@@ -1,10 +1,10 @@
 #pragma once
 
-//LIBS
-#include <SFML/Graphics/Sprite.hpp>
-
 //SELF
 #include "Enki/Graphics/Sprite.hpp"
+
+//LIBS
+#include <SFML/Graphics/Sprite.hpp>
 
 namespace enki
 {

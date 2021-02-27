@@ -1,13 +1,13 @@
 #pragma once
 
-//STD
-
-//LIB
-#include <enetpp/server.h>
-
 //SELF
 #include "Enki/Networking/Client.hpp"
 #include "Enki/Networking/Server.hpp"
+
+//LIBS
+#include <enetpp/server.h>
+
+//STD
 
 namespace enki
 {

@@ -1,13 +1,13 @@
 #pragma once
 
-//LIBS
-#include <SFML/Graphics.hpp>
-
 //SELF
 #include "Enki/Hash.hpp"
 #include "Enki/Managers/TextureManager.hpp"
 #include "Enki/Renderer/Renderer.hpp"
 #include "Enki/TimerTrigger.hpp"
+
+//LIBS
+#include <SFML/Graphics.hpp>
 
 namespace enki
 {

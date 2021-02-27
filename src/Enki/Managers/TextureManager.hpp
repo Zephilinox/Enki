@@ -1,12 +1,13 @@
 #pragma once
 
+//SELF
+#include "Enki/Graphics/Texture.hpp"
+#include "Enki/Renderer/Renderer.hpp"
+
 //STD
 #include <map>
 #include <string>
 
-//SELF
-#include "Enki/Graphics/Texture.hpp"
-#include "Enki/Renderer/Renderer.hpp"
 namespace enki
 {
 

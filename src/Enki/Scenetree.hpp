@@ -1,5 +1,16 @@
 #pragma once
 
+//SELF
+#include "Enki/Entity.hpp"
+#include "Enki/Hash.hpp"
+#include "Enki/Input/Events.hpp"
+#include "Enki/Networking/RPC.hpp"
+#include "Enki/Networking/RPCManager.hpp"
+#include "Enki/Renderer/Renderer.hpp"
+
+//LIBS
+#include <spdlog/spdlog.h>
+
 //STD
 #include <cstdint>
 #include <iostream>
@@ -8,17 +19,6 @@
 #include <queue>
 #include <set>
 #include <vector>
-
-//LIBS
-#include <spdlog/spdlog.h>
-
-//SELF
-#include "Enki/Entity.hpp"
-#include "Enki/Hash.hpp"
-#include "Enki/Input/Events.hpp"
-#include "Enki/Networking/RPC.hpp"
-#include "Enki/Networking/RPCManager.hpp"
-#include "Enki/Renderer/Renderer.hpp"
 
 namespace enki
 {

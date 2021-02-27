@@ -1,13 +1,13 @@
 #pragma once
 
-//STD
-#include <tuple>
+//SELF
+#include "Enki/Networking/RPC.hpp"
 
 //LIBS
 #include <spdlog/spdlog.h>
 
-//SELF
-#include "Enki/Networking/RPC.hpp"
+//STD
+#include <tuple>
 
 namespace enki
 {

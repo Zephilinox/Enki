@@ -3,16 +3,16 @@
 #undef max
 #undef min
 
-//STD
-#include <experimental/vector>
+//SELF
+#include <Asteroid.hpp>
 
 //LIBS
 #include <Enki/Scenetree.hpp>
 #include <Enki/Renderer/RendererSFML.hpp>
 #include <Enki/Graphics/Sprite.hpp>
 
-//SELF
-#include <Asteroid.hpp>
+//STD
+#include <experimental/vector>
 
 Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)

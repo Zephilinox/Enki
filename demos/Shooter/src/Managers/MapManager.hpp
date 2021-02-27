@@ -3,7 +3,7 @@
 //STD
 #include <vector>
 
-//LIB
+//LIBS
 #include <SFML/Graphics.hpp>
 #include <Enki/Scenetree.hpp>
 

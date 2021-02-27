@@ -1,12 +1,12 @@
 #pragma once
 
+//LIBS
+#include <spdlog/spdlog.h>
+
 //STD
 #include <chrono>
 #include <map>
 #include <string>
-
-//LIBS
-#include <spdlog/spdlog.h>
 
 struct Log
 {

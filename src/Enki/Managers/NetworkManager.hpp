@@ -1,16 +1,16 @@
 #pragma once
 
-//STD
-#include <thread>
+//SELF
+#include "../Signals/Signal.hpp"
+#include "../Timer.hpp"
 
-//LIB
+//LIBS
 #include <enetpp/client.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-//SELF
-#include "../Signals/Signal.hpp"
-#include "../Timer.hpp"
+//STD
+#include <thread>
 
 namespace enki
 {

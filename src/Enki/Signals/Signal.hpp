@@ -1,12 +1,12 @@
 #pragma once
 
-//STD
-#include <vector>
-
 //SELF
 #include "Enki/Signals/Connection.hpp"
 #include "Enki/Signals/Disconnector.hpp"
 #include "Enki/Signals/Slot.hpp"
+
+//STD
+#include <vector>
 
 //todo: fix signal implementation to be r-values?
 //currently too much being copied around, use pointers for non-POD

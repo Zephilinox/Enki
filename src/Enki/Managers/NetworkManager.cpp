@@ -1,15 +1,15 @@
 #include "NetworkManager.hpp"
 
-//STD
-#include <chrono>
-
-//LIBS
-
 //SELF
 #include "Enki/Networking/ClientHost.hpp"
 #include "Enki/Networking/ClientStandard.hpp"
 #include "Enki/Networking/ServerHost.hpp"
 #include "Enki/Networking/ServerStandard.hpp"
+
+//LIBS
+
+//STD
+#include <chrono>
 
 namespace enki
 {

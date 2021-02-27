@@ -1,13 +1,13 @@
 #include "PlayerText.hpp"
 
+//SELF
+#include "Player.hpp"
+
 //LIBS
 #include <spdlog/fmt/fmt.h>
 #include <Enki/Scenetree.hpp>
 #include <Enki/Renderer/RendererSFML.hpp>
 #include <Enki/Graphics/TextSFML.hpp>
-
-//SELF
-#include "Player.hpp"
 
 PlayerText::PlayerText(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(std::move(info))

@@ -1,12 +1,12 @@
 #include "Console.hpp"
 
-//STD
-#include <sstream>
-
 //SELF
 #include "Enki/Scenetree.hpp"
 #include "IMGUI/imgui_SFML.h"
 #include "ScenetreeGUI.hpp"
+
+//STD
+#include <sstream>
 
 namespace enki
 {

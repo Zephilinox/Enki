@@ -1,16 +1,16 @@
 #pragma once
 
-//STD
-#include <string>
-#include <unordered_map>
-
-//LIBS
-#include <spdlog/spdlog.h>
-
 //SELF
 #include "Enki/Hash.hpp"
 #include "Enki/Graphics/Font.hpp"
 #include "Enki/Renderer/Renderer.hpp"
+
+//LIBS
+#include <spdlog/spdlog.h>
+
+//STD
+#include <string>
+#include <unordered_map>
 
 namespace enki
 {

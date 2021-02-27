@@ -1,15 +1,15 @@
-﻿//STD
-#include <stdexcept>
-#include <iostream>
+﻿//TESTS
+#include "PacketTest.hpp"
+#include "RPCTest.hpp"
+#include "Benchmark.hpp"
 
 //LIBS
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest.h>
 
-//TESTS
-#include "PacketTest.hpp"
-#include "RPCTest.hpp"
-#include "Benchmark.hpp"
+//STD
+#include <stdexcept>
+#include <iostream>
 
 int main(int argc, char** argv)
 {	

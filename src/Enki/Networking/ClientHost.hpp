@@ -1,11 +1,11 @@
 #pragma once
 
-//LIB
-#include <enetpp/client.h>
-
 //SELF
 #include "Enki/Networking/Client.hpp"
 #include "Enki/Networking/ServerHost.hpp"
+
+//LIBS
+#include <enetpp/client.h>
 
 namespace enki
 {

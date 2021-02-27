@@ -1,10 +1,10 @@
 #pragma once
 
-//LIBS
-#include <Enki/Entity.hpp>
-
 //SELF
 #include "CustomData.hpp"
+
+//LIBS
+#include <Enki/Entity.hpp>
 
 class PlayerText : public enki::Entity
 {

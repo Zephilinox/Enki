@@ -1,12 +1,12 @@
 #pragma once
 
+//LIBS
+#include <SFML/Audio.hpp>
+
 //STD
 #include <map>
 #include <string>
 #include <vector>
-
-//LIBS
-#include <SFML/Audio.hpp>
 
 namespace enki
 {

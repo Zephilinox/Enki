@@ -1,10 +1,10 @@
 #pragma once
 
-//STD
-#include <functional>
-
 //SELF
 #include "Message.hpp"
+
+//STD
+#include <functional>
 
 namespace enki
 {

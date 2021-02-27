@@ -1,11 +1,11 @@
 #include "Player.hpp"
 
-//STD
-#include <experimental/vector>
-
 //LIBS
 #include <Enki/Scenetree.hpp>
 #include <Enki/Renderer/RendererSFML.hpp>
+
+//STD
+#include <experimental/vector>
 
 Player::Player(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)

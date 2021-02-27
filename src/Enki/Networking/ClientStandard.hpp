@@ -1,10 +1,10 @@
 #pragma once
 
-//LIB
-#include <enetpp/client.h>
-
 //SELF
 #include "Enki/Networking/Client.hpp"
+
+//LIBS
+#include <enetpp/client.h>
 
 namespace enki
 {

@@ -1,10 +1,10 @@
 #pragma once
 
-//LIBS
-#include <SFML/Graphics/Texture.hpp>
-
 //SELF
 #include "Enki/Graphics/Texture.hpp"
+
+//LIBS
+#include <SFML/Graphics/Texture.hpp>
 
 namespace enki
 {

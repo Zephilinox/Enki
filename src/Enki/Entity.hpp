@@ -1,15 +1,5 @@
 #pragma once
 
-//STD
-#include <charconv>
-#include <sstream>
-
-//LIBS
-//For whatever reason fmt and enet conflict a bit because of the ordering of winsock includes
-//fmt includes all of WIN32, including winsocks2, so defining this fixes that
-#define WIN32_LEAN_AND_MEAN
-#include <spdlog/fmt/ostr.h>
-#include <SFML/Graphics.hpp>
 
 //SELF
 #include "Enki/Hash.hpp"
@@ -18,6 +8,17 @@
 #include "Enki/Networking/Client.hpp"
 #include "Enki/Networking/Packet.hpp"
 #include "Enki/Renderer/Renderer.hpp"
+
+//LIBS
+//For whatever reason fmt and enet conflict a bit because of the ordering of winsock includes
+//fmt includes all of WIN32, including winsocks2, so defining this fixes that
+#define WIN32_LEAN_AND_MEAN
+#include <spdlog/fmt/ostr.h>
+#include <SFML/Graphics.hpp>
+
+//STD
+#include <charconv>
+#include <sstream>
 
 namespace enki
 {

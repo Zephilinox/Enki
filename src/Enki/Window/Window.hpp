@@ -1,15 +1,15 @@
 #pragma once
 
-//STD
-#include <string>
+//SELF
+#include "Enki/Hash.hpp"
+#include "Enki/Input/Events.hpp"
 
 //LIBS
 //todo: Once we make SFML windows optional we need to move this out. Kept for now due to convinience
 #include <SFML/Graphics.hpp>
 
-//SELF
-#include "Enki/Hash.hpp"
-#include "Enki/Input/Events.hpp"
+//STD
+#include <string>
 
 namespace enki
 {

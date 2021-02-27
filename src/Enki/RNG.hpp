@@ -5,11 +5,11 @@
 #	undef max
 #endif
 
-//STD
-#include <random>
-
 //LIBS
 #include <pcg/pcg_random.hpp>
+
+//STD
+#include <random>
 
 namespace enki
 {

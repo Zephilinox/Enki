@@ -1,16 +1,16 @@
 #pragma once
 
-//STD
-#include <array>
-#include <experimental/map>
-#include <map>
-#include <string>
-
 //SELF
 #include "Enki/Window/Window.hpp"
 
 //LIBS
 #include <SFML/System/Vector2.hpp>
+
+//STD
+#include <array>
+#include <experimental/map>
+#include <map>
+#include <string>
 
 namespace enki
 {

@@ -1,12 +1,12 @@
 #pragma once
 
+//LIBS
+#include <spdlog/spdlog.h>
+
 //STD
 #include <cassert>
 #include <map>
 #include <string>
-
-//LIBS
-#include <spdlog/spdlog.h>
 
 // These hash functions exist as a result of manual(well, automated) loop unrolling, as MSVC refused to use them at compile time otherwise.
 // Templating it doesn't work either

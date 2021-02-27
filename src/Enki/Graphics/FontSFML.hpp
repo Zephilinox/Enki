@@ -1,10 +1,10 @@
 #pragma once
 
-//LIBS
-#include <SFML/Graphics/Font.hpp>
-
 //SELF
 #include "Enki/Graphics/Font.hpp"
+
+//LIBS
+#include <SFML/Graphics/Font.hpp>
 
 namespace enki
 {

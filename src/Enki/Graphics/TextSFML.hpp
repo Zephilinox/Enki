@@ -1,10 +1,10 @@
 #pragma once
 
-//LIBS
-#include <SFML/Graphics/Text.hpp>
-
 //SELF
 #include "Enki/Graphics/Text.hpp"
+
+//LIBS
+#include <SFML/Graphics/Text.hpp>
 
 namespace enki
 {

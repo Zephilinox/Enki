@@ -1,10 +1,10 @@
 #pragma once
 
-//STD
-#include <chrono>
-
 //LIBS
 #include <Enki/Signals/Signal.hpp>
+
+//STD
+#include <chrono>
 
 using namespace std::chrono_literals;
 

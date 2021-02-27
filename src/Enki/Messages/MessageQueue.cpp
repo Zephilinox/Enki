@@ -1,11 +1,11 @@
 #include "MessageQueue.hpp"
 
+//SELF
+#include "Enki/TimerLog.hpp"
+
 //STD
 #include <iomanip>
 #include <iostream>
-
-//SELF
-#include "Enki/TimerLog.hpp"
 
 namespace enki
 {
