@@ -5,7 +5,9 @@
 
 //LIBS
 #include <Enki/Entity.hpp>
-#include <Enki/Signals/Signal.hpp>
+
+//STD
+#include <optional>
 
 class Asteroid;
 
@@ -49,4 +51,5 @@ private:
 	float m_find_asteroid_delay = 1.0f;
 	enki::EntityID m_closest_asteroid_id = 0;
 	enki::Vector2 m_distance_to_asteroid = {0, 0};
+	std::optional<enki::Line> debug_line;
 };

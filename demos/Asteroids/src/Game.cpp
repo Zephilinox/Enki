@@ -261,12 +261,12 @@ void Game::update(float dt)
 		ImGui::SetWindowSize({400, 300}, ImGuiCond_Always);
 		ImGui::SetWindowPos({100, 100}, ImGuiCond_Always);
 		
-		if (ImGui::Button("Server", {60, 30}))
+		if (ImGui::Button("Host Game", {60, 30}))
 		{
 			startServer();
 		}
 		
-		if (ImGui::Button("Client", {60, 30}))
+		if (ImGui::Button("Connect to Host", {60, 30}))
 		{
 			startClient();
 		}

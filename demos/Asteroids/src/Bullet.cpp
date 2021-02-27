@@ -1,8 +1,5 @@
 #include "Bullet.hpp"
 
-#undef max
-#undef min
-
 //SELF
 #include <Asteroid.hpp>
 
@@ -15,7 +12,7 @@
 #include <experimental/vector>
 
 Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
-	: Entity(info)
+	: Entity(std::move(info))
 	, m_custom_data(custom_data)
 	, m_bullet(custom_data->renderer->createSprite())
 {
@@ -64,7 +61,7 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 	}
 }
 
-float angle_distance(float a, float b)
+float angle_distance(const float a, const float b)
 {
 	const float wrapped = std::fmod(std::abs(b - a), 360.0f);
 	const float sign = (a - b >= 0.0f && a - b <= 180.0f) || (a - b <= -180.0f && a - b >= -360.0f) ? 1.0f : -1.0f;
@@ -73,12 +70,10 @@ float angle_distance(float a, float b)
 	return distance;
 }
 
-void Bullet::update(float dt)
+void Bullet::update(const float dt)
 {
 	if (!isOwner(m_custom_data->network_manager))
-	{
 		return;
-	}
 
 	auto* closest_asteroid = static_cast<Asteroid*>(m_custom_data->scenetree->findEntity(m_closest_asteroid_id));
 	if (!closest_asteroid)
@@ -90,7 +85,7 @@ void Bullet::update(float dt)
 		
 		float shortest_length = 0;
 		auto asteroids = m_custom_data->scenetree->findEntitiesByType<Asteroid>(hash("Asteroid"));
-		for (auto asteroid : asteroids)
+		for (auto* asteroid : asteroids)
 		{
 			const enki::Vector2 dist{
 				asteroid->getPosition().x - m_bullet->getPosition().x,
@@ -112,17 +107,31 @@ void Bullet::update(float dt)
 		m_distance_to_asteroid = enki::Vector2{
 			closest_asteroid->getPosition().x - m_bullet->getPosition().x,
 			closest_asteroid->getPosition().y - m_bullet->getPosition().y};
+
+		 debug_line = {
+			{
+				closest_asteroid->getPosition(),
+				m_bullet->getPosition(),
+			},
+			enki::Colour{255, 0, 0, 100}
+		};
 		
 		const float angle = std::atan2(m_distance_to_asteroid.x, m_distance_to_asteroid.y * -1.0f);
 		const float angle_degrees = angle * (180.0f / 3.1415f);
-		float angle_diff = angle_distance(angle_degrees, m_bullet->getRotation());
-		const float max_distance = 100000; //1000 pixels, squared
-		const float min_distance = 10000; //100 pixels, squared
-		const float distance = (m_distance_to_asteroid.x * m_distance_to_asteroid.x) + (m_distance_to_asteroid.y * m_distance_to_asteroid.y);
-		const float speed = std::max(1.0f, std::min(max_distance / distance, (max_distance / min_distance) * 0.1f));
-		angle_diff += (((std::rand() % 1000) / 100.0f) - 1.0f) * 10.0f;
-		m_bullet->setRotation(m_bullet->getRotation() + (angle_diff * speed * dt));
+		const float angle_diff = angle_distance(angle_degrees, m_bullet->getRotation());
+		const float max_distance = 128*128;
+		const float min_distance = 64*64;
+		const float distance = (m_distance_to_asteroid.x * m_distance_to_asteroid.x) + (m_distance_to_asteroid.y * m_distance_to_asteroid.y) + 1 /* don't divide by 0*/;
+		const float rotation_speed_at_min_distance = 4;
+		const float rotation_speed_at_max_distance = 8;
+		const float current_distance_percentage = distance / (max_distance - min_distance);
+		const float rotation_speed_at_current_distance = rotation_speed_at_max_distance * current_distance_percentage;
+		const float rotation_speed = std::clamp(rotation_speed_at_current_distance, rotation_speed_at_min_distance, rotation_speed_at_max_distance);
+		m_bullet->setRotation(m_bullet->getRotation() + (angle_diff * rotation_speed * dt));
 	}
+
+	if (!closest_asteroid)
+		debug_line = {};
 	
 	m_velocity.x = 1 * degToVector(m_bullet->getRotation()).x * m_speed;
 	m_velocity.y = 1 * degToVector(m_bullet->getRotation()).y * m_speed;
@@ -152,19 +161,17 @@ void Bullet::update(float dt)
 	}
 
 	if (m_warp_count >= 2)
-	{
 		m_alive = false;
-	}
 
 	if (!m_alive)
-	{
 		m_custom_data->scenetree->deleteEntity(info.ID);
-	}
 }
 
 void Bullet::draw(enki::Renderer* renderer)
 {
 	renderer->queue(m_bullet.get());
+	if (debug_line)
+		m_custom_data->renderer->queue(debug_line.value());
 }
 
 void Bullet::serializeOnConnection(enki::Packet& p)
