@@ -49,7 +49,7 @@ public:
 	[[nodiscard]] bool isMouseButtonUp(Mouse::Button button);
 	[[nodiscard]] bool isMouseButtonPressed(Mouse::Button button);
 	[[nodiscard]] bool isMouseButtonReleased(Mouse::Button button);
-	[[nodiscard]] bool InputManager::isMouseButtonDown(Mouse::Button button);
+	[[nodiscard]] bool isMouseButtonDown(Mouse::Button button);
 	
 	[[nodiscard]] sf::Vector2f getMouseDesktopPos() const;
 	[[nodiscard]] sf::Vector2f getMouseScreenPos() const;

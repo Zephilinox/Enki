@@ -7,6 +7,7 @@
 
 //STD
 #include <vector>
+#include <stdexcept>
 
 //todo: fix signal implementation to be r-values?
 //currently too much being copied around, use pointers for non-POD
