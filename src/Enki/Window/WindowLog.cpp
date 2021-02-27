@@ -76,11 +76,11 @@ void WindowLog::setVerticalSyncEnabled(bool enabled)
 	spdlog::info("setVerticalSyncEnabled = {}", enabled);
 }
 
-void WindowLog::setWidth(unsigned int width)
+void WindowLog::setWidth(unsigned int)
 {
 }
 
-void WindowLog::setHeight(unsigned int height)
+void WindowLog::setHeight(unsigned int)
 {
 }
 

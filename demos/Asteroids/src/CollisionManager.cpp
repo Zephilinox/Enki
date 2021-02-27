@@ -23,7 +23,7 @@ void CollisionManager::onSpawn([[maybe_unused]]enki::Packet p)
 	auto console = spdlog::get("console");
 }
 
-void CollisionManager::update(float dt)
+void CollisionManager::update(float)
 {
 	auto bullets = custom_data->scenetree->findEntitiesByType(hash("Bullet"));
 	auto asteroids = custom_data->scenetree->findEntitiesByType(hash("Asteroid"));
@@ -96,17 +96,17 @@ void CollisionManager::update(float dt)
 	}
 }
 
-void CollisionManager::draw(enki::Renderer* renderer)
+void CollisionManager::draw(enki::Renderer*)
 {
 
 }
 
-void CollisionManager::serializeOnTick(enki::Packet& p)
+void CollisionManager::serializeOnTick(enki::Packet&)
 {
 
 }
 
-void CollisionManager::deserializeOnTick(enki::Packet& p)
+void CollisionManager::deserializeOnTick(enki::Packet&)
 {
 
 }

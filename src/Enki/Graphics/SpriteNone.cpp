@@ -10,37 +10,37 @@ SpriteNone::SpriteNone()
 
 void SpriteNone::setTexture(Texture* texture)
 {
-	this->texture = texture;
+	m_texture = texture;
 }
 
 void SpriteNone::setPosition(float x, float y)
 {
-	position = {x, y};
+	m_position = {x, y};
 }
 
 Vector2 SpriteNone::getPosition() const
 {
-	return position;
+	return m_position;
 }
 
 void SpriteNone::setRotation(float rotation)
 {
-	this->rotation = rotation;
+	m_rotation = rotation;
 }
 
 float SpriteNone::getRotation() const
 {
-	return rotation;
+	return m_rotation;
 }
 
 Colour SpriteNone::getColour() const
 {
-	return colour;
+	return m_colour;
 }
 
 void SpriteNone::setColour(Colour colour)
 {
-	this->colour = colour;
+	m_colour = colour;
 }
 
 }	 // namespace enki

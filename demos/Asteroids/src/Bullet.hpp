@@ -34,19 +34,19 @@ public:
 	bool isAlive() const;
 
 private:
-	CustomData* const custom_data;
+	CustomData* const m_custom_data;
 
-	enki::Texture* bullet_tex;
-	std::unique_ptr<enki::Sprite> bullet;
+	enki::Texture* m_bullet_tex;
+	std::unique_ptr<enki::Sprite> m_bullet;
 
-	float speed = 300;
-	enki::Vector2 velocity = { 1, 1 };
+	float m_speed = 300;
+	enki::Vector2 m_velocity = { 1, 1 };
 
-	unsigned int warp_count = 0;
-	bool alive = true;
+	unsigned int m_warp_count = 0;
+	bool m_alive = true;
 
-	enki::Timer find_asteroid_timer;
-	float find_asteroid_delay = 1.0f;
-	enki::EntityID closest_asteroid_id = 0;
-	enki::Vector2 distance_to_asteroid = {0, 0};
+	enki::Timer m_find_asteroid_timer;
+	float m_find_asteroid_delay = 1.0f;
+	enki::EntityID m_closest_asteroid_id = 0;
+	enki::Vector2 m_distance_to_asteroid = {0, 0};
 };

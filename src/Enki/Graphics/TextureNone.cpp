@@ -8,7 +8,7 @@ TextureNone::TextureNone()
 {
 }
 
-bool TextureNone::loadFromFile(const std::string& file)
+bool TextureNone::loadFromFile(const std::string&)
 {
 	return false;
 }

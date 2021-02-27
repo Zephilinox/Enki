@@ -31,19 +31,15 @@ void Asteroid::onSpawn([[maybe_unused]]enki::Packet p)
 void Asteroid::update(float dt)
 {
 	if (!isOwner(custom_data->network_manager))
-	{
 		return;
-	}
-
-	auto input_manager = custom_data->input_manager;
-
+	
 	shape.move(velocity.x * dt, velocity.y * dt);
 
 	if (shape.getPosition().x + radius <= 0)
 	{
-		shape.setPosition(custom_data->window->getWidth() + radius, shape.getPosition().y);
+		shape.setPosition(static_cast<float>(custom_data->window->getWidth()) + radius, shape.getPosition().y);
 	}
-	else if (shape.getPosition().x - radius >= custom_data->window->getWidth())
+	else if (shape.getPosition().x - radius >= static_cast<float>(custom_data->window->getWidth()))
 	{
 		shape.setPosition(0 - radius, shape.getPosition().y);
 	}
@@ -138,15 +134,15 @@ float Asteroid::getRotation() const
 
 void Asteroid::constructAsteroid(unsigned sides, float x, float y)
 {
-	radius = (sides - 4) * 8;
+	radius = static_cast<float>((static_cast<int>(sides) - 4) * 8);
 	shape.setPosition(x, y);
 	shape.setOutlineThickness(1.5f);
 	shape.setOutlineColor(sf::Color::Black);
 	createShape(sides);
 
 	sf::Vector2f target_pos(
-		std::rand() % 1280,
-		std::rand() % 720);
+		static_cast<float>(std::rand() % 1280),
+		static_cast<float>(std::rand() % 720));
 
 	sf::Vector2f target_dir = target_pos - shape.getPosition();
 	float length = std::sqrtf((target_dir.x * target_dir.x) + (target_dir.y * target_dir.y));
@@ -163,7 +159,7 @@ void Asteroid::constructAsteroid(unsigned sides, float x, float y)
 
 void Asteroid::createShape(unsigned sides)
 {
-	float total_angle = (sides - 2) * 180;
+	float total_angle = static_cast<float>((static_cast<int>(sides) - 2) * 180);
 	float interior_angle = total_angle / sides;
 	float exterior_angle = 180 - interior_angle;
 	shape.setPointCount(sides);
@@ -171,8 +167,8 @@ void Asteroid::createShape(unsigned sides)
 	const auto degToVector = [](float angle) -> sf::Vector2f
 	{
 		return sf::Vector2f(
-			std::sin(angle * (3.1415 / 180.0f)),
-			-std::cos(angle * 3.1415 / 180.0f));
+			std::sin(angle * (3.1415f / 180.0f)),
+			-std::cos(angle * (3.1415f / 180.0f)));
 	};
 
 	for (unsigned i = 0; i < sides; ++i)

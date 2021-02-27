@@ -4,60 +4,60 @@ namespace enki
 {
 Scenetree::Scenetree(NetworkManager* network_manager)
 	: rpc_man(network_manager)
-	, network_manager(network_manager)
+	, m_network_manager(network_manager)
 {
 	if (network_manager == nullptr)
 		throw;
 
-	console = spdlog::get("Enki");
-	if (console == nullptr)
-		console = spdlog::stdout_color_mt("Enki");
+	m_console = spdlog::get("Enki");
+	if (m_console == nullptr)
+		m_console = spdlog::stdout_color_mt("Enki");
 }
 
 void Scenetree::enableNetworking()
 {
-	if (network_ready)
+	if (m_network_ready)
 	{
-		console->error(
+		m_console->error(
 			"Tried to enable networking for scenetree "
 			"but networking is already enabled");
 		return;
 	}
 
-	if (!network_manager->isNetworked())
+	if (!m_network_manager->isNetworked())
 	{
-		console->error(
+		m_console->error(
 			"Tried to enable networking for scenetree "
 			"but neither the server nor the client have been started");
 		return;
 	}
 
-	network_ready = true;
+	m_network_ready = true;
 
-	if (network_manager->server)
-		mc1 = network_manager->server->on_packet_received.connect(this, &Scenetree::receivedPacketFromClient);
+	if (m_network_manager->server)
+		m_mc1 = m_network_manager->server->on_packet_received.connect(this, &Scenetree::receivedPacketFromClient);
 
-	if (network_manager->client)
+	if (m_network_manager->client)
 	{
-		mc2 = network_manager->client->on_packet_received.connect(this, &Scenetree::receivedPacketFromServer);
-		mc3 = network_manager->on_network_tick.connect(this, &Scenetree::onNetworkTick);
+		m_mc2 = m_network_manager->client->on_packet_received.connect(this, &Scenetree::receivedPacketFromServer);
+		m_mc3 = m_network_manager->on_network_tick.connect(this, &Scenetree::onNetworkTick);
 	}
 }
 
 NetworkManager* Scenetree::getNetworkManager() const
 {
-	return network_manager;
+	return m_network_manager;
 }
 
 void Scenetree::forEachEntity(std::function<void(const Entity&)> function)
 {
-	for (const auto& [version, ent] : entities[Local])
+	for (const auto& [version, ent] : m_entities[Local])
 	{
 		if (ent)
 			function(*ent);
 	}
 
-	for (const auto& [version, ent] : entities[Networked])
+	for (const auto& [version, ent] : m_entities[Networked])
 	{
 		if (ent)
 			function(*ent);
@@ -84,50 +84,50 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 	if (parentID != Entity::InvalidID && _findEntity(parentID) == nullptr)
 		return nullptr;
 	
-	if (registeredTypes[type] == nullptr)
+	if (m_registered_types[type] == nullptr)
 		return nullptr;
 
 	Entity* entity = nullptr;
 
 	//no free indices available, create a new entity with version 0
-	if (entities_free_indices[Local].empty())
+	if (m_entities_free_indices[Local].empty())
 	{
 		EntityInfo info;
 		info.type = type;
 		info.name = std::move(name);
-		info.ID = generateEntityID(true, 0, static_cast<std::uint32_t>(entities[Local].size()));
+		info.ID = generateEntityID(true, 0, static_cast<std::uint32_t>(m_entities[Local].size()));
 		info.parentID = parentID;
 
 		if (parentID == Entity::InvalidID)
-			entitiesParentless.push_back(info.ID);
+			m_entities_parentless.push_back(info.ID);
 
-		auto e = registeredTypes[type](std::move(info));
+		auto e = m_registered_types[type](std::move(info));
 		entity = e.get();
 
-		entities[Local].emplace_back(VersionEntityPair{0, std::move(e)});
+		m_entities[Local].emplace_back(VersionEntityPair{0, std::move(e)});
 	}
 	else	//reuse existing index
 	{
-		std::uint32_t index = entities_free_indices[Local].top();
-		entities_free_indices[Local].pop();
+		std::uint32_t index = m_entities_free_indices[Local].top();
+		m_entities_free_indices[Local].pop();
 
 		EntityInfo info;
 		info.type = type;
 		info.name = std::move(name);
 		//version was incremented when the last entity here was deleted, no need to change it here
-		info.ID = generateEntityID(true, entities[Local][index].version, index);
+		info.ID = generateEntityID(true, m_entities[Local][index].version, index);
 		info.parentID = parentID;
 
 		if (parentID == Entity::InvalidID)
-			entitiesParentless.push_back(info.ID);
+			m_entities_parentless.push_back(info.ID);
 
-		auto e = registeredTypes[type](std::move(info));
+		auto e = m_registered_types[type](std::move(info));
 		entity = e.get();
 
-		entities[Local][index].entity = std::move(e);
+		m_entities[Local][index].entity = std::move(e);
 	}
 
-	for (const auto& child : registeredChildCreationInfo[type])
+	for (const auto& child : m_registered_child_creation_info[type])
 	{
 		const auto* c = createEntityLocal(child.type, child.name, entity->info.ID, child.spawnInfo, child.children);
 		entity->info.childIDs.push_back(c->info.ID);
@@ -148,10 +148,10 @@ Entity* Scenetree::createEntityLocal(const EntityType type,
 
 void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string name, const EntityID parentID, Packet spawnInfo, const std::vector<EntityChildCreationInfo>& children)
 {
-	auto net_man = network_manager;
-	if (!network_ready)
+	auto net_man = m_network_manager;
+	if (!m_network_ready)
 	{
-		console->error(
+		m_console->error(
 			"Tried to request a networked entity "
 			"when scenetree isn't network ready");
 		return;
@@ -159,7 +159,7 @@ void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string 
 
 	if (!net_man->isClient())
 	{
-		console->error(
+		m_console->error(
 			"Tried to request a networked entity "
 			"when there is no client");
 		return;
@@ -167,7 +167,7 @@ void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string 
 
 	if (name.empty() || type == 0)
 	{
-		console->error(
+		m_console->error(
 			"Invalid info when creating networked entity."
 			"\nname: {}, type: {}",
 			name,
@@ -175,9 +175,9 @@ void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string 
 		return;
 	}
 
-	if (!registeredTypes.count(type))
+	if (!m_registered_types.count(type))
 	{
-		console->error(
+		m_console->error(
 			"Tried to create entity without "
 			"registering it first.\ntype: {}",
 			type);
@@ -191,7 +191,7 @@ void Scenetree::createEntityNetworkedRequest(const EntityType type, std::string 
 	  << spawnInfo
 	  << children;
 
-	console->info(
+	m_console->info(
 		"Sending networked entity request as the client "
 		"to the server.\n\t{}",
 		EntityInfo{type, name, 0, 0, parentID});
@@ -216,10 +216,10 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 	if (!local)
 		return ErrorCodeRemove::IDWasNotLocal;
 	
-	if (index >= entities[Local].size())
+	if (index >= m_entities[Local].size())
 		return ErrorCodeRemove::IndexOutOfBounds;
 
-	auto& e = entities[Local][index];
+	auto& e = m_entities[Local][index];
 	if (ID != e.entity->info.ID)
 		return ErrorCodeRemove::IDDoesNotMatchFoundID;
 	//this should never happen, the version we store and the version in the ID has diverged somehow
@@ -233,7 +233,7 @@ Scenetree::ErrorCodeRemove Scenetree::removeEntityLocal(const EntityID ID)
 
 	e.version++;
 	e.entity.reset(nullptr);
-	entities_free_indices[Local].push(index);
+	m_entities_free_indices[Local].push(index);
 	return ErrorCodeRemove::Success;
 }
 
@@ -249,7 +249,7 @@ Entity* Scenetree::_findEntity(EntityID ID) const
 
 Entity* Scenetree::getEntityUnsafe(const EntityID ID)
 {
-	return entities[ID < 0][indexFromID(ID)].entity.get();
+	return m_entities[ID < 0][indexFromID(ID)].entity.get();
 }
 
 bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildCreationInfo> children)
@@ -261,7 +261,7 @@ bool Scenetree::registerChildren(const EntityType type, std::vector<EntityChildC
 		if (!checkChildrenValid(parentTypes, children))
 			return false;
 
-		registeredChildCreationInfo[type] = children;	 //do we need to do this beforehand?
+		m_registered_child_creation_info[type] = children;	 //do we need to do this beforehand?
 	}
 
 	return true;
@@ -273,7 +273,7 @@ std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 
 	if (ID == 0)
 	{
-		fillEntitiesFromChildren(nullptr, entitiesParentless, ents);
+		fillEntitiesFromChildren(nullptr, m_entities_parentless, ents);
 	}
 	else
 	{
@@ -288,8 +288,8 @@ std::vector<Entity*> Scenetree::getEntitiesFromRoot(EntityID ID)
 void Scenetree::input(Event& event)
 {
 	// do not use range for loop
-	for (std::size_t i = 0; i < entitiesParentless.size(); ++i)
-		input(event, entitiesParentless[i]);
+	for (std::size_t i = 0; i < m_entities_parentless.size(); ++i)
+		input(event, m_entities_parentless[i]);
 }
 
 void Scenetree::update(float dt)
@@ -306,7 +306,7 @@ void Scenetree::update(float dt)
 		if (e && e->remove)
 		{
 			auto [local, version, index] = splitID(e->info.ID);
-			this->entities[local][index].entity->onDespawn();
+			this->m_entities[local][index].entity->onDespawn();
 			entitiesToRemove.push_back(e);
 		}
 	}
@@ -326,25 +326,25 @@ void Scenetree::update(float dt)
 			});
 		}
 		
-		std::erase_if(entitiesParentless, [removedID = e->info.ID](EntityID id) {
+		std::erase_if(m_entities_parentless, [removedID = e->info.ID](EntityID id) {
 			return id == removedID;
 		});
 
-		this->entities[local][index].version++;
-		this->entities[local][index].entity = nullptr;
-		entities_free_indices[local].push(index);
+		this->m_entities[local][index].version++;
+		this->m_entities[local][index].entity = nullptr;
+		m_entities_free_indices[local].push(index);
 	}
 
 	//do not use range for loop
-	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
-		update(dt, entitiesParentless[i]);
+	for (unsigned int i = 0; i < m_entities_parentless.size(); ++i)
+		update(dt, m_entities_parentless[i]);
 }
 
 void Scenetree::draw(Renderer* renderer)
 {
 	//do not use range for loop
-	for (unsigned int i = 0; i < entitiesParentless.size(); ++i)
-		draw(renderer, entitiesParentless[i]);
+	for (unsigned int i = 0; i < m_entities_parentless.size(); ++i)
+		draw(renderer, m_entities_parentless[i]);
 }
 
 void Scenetree::deleteEntity(EntityID ID)
@@ -353,7 +353,7 @@ void Scenetree::deleteEntity(EntityID ID)
 
 	if (!e)
 	{
-		console->error(
+		m_console->error(
 			"Tried to delete entity {} "
 			"but it doesn't exist",
 			ID);
@@ -364,15 +364,15 @@ void Scenetree::deleteEntity(EntityID ID)
 	{
 		e->remove = true;
 	}
-	else if (network_ready)
+	else if (m_network_ready)
 	{
 		Packet p({ENTITY_DELETION});
 		p << ID;
 
-		if (network_manager->isServer())
-			network_manager->server->sendPacketToAllClients(0, &p);
-		else if (network_manager->isClient())
-			network_manager->client->sendPacket(0, &p);
+		if (m_network_manager->isServer())
+			m_network_manager->server->sendPacketToAllClients(0, &p);
+		else if (m_network_manager->isClient())
+			m_network_manager->client->sendPacket(0, &p);
 	}
 }
 
@@ -380,7 +380,7 @@ std::vector<Entity*> Scenetree::findEntitiesByType(HashedID type) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& group : entities)
+	for (const auto& group : m_entities)
 		for (const auto& [version, entity] : group)
 			if (entity && entity->info.type == type)
 				ents.push_back(entity.get());
@@ -392,7 +392,7 @@ std::vector<Entity*> Scenetree::findEntitiesByName(const std::string& name) cons
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& group : entities)
+	for (const auto& group : m_entities)
 		for (const auto& [version, entity] : group)
 			if (entity && entity->info.name == name)
 				ents.push_back(entity.get());
@@ -404,7 +404,7 @@ std::vector<Entity*> Scenetree::findEntitiesByOwner(ClientID owner) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& group : entities)
+	for (const auto& group : m_entities)
 		for (const auto& [version, entity] : group)
 			if (entity && entity->info.ownerID == owner)
 				ents.push_back(entity.get());
@@ -416,7 +416,7 @@ std::vector<Entity*> Scenetree::findEntitiesByParent(EntityID parent) const
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& group : entities)
+	for (const auto& group : m_entities)
 		for (const auto& [version, entity] : group)
 			if (entity && entity->info.parentID == parent)
 				ents.push_back(entity.get());
@@ -428,7 +428,7 @@ std::vector<Entity*> Scenetree::findEntitiesByPredicate(const std::function<bool
 {
 	std::vector<Entity*> ents;
 
-	for (const auto& group : entities)
+	for (const auto& group : m_entities)
 		for (const auto& [version, entity] : group)
 			if (entity && predicate(*entity))
 				ents.push_back(entity.get());
@@ -443,13 +443,13 @@ void Scenetree::createEntityNetworkedFromRequest(EntityInfo info,
 	Packet p({PacketType::ENTITY_CREATION_TREE});
 	auto* e = createEntityNetworkedFromRequestImpl(std::move(info), spawnInfo, children, p);
 
-	console->info(
+	m_console->info(
 		"Creating networked entity as the server "
 		"to all clients. Sending tree\n\t{}",
 		e->info);
 	//Don't forward to ourselves in case we're hosting
 	//todo: maybe think about having a different ID even when hosting, i.e. 0 is invalid, 1 is this server, 2 is our client, 3+ is everyone else
-	network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
+	m_network_manager->server->sendPacketToAllExceptOneClient(1, 0, &p);
 }
 
 ////////////////////////
@@ -463,16 +463,16 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 {
 	if (info.name.empty() || info.type == 0)
 	{
-		console->error(
+		m_console->error(
 			"Invalid info when creating networked entity."
 			"\n\t{}",
 			info);
 		throw;
 	}
 
-	if (!registeredTypes.count(info.type))
+	if (!m_registered_types.count(info.type))
 	{
-		console->error(
+		m_console->error(
 			"Tried to create networked entity without "
 			"registering it first.\n\t{}",
 			info);
@@ -481,7 +481,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 	if (info.ID < 0)
 	{
-		console->error(
+		m_console->error(
 			"Tried to create networked entity that has "
 			"a local ID.\n\t{}",
 			info);
@@ -490,7 +490,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 	if (info.ID > 0)
 	{
-		console->error(
+		m_console->error(
 			"Tried to create networked entity that has "
 			"an existing ID.\n\t{}",
 			info);
@@ -499,7 +499,7 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 	if (info.parentID != Entity::InvalidID && !_findEntity(info.parentID))
 	{
-		console->error(
+		m_console->error(
 			"Tried to create networked entity that has "
 			"the non-existent parent {} specified.\n\t{}",
 			prettyID(info.parentID),
@@ -510,24 +510,24 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	std::uint32_t index;
 	std::uint32_t version;
 
-	if (entities_free_indices[Networked].empty())
+	if (m_entities_free_indices[Networked].empty())
 	{
-		index = static_cast<std::uint32_t>(entities[Networked].size());
+		index = static_cast<std::uint32_t>(m_entities[Networked].size());
 		version = 0;
-		entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
+		m_entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
 	}
 	else
 	{
-		index = entities_free_indices[Networked].top();
-		entities_free_indices[Networked].pop();
-		version = entities[Networked][index].version;
+		index = m_entities_free_indices[Networked].top();
+		m_entities_free_indices[Networked].pop();
+		version = m_entities[Networked][index].version;
 	}
 
 	info.ID = generateEntityID(false, version, index);
 
 	if (info.parentID == Entity::InvalidID)
 	{
-		entitiesParentless.push_back(info.ID);
+		m_entities_parentless.push_back(info.ID);
 	}
 	else
 	{
@@ -539,17 +539,17 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 	Entity* entity;
 
 	{
-		auto e = registeredTypes[info.type](info);
+		auto e = m_registered_types[info.type](info);
 		entity = e.get();
-		entities[Networked][index].version = version;
-		entities[Networked][index].entity = std::move(e);
+		m_entities[Networked][index].version = version;
+		m_entities[Networked][index].entity = std::move(e);
 	}
 
 	p << entity->info;
 	p << spawnInfo;
 
 	//todo: both of these for loops have the same body
-	for (auto& child : registeredChildCreationInfo[info.type])
+	for (auto& child : m_registered_child_creation_info[info.type])
 	{
 		auto* c = createEntityNetworkedFromRequestImpl(
 			{child.type, child.name, Entity::InvalidID, info.ownerID, info.ID},
@@ -577,11 +577,11 @@ Entity* Scenetree::createEntityNetworkedFromRequestImpl(EntityInfo info,
 
 void Scenetree::createEntitiesFromTreePacket(Packet p)
 {
-	console->info("got tree packet {}", p.getBytesWritten());
+	m_console->info("got tree packet {}", p.getBytesWritten());
 
-	if (!network_manager->isClient())
+	if (!m_network_manager->isClient())
 	{
-		console->error("packet tree we are the server");
+		m_console->error("packet tree we are the server");
 		throw;
 	}
 
@@ -595,7 +595,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 
 		if (info.parentID == Entity::InvalidID)
 		{
-			entitiesParentless.push_back(info.ID);
+			m_entities_parentless.push_back(info.ID);
 		}
 		else
 		{
@@ -604,44 +604,44 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 			parent->info.childIDs.push_back(info.ID);
 		}
 
-		auto e = registeredTypes[type](std::move(info));
+		auto e = m_registered_types[type](std::move(info));
 		auto* entity = e.get();
 
-		if (index >= entities[Networked].size())	//need to create a new one
+		if (index >= m_entities[Networked].size())	//need to create a new one
 		{
-			console->info(
+			m_console->info(
 				"Creating additional entities from a tree packet. {} {}\n{}",
 				index,
-				entities[Networked].size(),
+				m_entities[Networked].size(),
 				entity->info);
 
-			while (index != entities[Networked].size())	   //need to create empty ents to match required index
-				entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
+			while (index != m_entities[Networked].size())	   //need to create empty ents to match required index
+				m_entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
 
 			//now index == size, so last push back is the correct index
-			entities[Networked].emplace_back(VersionEntityPair{version, std::move(e)});
+			m_entities[Networked].emplace_back(VersionEntityPair{version, std::move(e)});
 		}
 		else
 		{
-			console->info(
+			m_console->info(
 				"Creating exact entity from a tree packet. {} {}\n{}",
 				index,
-				entities[Networked].size(),
+				m_entities[Networked].size(),
 				entity->info);
 
-			if (entities[Networked][index].version != version												 //version mismatch
-				&& (entities[Networked][index].entity != nullptr && entities[Networked][index].version != 0))	 //but our version is 0 with a null entity, so it's just a placeholder, making it okay
+			if (m_entities[Networked][index].version != version												 //version mismatch
+				&& (m_entities[Networked][index].entity != nullptr && m_entities[Networked][index].version != 0))	 //but our version is 0 with a null entity, so it's just a placeholder, making it okay
 			{
-				console->error("packet tree version mismatch");
+				m_console->error("packet tree version mismatch");
 				//throw;
 			}
-			else if (entities[Networked][index].entity != nullptr)
+			else if (m_entities[Networked][index].entity != nullptr)
 			{
-				console->error("packet tree entity already exists at index with same version");
+				m_console->error("packet tree entity already exists at index with same version");
 				//throw;
 			}
 
-			entities[Networked][index] = {version, std::move(e)};
+			m_entities[Networked][index] = {version, std::move(e)};
 		}
 
 		//todo: this is calling it from parent-to-child, should be child-to-parent
@@ -649,7 +649,7 @@ void Scenetree::createEntitiesFromTreePacket(Packet p)
 	}
 	catch (...)
 	{
-		console->info(
+		m_console->info(
 			"Failed to create entities from a tree packet");
 		//todo: this is a shit way of handling this problem
 	}
@@ -724,10 +724,10 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 			return false;
 
 		//check registered grandchildren against our parental hierarchy and ourselves
-		if (!registeredChildCreationInfo[child.type].empty())
+		if (!m_registered_child_creation_info[child.type].empty())
 		{
 			parentTypes.insert(child.type);
-			const bool valid = checkChildrenValid(parentTypes, registeredChildCreationInfo[child.type]);
+			const bool valid = checkChildrenValid(parentTypes, m_registered_child_creation_info[child.type]);
 			parentTypes.erase(child.type);
 			if (!valid)
 				return false;
@@ -750,13 +750,13 @@ bool Scenetree::checkChildrenValid(std::set<EntityType>& parentTypes, const std:
 
 void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 {
-	if (!network_ready || !network_manager->isServer())
+	if (!m_network_ready || !m_network_manager->isServer())
 	{
-		console->error(
+		m_console->error(
 			"Tried to send networked entities to clients "
 			" but failed. network_ready = {}, server = {}",
-			network_ready,
-			network_manager->isServer());
+			m_network_ready,
+			m_network_manager->isServer());
 	}
 
 	Packet p({PacketType::ENTITY_CREATION_ON_CONNECTION});
@@ -775,7 +775,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 
 		if (info.name.empty() || info.type == 0)
 		{
-			console->error(
+			m_console->error(
 				"Invalid info when sending on connection of "
 				"client {} for entity.\n\t{}",
 				client_id,
@@ -783,7 +783,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 		}
 		else
 		{
-			console->info(
+			m_console->info(
 				"Sending networked entity to client {}."
 				"\n\t{}",
 				client_id,
@@ -799,7 +799,7 @@ void Scenetree::sendAllNetworkedEntitiesToClient(ClientID client_id)
 
 		ent->serializeOnConnection(p);
 	}
-	network_manager->server->sendPacketToOneClient(client_id, 0, &p);
+	m_network_manager->server->sendPacketToOneClient(client_id, 0, &p);
 }
 
 void Scenetree::receivedPacketFromClient(Packet p)
@@ -852,7 +852,7 @@ void Scenetree::receivedPacketFromClient(Packet p)
 
 		case ENTITY_CREATION_ON_CONNECTION:
 		{
-			console->error(
+			m_console->error(
 				"Server received ENTITY_CREATION_ON_CONNECTION from client {}",
 				p.info.senderID);
 			break;
@@ -861,7 +861,7 @@ void Scenetree::receivedPacketFromClient(Packet p)
 		case ENTITY_UPDATE:
 		{
 			//Don't send entity updates back to the sender
-			network_manager->server->sendPacketToAllExceptOneClient(
+			m_network_manager->server->sendPacketToAllExceptOneClient(
 				p.info.senderID, 0, &p);
 			//game_data->network_manager->server->sendPacketToAllClients(
 			//	p.info.senderID, &p);
@@ -885,7 +885,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 	const auto* ent = _findEntity(info.ID);
 	if (!ent)
 	{
-		console->error(
+		m_console->error(
 			"Received request to call RPC {} on entity {} "
 			"but it doesn't exist",
 			name,
@@ -895,7 +895,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 
 	if (info != ent->info)
 	{
-		console->error(
+		m_console->error(
 			"Received request to call RPC {} on entity {} "
 			"but it doesn't match the entity we have: {}",
 			name,
@@ -910,7 +910,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 	{
 		case LOCAL:
 		{
-			console->error(
+			m_console->error(
 				"Received a request for a "
 				"Local Entity RPC call from {} for {} "
 				"but local calls shouldn't be "
@@ -925,7 +925,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 			if (info.ownerID == p.info.senderID)
 			{
 				//todo: not sure if this is an error or not
-				console->error(
+				m_console->error(
 					"Received a request for a "
 					"Master Entity RPC call from {} "
 					"but the sender is the owner of {}",
@@ -935,7 +935,7 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 			else
 			{
 				//only send packet to owner
-				network_manager->server->sendPacketToOneClient(
+				m_network_manager->server->sendPacketToOneClient(
 					info.ownerID, 0, &p);
 			}
 			break;
@@ -947,12 +947,12 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 			if (info.ownerID == p.info.senderID)
 			{
 				//only send packets to non-owners, which must be all except sender
-				network_manager->server->sendPacketToAllExceptOneClient(
+				m_network_manager->server->sendPacketToAllExceptOneClient(
 					p.info.senderID, 0, &p);
 			}
 			else
 			{
-				console->error(
+				m_console->error(
 					"Received request for Remote "
 					"or RemoteAndLocal RPC call from {} "
 					"but the sent entity's owner ID {} "
@@ -969,14 +969,14 @@ void Scenetree::receivedEntityRPCFromClient(Packet& p)
 		case ALL:
 		{
 			//send to everyone else
-			network_manager->server->sendPacketToAllExceptOneClient(
+			m_network_manager->server->sendPacketToAllExceptOneClient(
 				p.info.senderID, 0, &p);
 			break;
 		}
 
 		default:
 		{
-			console->error(
+			m_console->error(
 				"Received request for an Entity RPC "
 				"from {} for {} but the RPC type is invalid",
 				p.info.senderID,
@@ -992,7 +992,7 @@ void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 	const auto* ent = _findEntity(entID);
 	if (!ent)
 	{
-		console->error(
+		m_console->error(
 			"Received request to delete entity {} "
 			"but it doesn't exist",
 			entID);
@@ -1001,7 +1001,7 @@ void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 
 	if (ent->info.ownerID != p.info.senderID)
 	{
-		console->error(
+		m_console->error(
 			"Received request to delete entity {} "
 			"but the sender {} isn't the owner",
 			ent->info,
@@ -1009,7 +1009,7 @@ void Scenetree::receivedEntityDeletionFromClient(Packet& p)
 		return;
 	}
 
-	network_manager->server->sendPacketToAllClients(0, &p);
+	m_network_manager->server->sendPacketToAllClients(0, &p);
 }
 
 void Scenetree::receivedPacketFromServer(Packet p)
@@ -1034,7 +1034,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 
 			if (!ent)
 			{
-				console->error(
+				m_console->error(
 					"Received an RPC packet from {} "
 					"for an entity that does not exist."
 					"\n\t{}",
@@ -1045,7 +1045,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 
 			if (info != ent->info)
 			{
-				console->error(
+				m_console->error(
 					"Received an RPC packet from {} for an entity "
 					"that does not match our version."
 					"\nTheirs: \t{}"
@@ -1063,7 +1063,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 
 		case ENTITY_CREATION_REQUEST:
 		{
-			console->error("Client received ENTITY_CREATION_REQUEST from server");
+			m_console->error("Client received ENTITY_CREATION_REQUEST from server");
 			break;
 		}
 
@@ -1096,47 +1096,47 @@ void Scenetree::receivedPacketFromServer(Packet p)
 				
 				if (info.parentID == Entity::InvalidID)
 				{
-					entitiesParentless.push_back(info.ID);
+					m_entities_parentless.push_back(info.ID);
 				}
 
-				auto e = registeredTypes[info.type](info);
+				auto e = m_registered_types[info.type](info);
 				auto* entity = e.get();
 
-				if (index >= entities[Networked].size())	//need to create a new one
+				if (index >= m_entities[Networked].size())	//need to create a new one
 				{
-					console->info(
+					m_console->info(
 						"Creating additional entities from a connection packet. {} {}\n{}",
 						index,
-						entities[Networked].size(),
+						m_entities[Networked].size(),
 						info);
 
-					while (index != entities[Networked].size())	   //need to create empty ents to match required index
-						entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
+					while (index != m_entities[Networked].size())	   //need to create empty ents to match required index
+						m_entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
 
 					//now index == size, so last push back is the correct index
-					entities[Networked].emplace_back(VersionEntityPair{version, std::move(e)});
+					m_entities[Networked].emplace_back(VersionEntityPair{version, std::move(e)});
 				}
 				else
 				{
-					console->info(
+					m_console->info(
 						"Creating exact entity from a connection packet. {} {}\n{}",
 						index,
-						entities[Networked].size(),
+						m_entities[Networked].size(),
 						info);
 
-					if (entities[Networked][index].version != version												 //version mismatch
-						&& (entities[Networked][index].entity != nullptr && entities[Networked][index].version != 0))	 //but our version is 0 with a null entity, so it's just a placeholder, making it okay
+					if (m_entities[Networked][index].version != version												 //version mismatch
+						&& (m_entities[Networked][index].entity != nullptr && m_entities[Networked][index].version != 0))	 //but our version is 0 with a null entity, so it's just a placeholder, making it okay
 					{
-						console->error("packet connection version mismatch");
+						m_console->error("packet connection version mismatch");
 						//throw;
 					}
-					else if (entities[Networked][index].entity != nullptr)
+					else if (m_entities[Networked][index].entity != nullptr)
 					{
-						console->error("packet connection entity already exists at index with same version");
+						m_console->error("packet connection entity already exists at index with same version");
 						//throw;
 					}
 
-					entities[Networked][index] = {version, std::move(e)};
+					m_entities[Networked][index] = {version, std::move(e)};
 				}
 
 				//todo: we pass the whole damn thing, they should only have access to their specific data, this is really really bad
@@ -1152,7 +1152,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 			 * //but even then iffy, because what about vector? it's variable, so it would be a minimum size requirement at best in that case, or max in the compressed case, so... useless?
 			if (!p.canDeserialize<EntityInfo>())
 			{
-				console->error(
+				m_console->error(
 					"Received entity update with an invalid packet{}");
 				return;
 			}*/
@@ -1164,14 +1164,14 @@ void Scenetree::receivedPacketFromServer(Packet p)
 			}
 			catch (...)
 			{
-				console->error("Received entity update with an invalid packet as it failed to deserialize EntityInfo {}", info);
+				m_console->error("Received entity update with an invalid packet as it failed to deserialize EntityInfo {}", info);
 				return;
 			}
 
 			auto* ent = _findEntity(info.ID);
 			if (!ent)
 			{
-				console->error(
+				m_console->error(
 					"Received entity update for nonexistant entity."
 					"\n\t{}",
 					info);
@@ -1180,14 +1180,14 @@ void Scenetree::receivedPacketFromServer(Packet p)
 
 			if (info != ent->info)
 			{
-				console->error(
+				m_console->error(
 					"Received entity update with "
 					"invalid info.\n\t{}\n\tVS\n\t{}"
 					"\n\tSender ID = {}, Client ID = {}",
 					info,
 					ent->info,
 					p.info.senderID,
-					network_manager->client->getID());
+					m_network_manager->client->getID());
 				return;
 			}
 
@@ -1205,7 +1205,7 @@ void Scenetree::receivedPacketFromServer(Packet p)
 			}
 			else
 			{
-				console->error(
+				m_console->error(
 					"Received a request for entity deletion from {} "
 					"but an entity with ID {} does not exist.",
 					p.info.senderID,
@@ -1227,7 +1227,7 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 
 	//todo: handle this better, no need to even send the packet, etc
 	//we're both the client and server so the server has already created this for us
-	if (p.info.senderID == network_manager->client->getID())
+	if (p.info.senderID == m_network_manager->client->getID())
 		return;
 
 	//todo: we should send how many entities and use a for loop and then check at the end that there's nothing left in the packet
@@ -1239,30 +1239,30 @@ void Scenetree::receivedEntityCreationFromServer(Packet p)
 
 		auto [local, version, index] = splitID(info.ID);
 		auto type = info.type;
-		auto e = registeredTypes[type](std::move(info));
+		auto e = m_registered_types[type](std::move(info));
 
-		if (index >= entities[Networked].size())	//need to create a new one
+		if (index >= m_entities[Networked].size())	//need to create a new one
 		{
-			while (index != entities[Networked].size())	   //need to create empty ents to match required index
-				entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
+			while (index != m_entities[Networked].size())	   //need to create empty ents to match required index
+				m_entities[Networked].emplace_back(VersionEntityPair{0, nullptr});
 
 			//now index == size, so last push back is the correct index
-			entities[Networked].emplace_back(VersionEntityPair{version, std::move(e)});
+			m_entities[Networked].emplace_back(VersionEntityPair{version, std::move(e)});
 		}
 		else
 		{
-			if (entities[Networked][index].version != version
-				|| entities[Networked][index].entity != nullptr)
+			if (m_entities[Networked][index].version != version
+				|| m_entities[Networked][index].entity != nullptr)
 				throw;
 
-			entities[Networked][index] = {version, std::move(e)};
+			m_entities[Networked][index] = {version, std::move(e)};
 		}
 	}
 }
 
 void Scenetree::onNetworkTick()
 {
-	total_network_ticks++;
+	m_total_network_ticks++;
 
 	Packet p({PacketType::ENTITY_UPDATE});
 
@@ -1280,17 +1280,17 @@ void Scenetree::onNetworkTick()
 	for (auto* ent : entities)
 	{
 		//Serialize our entities based on their specific tick rates
-		if (ent->isOwner(network_manager) &&
+		if (ent->isOwner(m_network_manager) &&
 			ent->isNetworked() &&
 			ent->network_tick_rate > 0 &&
-			total_network_ticks % ent->network_tick_rate == 0)
+			m_total_network_ticks % ent->network_tick_rate == 0)
 		{
 			p.clear();
 			p << ent->info;
 			//todo: this is why we need a generic buffer, because sometimes we need to serialise a packet within a packet and that means redundant packet header overhead
 			ent->serializeOnTick(p);
 			//todo: send lots of little packets, or one big packet?
-			network_manager->client->sendPacket(0, &p);
+			m_network_manager->client->sendPacket(0, &p);
 		}
 	}
 }

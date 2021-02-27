@@ -155,7 +155,7 @@ sf::Vector2f asteroidPos()
 	float y = 0;
 	if (vertical_horizontal)
 	{
-		x = std::rand() % 1280;
+		x = static_cast<float>(std::rand() % 1280);
 		if (side)
 		{
 			y = 0 - 100;
@@ -167,7 +167,7 @@ sf::Vector2f asteroidPos()
 	}
 	else
 	{
-		y = std::rand() % 720;
+		y = static_cast<float>(std::rand() % 720);
 		if (side)
 		{
 			x = 0 - 100;
@@ -278,6 +278,7 @@ void Game::update(float dt)
 
 		int port = custom_data.network_manager->server_port;
 		ImGui::InputInt("Port", &port);
+		//todo: check port fits uint16
 		custom_data.network_manager->server_port = port;
 		
 		ImGui::End();

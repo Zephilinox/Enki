@@ -34,11 +34,11 @@ std::unique_ptr<Font> RendererNone::createFont() const
 	return std::make_unique<FontNone>();
 }
 
-void RendererNone::queue(const Sprite* sprite)
+void RendererNone::queue(const Sprite*)
 {
 }
 
-void RendererNone::queue(const Text* text)
+void RendererNone::queue(const Text*)
 {
 }
 

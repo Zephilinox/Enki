@@ -14,7 +14,7 @@ WindowNone::WindowNone(Properties properties)
 	
 }
 
-bool WindowNone::poll(Event& e)
+bool WindowNone::poll(Event&)
 {
 	return false;
 }
@@ -44,7 +44,7 @@ void WindowNone::close()
 	open = false;
 }
 
-void WindowNone::clear(int r, int g, int b)
+void WindowNone::clear(int, int, int)
 {
 	
 }
@@ -58,7 +58,7 @@ void WindowNone::setVerticalSyncEnabled(bool enabled)
 {
 	properties.vsync = enabled;
 }
-void WindowNone::setWidth(unsigned int width) {}
-void WindowNone::setHeight(unsigned int height){};
+void WindowNone::setWidth(unsigned int) {}
+void WindowNone::setHeight(unsigned int){};
 
 }	 // namespace enki

@@ -10,9 +10,7 @@
 #include "Enki/Renderer/Renderer.hpp"
 
 //LIBS
-//For whatever reason fmt and enet conflict a bit because of the ordering of winsock includes
-//fmt includes all of WIN32, including winsocks2, so defining this fixes that
-#define WIN32_LEAN_AND_MEAN
+//For whatever reason fmt and enet conflict a bit because of the ordering of winsock includes. Ensure we're compiling with WIN32_LEAN_AND_MEAN
 #include <spdlog/fmt/ostr.h>
 #include <SFML/Graphics.hpp>
 

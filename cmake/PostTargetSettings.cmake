@@ -16,10 +16,9 @@ if (MSVC)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 	endif()
 	
-	#disable for now, warnings as errors
-	if (CMAKE_CXX_FLAGS MATCHES "/WX")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
-	endif()
+	#if (CMAKE_CXX_FLAGS MATCHES "/W4")
+	#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
+	#endif()
 
 	target_compile_options(${PROJECT_NAME} PUBLIC
 		"/permissive-"

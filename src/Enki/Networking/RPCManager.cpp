@@ -43,8 +43,9 @@ RPCType RPCManager::getGlobalRPCType(const std::string& name) const
 	return global_rpcs.at(name).rpctype;
 }
 
-RPCType RPCManager::getEntityRPCType(HashedID type, const std::string& name) const
+RPCType RPCManager::getEntityRPCType(HashedID, const std::string& name) const
 {
+	//todo: fix class/entity RPC's, since currently entity RPC's are all on the top-level entity rpcs and may conflict. the entity type is not used.
 	return RPCWrapper<Entity>::class_rpcs.at(name).rpctype;
 }
 

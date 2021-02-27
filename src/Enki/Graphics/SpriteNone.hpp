@@ -25,10 +25,10 @@ public:
 	static constexpr HashedID type = hash_constexpr("None");
 
 private:
-	Texture* texture;
-	Vector2 position;
-	float rotation;
-	Colour colour;
+	Texture* m_texture = nullptr;
+	Vector2 m_position;
+	float m_rotation = 0;
+	Colour m_colour;
 };
 
 }	 // namespace enki

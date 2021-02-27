@@ -210,11 +210,11 @@ private:
 	template <typename T>
 	void deserialize(T* data, std::size_t size);
 
-	PacketHeader header;
-	std::size_t bytes_written;
-	std::size_t bytes_read;
-	std::size_t bits_written;
-	std::size_t bits_read;
+	PacketHeader m_header;
+	std::size_t m_bytes_written;
+	std::size_t m_bytes_read;
+	std::size_t m_bits_written;
+	std::size_t m_bits_read;
 };
 
 //will need to adjust this in the future for endianess concerns
@@ -349,25 +349,25 @@ T Packet::read()
 template <typename T>
 T Packet::writeAndRetrieve(T& data)
 {
-	const auto bits_written = this->bits_written;
-	const auto bytes_written = this->bytes_written;
+	const auto bits_written = m_bits_written;
+	const auto bytes_written = m_bytes_written;
 	*this << data;
-	const auto new_bits_written = this->bits_written;
-	const auto new_bytes_written = this->bytes_written;
+	const auto new_bits_written = m_bits_written;
+	const auto new_bytes_written = m_bytes_written;
 
-	const auto bits_read = this->bits_read;
-	const auto bytes_read = this->bytes_read;
+	const auto bits_read = m_bits_read;
+	const auto bytes_read = m_bytes_read;
 
-	this->bits_read = bits_written;
-	this->bytes_read = bytes_written;
+	m_bits_read = bits_written;
+	m_bytes_read = bytes_written;
 
 	T t;
 	*this >> t;
 
-	this->bits_read = bits_read;
-	this->bytes_read = bytes_read;
-	this->bytes_written = new_bytes_written;
-	this->bits_written = new_bits_written;
+	m_bits_read = bits_read;
+	m_bytes_read = bytes_read;
+	m_bytes_written = new_bytes_written;
+	m_bits_written = new_bits_written;
 
 	return t;
 }
@@ -386,14 +386,14 @@ void Packet::serialize(T* data, std::size_t size)
 			"Failed to serialize data into packet, data is nullptr");
 	}
 
-	if (bytes_written + size > bytes.size())
+	if (m_bytes_written + size > bytes.size())
 	{
-		bytes.resize((bytes_written + size) * 2);
+		bytes.resize((m_bytes_written + size) * 2);
 	}
 
-	memcpy(bytes.data() + bytes_written, data, size);
-	bytes_written += size;
-	bits_written = 8;
+	memcpy(bytes.data() + m_bytes_written, data, size);
+	m_bytes_written += size;
+	m_bits_written = 8;
 }
 
 template <typename T>
@@ -402,7 +402,7 @@ void Packet::deserialize(T* data, std::size_t size)
 	static_assert(std::is_trivially_copyable_v<T>,
 		"You can only deserialize trivially copyable types");
 
-	if (bytes_read + size > bytes.size())
+	if (m_bytes_read + size > bytes.size())
 	{
 		throw std::runtime_error(
 			"Failed to deserialize data in packet, "
@@ -415,9 +415,9 @@ void Packet::deserialize(T* data, std::size_t size)
 			"Failed to deserialize data in packet, data is nullptr");
 	}
 
-	memcpy(data, bytes.data() + bytes_read, size);
-	bytes_read += size;
-	bits_read = 8;
+	memcpy(data, bytes.data() + m_bytes_read, size);
+	m_bytes_read += size;
+	m_bits_read = 8;
 }
 
 //https://stackoverflow.com/questions/29603364/type-trait-to-check-that-all-types-in-a-parameter-pack-are-copy-constructible
@@ -451,7 +451,7 @@ bool Packet::canDeserialize()
 	constexpr std::array<std::size_t, sizeof...(Args)> sizes = {sizeof(Args)...};
 	int size = std::accumulate(sizes.begin(), sizes.end(), 0);
 
-	if (bytes_read + size > bytes.size())
+	if (m_bytes_read + size > bytes.size())
 	{
 		return false;
 	}

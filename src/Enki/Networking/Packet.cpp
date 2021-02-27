@@ -10,61 +10,61 @@ namespace enki
 {
 Packet::Packet()
 	: bytes(sizeof(PacketHeader))
-	, bytes_written(sizeof(PacketHeader))
-	, bytes_read(sizeof(PacketHeader))
-	, bits_written(8)
-	, bits_read(8)
+	, m_bytes_written(sizeof(PacketHeader))
+	, m_bytes_read(sizeof(PacketHeader))
+	, m_bits_written(8)
+	, m_bits_read(8)
 {
 	bytes.reserve(1400);
-	memcpy(bytes.data(), &header, sizeof(PacketHeader));
+	memcpy(bytes.data(), &m_header, sizeof(PacketHeader));
 }
 
 Packet::Packet(PacketHeader p_header)
 	: bytes(sizeof(PacketHeader))
-	, header(p_header)
-	, bytes_written(sizeof(PacketHeader))
-	, bytes_read(sizeof(PacketHeader))
-	, bits_written(8)
-	, bits_read(8)
+	, m_header(p_header)
+	, m_bytes_written(sizeof(PacketHeader))
+	, m_bytes_read(sizeof(PacketHeader))
+	, m_bits_written(8)
+	, m_bits_read(8)
 {
 	bytes.reserve(1400);
-	memcpy(bytes.data(), &header, sizeof(PacketHeader));
+	memcpy(bytes.data(), &m_header, sizeof(PacketHeader));
 }
 
 Packet::Packet(const unsigned char* data, std::size_t size)
 	: bytes(size)
-	, bytes_written(size)
-	, bytes_read(sizeof(PacketHeader))
-	, bits_written(8)
-	, bits_read(8)
+	, m_bytes_written(size)
+	, m_bytes_read(sizeof(PacketHeader))
+	, m_bits_written(8)
+	, m_bits_read(8)
 {
 	bytes.reserve(1400);
 	memcpy(bytes.data(), data, size);
-	memcpy(&header, bytes.data(), sizeof(PacketHeader));
+	memcpy(&m_header, bytes.data(), sizeof(PacketHeader));
 }
 
 Packet::Packet(std::byte* data, std::size_t size)
 	: bytes(size)
-	, bytes_written(size)
-	, bytes_read(sizeof(PacketHeader))
-	, bits_written(8)
-	, bits_read(8)
+	, m_bytes_written(size)
+	, m_bytes_read(sizeof(PacketHeader))
+	, m_bits_written(8)
+	, m_bits_read(8)
 {
 	bytes.reserve(1400);
 	memcpy(bytes.data(), data, size);
-	memcpy(&header, bytes.data(), sizeof(PacketHeader));
+	memcpy(&m_header, bytes.data(), sizeof(PacketHeader));
 }
 
 void Packet::writeBits(int data, int bits_to_write, int offset)
 {
 	//ensure our bit/byte count is up to date
-	if (bits_written >= 8)
+	if (m_bits_written >= 8)
 	{
-		bytes_written += bits_written / 8;
-		bits_written = bits_written % 8;
+		m_bytes_written += m_bits_written / 8;
+		m_bits_written = m_bits_written % 8;
 	}
 
-	if (sizeof(data) * 8 < bits_to_write + offset)
+	if (static_cast<int>(sizeof(data)) * 8 < bits_to_write + offset)
 	{
 		throw std::runtime_error(
 			"Writing these bits with this offset "
@@ -73,26 +73,26 @@ void Packet::writeBits(int data, int bits_to_write, int offset)
 
 	//calculate how much space we need and then resize the buffer
 	//to accomodate it
-	int bits_available = 8 - bits_written;
+	int bits_available = 8 - static_cast<int>(m_bits_written);
 	int bits_needed = bits_to_write - bits_available;
 	int bytes_needed = static_cast<int>(std::ceil(static_cast<float>(bits_needed) / 8.0f));
 
-	if (bytes_written + bytes_needed > bytes.size())
-		bytes.resize(bytes_written + bytes_needed);
+	if (m_bytes_written + bytes_needed > bytes.size())
+		bytes.resize(m_bytes_written + bytes_needed);
 
 	const auto write_bits = [&](int bits, int extra_offset) {
 		//maybe there is a better way to do it than a loop
 		for (int i = 0; i < bits; ++i)
 		{
 			//sorry for ugly casts, blame GCC and Clang
-			int shift = 1 << (i + offset + extra_offset);
+			const int shift = 1 << (i + offset + extra_offset);
 			if (data & (shift))
 			{
-				bytes.data()[bytes_written - 1] = static_cast<std::byte>(static_cast<unsigned char>(bytes.data()[bytes_written - 1]) | static_cast<unsigned char>((1 << (i + bits_written))));
+				bytes.data()[m_bytes_written - 1] = static_cast<std::byte>(static_cast<unsigned char>(bytes.data()[m_bytes_written - 1]) | static_cast<unsigned char>((1 << (i + m_bits_written))));
 			}
 			else
 			{
-				bytes.data()[bytes_written - 1] = static_cast<std::byte>(static_cast<unsigned char>(bytes.data()[bytes_written - 1]) & static_cast<unsigned char>(~(1 << (i + bits_written))));
+				bytes.data()[m_bytes_written - 1] = static_cast<std::byte>(static_cast<unsigned char>(bytes.data()[m_bytes_written - 1]) & static_cast<unsigned char>(~(1 << (i + m_bits_written))));
 			}
 		}
 	};
@@ -117,22 +117,22 @@ void Packet::writeBits(int data, int bits_to_write, int offset)
 		if (bits_available < 8)
 		{
 			write_bits(bits_available, 0);
-			bytes_written++;
-			bits_written = 0;
+			m_bytes_written++;
+			m_bits_written = 0;
 			bits_left -= bits_available;
 			bits_available = 8;
 		}
 		else if (bits_left / 8 >= 1)
 		{
 			write_bits(8, bits_to_write - bits_left);
-			bytes_written++;
-			bits_written = 0;
+			m_bytes_written++;
+			m_bits_written = 0;
 			bits_left -= 8;
 		}
 		else
 		{
 			write_bits(bits_left % 8, bits_to_write - bits_left);
-			bits_written += bits_left % 8;
+			m_bits_written += bits_left % 8;
 			bits_left = 0;
 		}
 	}
@@ -142,24 +142,24 @@ int Packet::readBits(int bits_to_read, int offset)
 {
 	int data = 0;
 
-	if (bits_read >= 8)
+	if (m_bits_read >= 8)
 	{
-		bytes_read += bits_read / 8;
-		bits_read = bits_read % 8;
+		m_bytes_read += m_bits_read / 8;
+		m_bits_read = m_bits_read % 8;
 	}
 
-	int bits_available = 8 - bits_read;
-	int bits_needed = bits_to_read - bits_available;
-	int bytes_needed = static_cast<int>(std::ceil(static_cast<float>(bits_needed) / 8.0f));
+	int bits_available = 8 - static_cast<int>(m_bits_read);
+	const int bits_needed = bits_to_read - bits_available;
+	const int bytes_needed = static_cast<int>(std::ceil(static_cast<float>(bits_needed) / 8.0f));
 
-	if (sizeof(data) * 8 < bits_to_read + offset)
+	if (static_cast<int>(sizeof(data)) * 8 < bits_to_read + offset)
 	{
 		throw std::runtime_error(
 			"Reading these bits with this offset "
 			"would cause an overflow of the return value");
 	}
 
-	if (bytes_read + bytes_needed - 1 > bytes.size())
+	if (m_bytes_read + bytes_needed - 1 > bytes.size())
 	{
 		throw std::runtime_error(
 			"Tried to read past the packet buffer, "
@@ -170,8 +170,8 @@ int Packet::readBits(int bits_to_read, int offset)
 		for (int i = 0; i < bits; ++i)
 		{
 			//If this bit is 1
-			int byte = static_cast<int>(bytes.data()[bytes_read - 1]);
-			int shift = 1 << (bits_read + i);
+			const int byte = static_cast<int>(bytes.data()[m_bytes_read - 1]);
+			const int shift = 1 << (m_bits_read + i);
 			if ((byte) & (shift))
 			{
 				//set the other numbers bit to 1
@@ -191,22 +191,22 @@ int Packet::readBits(int bits_to_read, int offset)
 		if (bits_available < 8)
 		{
 			read_bits(bits_available, 0);
-			bytes_read++;
-			bits_read = 0;
+			m_bytes_read++;
+			m_bits_read = 0;
 			bits_left -= bits_available;
 			bits_available = 8;
 		}
 		else if (bits_left / 8 >= 1)
 		{
 			read_bits(8, bits_to_read - bits_left);
-			bytes_read++;
-			bits_read = 0;
+			m_bytes_read++;
+			m_bits_read = 0;
 			bits_left -= 8;
 		}
 		else
 		{
 			read_bits(bits_left % 8, bits_to_read - bits_left);
-			bits_read += bits_left % 8;
+			m_bits_read += bits_left % 8;
 			bits_left = 0;
 		}
 	}
@@ -244,25 +244,25 @@ float Packet::readCompressedFloat(float min, float max, float resolution)
 
 void Packet::resetReadPosition()
 {
-	bytes_read = sizeof(PacketHeader);
-	bits_read = 8;
+	m_bytes_read = sizeof(PacketHeader);
+	m_bits_read = 8;
 }
 
 void Packet::resetWritePosition()
 {
-	bytes_written = sizeof(PacketHeader);
-	bits_written = 8;
+	m_bytes_written = sizeof(PacketHeader);
+	m_bits_written = 8;
 }
 
 void Packet::clear()
 {
 	bytes.clear();
 	bytes.resize(sizeof(PacketHeader));
-	memcpy(bytes.data(), &header, sizeof(PacketHeader));
-	bytes_read = sizeof(PacketHeader);
-	bits_read = 8;
-	bytes_written = sizeof(PacketHeader);
-	bits_written = 8;
+	memcpy(bytes.data(), &m_header, sizeof(PacketHeader));
+	m_bytes_read = sizeof(PacketHeader);
+	m_bits_read = 8;
+	m_bytes_written = sizeof(PacketHeader);
+	m_bits_written = 8;
 }
 
 bool Packet::isEmpty() const
@@ -272,13 +272,13 @@ bool Packet::isEmpty() const
 
 void Packet::setHeader(PacketHeader p_header)
 {
-	header = p_header;
-	memcpy(bytes.data(), &header, sizeof(PacketHeader));
+	m_header = p_header;
+	memcpy(bytes.data(), &m_header, sizeof(PacketHeader));
 }
 
 const PacketHeader& Packet::getHeader() const
 {
-	return header;
+	return m_header;
 }
 
 const std::vector<std::byte>& Packet::getBytes() const
@@ -288,12 +288,12 @@ const std::vector<std::byte>& Packet::getBytes() const
 
 std::size_t Packet::getBytesWritten() const
 {
-	return bytes_written;
+	return m_bytes_written;
 }
 
 std::size_t Packet::getBytesRead() const
 {
-	return bytes_read;
+	return m_bytes_read;
 }
 
 Packet& Packet::operator<<(Packet data)
@@ -339,16 +339,16 @@ Packet& Packet::operator>>(std::string_view& data)
 	std::size_t length;
 	*this >> length;
 
-	if (bytes_read + length > bytes.size())
+	if (m_bytes_read + length > bytes.size())
 	{
 		throw std::runtime_error(
 			"Failed to deserialize data in packet, "
 			"would be reading past end of packet buffer");
 	}
 
-	char* ptr = reinterpret_cast<char*>(bytes.data()) + bytes_read;
-	bytes_read += length;
-	bits_read = 8;
+	char* ptr = reinterpret_cast<char*>(bytes.data()) + m_bytes_read;
+	m_bytes_read += length;
+	m_bits_read = 8;
 
 	data = std::string_view(ptr, length);
 	

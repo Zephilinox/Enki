@@ -34,12 +34,12 @@ public:
 	void stopInvincible();
 
 private:
-	enki::Keyboard::Key up;
-	enki::Keyboard::Key down;
-	enki::Keyboard::Key left;
-	enki::Keyboard::Key right;
-	enki::Keyboard::Key shoot;
-	enki::Keyboard::Key slow;
+	enki::Keyboard::Key up = enki::Keyboard::Key::Unknown;
+	enki::Keyboard::Key down = enki::Keyboard::Key::Unknown;
+	enki::Keyboard::Key left = enki::Keyboard::Key::Unknown;
+	enki::Keyboard::Key right = enki::Keyboard::Key::Unknown;
+	enki::Keyboard::Key shoot = enki::Keyboard::Key::Unknown;
+	enki::Keyboard::Key slow = enki::Keyboard::Key::Unknown;
 
 	CustomData* const custom_data;
 

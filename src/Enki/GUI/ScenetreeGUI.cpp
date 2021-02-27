@@ -10,7 +10,7 @@ ScenetreeGUI::ScenetreeGUI(EntityInfo info, Scenetree* scenetree)
 	
 }
 
-void ScenetreeGUI::input(Event& e)
+void ScenetreeGUI::input(Event&)
 {
 }
 
@@ -18,7 +18,7 @@ void missing_child(EntityID id)
 {
 	std::string pretty_id = prettyID(id);
 	std::string combined = std::string("MISSING! ") + pretty_id;
-	ImGui::PushStyleColor(ImGuiCol_Text, {1, 0.2, 0.2, 1});
+	ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.2f, 0.2f, 1.0f});
 	const bool node = ImGui::TreeNode(combined.c_str());
 	ImGui::PopStyleColor();
 
@@ -40,9 +40,9 @@ void treenode(Scenetree* scenetree, const Entity* ent)
 	std::string combined = ent->info.name + " " + pretty_id;
 
 	if (ent->isLocal())
-		ImGui::PushStyleColor(ImGuiCol_Text, {1, 0.7, 0.3, 1});
+		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 0.7f, 0.3f, 1.0f});
 	else
-		ImGui::PushStyleColor(ImGuiCol_Text, {0.5, 1, 0.5, 1});
+		ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 1.0f, 0.5f, 1.0f});
 	
 	const bool node = ImGui::TreeNode(combined.c_str());
 
@@ -87,7 +87,7 @@ void treenode(Scenetree* scenetree, const Entity* ent)
 	}
 }
 
-void ScenetreeGUI::update(float dt)
+void ScenetreeGUI::update(float)
 {
 	if (!show)
 		return;

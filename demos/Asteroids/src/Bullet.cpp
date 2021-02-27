@@ -16,12 +16,12 @@
 
 Bullet::Bullet(enki::EntityInfo info, CustomData* custom_data)
 	: Entity(info)
-	, custom_data(custom_data)
-	, bullet(custom_data->renderer->createSprite())
+	, m_custom_data(custom_data)
+	, m_bullet(custom_data->renderer->createSprite())
 {
 	custom_data->texture_manager->registerTexture(custom_data->renderer, "resources/bullet.png");
-	bullet_tex = custom_data->texture_manager->getTexture("resources/bullet.png");
-	bullet->setTexture(bullet_tex);
+	m_bullet_tex = custom_data->texture_manager->getTexture("resources/bullet.png");
+	m_bullet->setTexture(m_bullet_tex);
 	network_tick_rate = 1;
 }
 
@@ -40,7 +40,7 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 		const auto x = p.read<float>();
 		const auto y = p.read<float>();
 
-		speed = p.read<float>();
+		m_speed = p.read<float>();
 		const auto rot = p.read<float>();
 
 		const auto r = p.read<std::uint8_t>();
@@ -49,14 +49,14 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 		const auto a = p.read<std::uint8_t>();
 
 		const enki::Colour c{r, g, b, a};
-		bullet->setColour(c);
-		bullet->setPosition(x, y);
-		bullet->setRotation(rot);
+		m_bullet->setColour(c);
+		m_bullet->setPosition(x, y);
+		m_bullet->setRotation(rot);
 
-		velocity.x = 1 * degToVector(rot).x * speed;
-		velocity.y = 1 * degToVector(rot).y * speed;
+		m_velocity.x = 1 * degToVector(rot).x * m_speed;
+		m_velocity.y = 1 * degToVector(rot).y * m_speed;
 
-		find_asteroid_delay = 1.0f + (((std::rand() % 100) / 100.0f) - 0.5f);
+		m_find_asteroid_delay = 1.0f + (((std::rand() % 100) / 100.0f) - 0.5f);
 	}
 	else
 	{
@@ -64,45 +64,43 @@ void Bullet::onSpawn([[maybe_unused]]enki::Packet p)
 	}
 }
 
-int angle_distance(int a, int b)
+float angle_distance(float a, float b)
 {
-	const int wrapped = std::abs(b - a) % 360;
-	const int sign = (a - b >= 0 && a - b <= 180) || (a - b <= -180 && a - b >= -360) ? 1 : -1;
+	const float wrapped = std::fmod(std::abs(b - a), 360.0f);
+	const float sign = (a - b >= 0.0f && a - b <= 180.0f) || (a - b <= -180.0f && a - b >= -360.0f) ? 1.0f : -1.0f;
 	
-	const int distance = (wrapped > 180 ? 360 - wrapped : wrapped) * sign;
+	const float distance = (wrapped > 180.0f ? 360.0f - wrapped : wrapped) * sign;
 	return distance;
 }
 
 void Bullet::update(float dt)
 {
-	if (!isOwner(custom_data->network_manager))
+	if (!isOwner(m_custom_data->network_manager))
 	{
 		return;
 	}
 
-	auto input_manager = custom_data->input_manager;
-
-	Asteroid* closest_asteroid = static_cast<Asteroid*>(custom_data->scenetree->findEntity(closest_asteroid_id));
+	auto* closest_asteroid = static_cast<Asteroid*>(m_custom_data->scenetree->findEntity(m_closest_asteroid_id));
 	if (!closest_asteroid)
-		closest_asteroid_id = 0;
+		m_closest_asteroid_id = 0;
 	
-	if (/*!closest_asteroid || */find_asteroid_timer.getElapsedTime() > find_asteroid_delay)
+	if (/*!closest_asteroid || */m_find_asteroid_timer.getElapsedTime() > m_find_asteroid_delay)
 	{
-		find_asteroid_timer.restart();
+		m_find_asteroid_timer.restart();
 		
 		float shortest_length = 0;
-		auto asteroids = custom_data->scenetree->findEntitiesByType<Asteroid>(hash("Asteroid"));
+		auto asteroids = m_custom_data->scenetree->findEntitiesByType<Asteroid>(hash("Asteroid"));
 		for (auto asteroid : asteroids)
 		{
-			enki::Vector2 dist{
-				asteroid->getPosition().x - bullet->getPosition().x,
-				asteroid->getPosition().y - bullet->getPosition().y};
+			const enki::Vector2 dist{
+				asteroid->getPosition().x - m_bullet->getPosition().x,
+				asteroid->getPosition().y - m_bullet->getPosition().y};
 			
-			float our_length = (dist.x * dist.x) + (dist.y * dist.y);
+			const float our_length = (dist.x * dist.x) + (dist.y * dist.y);
 			if (!closest_asteroid || our_length < shortest_length)
 			{
-				distance_to_asteroid = dist;
-				closest_asteroid_id = asteroid->info.ID;
+				m_distance_to_asteroid = dist;
+				m_closest_asteroid_id = asteroid->info.ID;
 				closest_asteroid = asteroid;
 				shortest_length = our_length;
 			}
@@ -111,68 +109,68 @@ void Bullet::update(float dt)
 
 	if (closest_asteroid)
 	{
-		distance_to_asteroid = enki::Vector2{
-			closest_asteroid->getPosition().x - bullet->getPosition().x,
-			closest_asteroid->getPosition().y - bullet->getPosition().y};
+		m_distance_to_asteroid = enki::Vector2{
+			closest_asteroid->getPosition().x - m_bullet->getPosition().x,
+			closest_asteroid->getPosition().y - m_bullet->getPosition().y};
 		
-		float angle = std::atan2(distance_to_asteroid.x, distance_to_asteroid.y * -1.0f);
-		float angle_degrees = angle * (180.0f / 3.1415f);
-		float angle_diff = angle_distance(angle_degrees, bullet->getRotation());
-		float max_distance = 100000; //1000 pixels, squared
-		float min_distance = 10000; //100 pixels, squared
-		float distance = (distance_to_asteroid.x * distance_to_asteroid.x) + (distance_to_asteroid.y * distance_to_asteroid.y);
-		float speed = std::max(1.0f, std::min(max_distance / distance, (max_distance / min_distance) * 0.1f));
+		const float angle = std::atan2(m_distance_to_asteroid.x, m_distance_to_asteroid.y * -1.0f);
+		const float angle_degrees = angle * (180.0f / 3.1415f);
+		float angle_diff = angle_distance(angle_degrees, m_bullet->getRotation());
+		const float max_distance = 100000; //1000 pixels, squared
+		const float min_distance = 10000; //100 pixels, squared
+		const float distance = (m_distance_to_asteroid.x * m_distance_to_asteroid.x) + (m_distance_to_asteroid.y * m_distance_to_asteroid.y);
+		const float speed = std::max(1.0f, std::min(max_distance / distance, (max_distance / min_distance) * 0.1f));
 		angle_diff += (((std::rand() % 1000) / 100.0f) - 1.0f) * 10.0f;
-		bullet->setRotation(bullet->getRotation() + (angle_diff * speed * dt));
+		m_bullet->setRotation(m_bullet->getRotation() + (angle_diff * speed * dt));
 	}
 	
-	velocity.x = 1 * degToVector(bullet->getRotation()).x * speed;
-	velocity.y = 1 * degToVector(bullet->getRotation()).y * speed;
-	bullet->setPosition(
-		bullet->getPosition().x + velocity.x * dt, 
-		bullet->getPosition().y + velocity.y * dt);
+	m_velocity.x = 1 * degToVector(m_bullet->getRotation()).x * m_speed;
+	m_velocity.y = 1 * degToVector(m_bullet->getRotation()).y * m_speed;
+	m_bullet->setPosition(
+		m_bullet->getPosition().x + m_velocity.x * dt, 
+		m_bullet->getPosition().y + m_velocity.y * dt);
 
-	if (bullet->getPosition().x + (bullet_tex->getWidth() / 2) <= 0)
+	if (m_bullet->getPosition().x + static_cast<float>(m_bullet_tex->getWidth() / 2) <= 0)
 	{
-		warp_count++;
-		bullet->setPosition(custom_data->window->getWidth(), bullet->getPosition().y);
+		m_warp_count++;
+		m_bullet->setPosition(static_cast<float>(m_custom_data->window->getWidth()), m_bullet->getPosition().y);
 	}
-	else if (bullet->getPosition().x - (bullet_tex->getWidth() / 2) >= custom_data->window->getWidth())
+	else if (m_bullet->getPosition().x - static_cast<float>(m_bullet_tex->getWidth() / 2) >= static_cast<float>(m_custom_data->window->getWidth()))
 	{
-		warp_count++;
-		bullet->setPosition(0, bullet->getPosition().y);
+		m_warp_count++;
+		m_bullet->setPosition(0, m_bullet->getPosition().y);
 	}
-	else if (bullet->getPosition().y + (bullet_tex->getHeight() / 2) <= 0)
+	else if (m_bullet->getPosition().y + static_cast<float>(m_bullet_tex->getHeight() / 2) <= 0)
 	{
-		warp_count++;
-		bullet->setPosition(bullet->getPosition().x, custom_data->window->getHeight());
+		m_warp_count++;
+		m_bullet->setPosition(m_bullet->getPosition().x, static_cast<float>(m_custom_data->window->getHeight()));
 	}
-	else if (bullet->getPosition().y - (bullet_tex->getHeight() / 2) >= custom_data->window->getHeight())
+	else if (m_bullet->getPosition().y - static_cast<float>(m_bullet_tex->getHeight() / 2) >= static_cast<float>(m_custom_data->window->getHeight()))
 	{
-		warp_count++;
-		bullet->setPosition(bullet->getPosition().x, 0);
-	}
-
-	if (warp_count >= 2)
-	{
-		alive = false;
+		m_warp_count++;
+		m_bullet->setPosition(m_bullet->getPosition().x, 0);
 	}
 
-	if (!alive)
+	if (m_warp_count >= 2)
 	{
-		custom_data->scenetree->deleteEntity(info.ID);
+		m_alive = false;
+	}
+
+	if (!m_alive)
+	{
+		m_custom_data->scenetree->deleteEntity(info.ID);
 	}
 }
 
 void Bullet::draw(enki::Renderer* renderer)
 {
-	renderer->queue(bullet.get());
+	renderer->queue(m_bullet.get());
 }
 
 void Bullet::serializeOnConnection(enki::Packet& p)
 {
 	serializeOnTick(p);
-	p << bullet->getColour().r << bullet->getColour().g << bullet->getColour().b << bullet->getColour().a;
+	p << m_bullet->getColour().r << m_bullet->getColour().g << m_bullet->getColour().b << m_bullet->getColour().a;
 }
 
 void Bullet::deserializeOnConnection(enki::Packet& p)
@@ -180,75 +178,75 @@ void Bullet::deserializeOnConnection(enki::Packet& p)
 	deserializeOnTick(p);
 	enki::Colour c;
 	p >> c.r >> c.g >> c.b >> c.a;
-	bullet->setColour(c);
+	m_bullet->setColour(c);
 }
 
 void Bullet::serializeOnTick(enki::Packet& p)
 {
-	p.writeCompressedFloat(bullet->getPosition().x, 0, 1280, 0.01f);
-	p.writeCompressedFloat(bullet->getPosition().y, 0, 720, 0.01f);
-	p.writeCompressedFloat(bullet->getRotation(), 0, 360, 0.01f);
+	p.writeCompressedFloat(m_bullet->getPosition().x, 0, 1280, 0.01f);
+	p.writeCompressedFloat(m_bullet->getPosition().y, 0, 720, 0.01f);
+	p.writeCompressedFloat(m_bullet->getRotation(), 0, 360, 0.01f);
 }
 
 void Bullet::deserializeOnTick(enki::Packet& p)
 {
 	float x = p.readCompressedFloat(0, 1280, 0.01f);
 	float y = p.readCompressedFloat(0, 720, 0.01f);
-	bullet->setPosition(x, y);
-	bullet->setRotation(p.readCompressedFloat(0, 360, 0.01f));
+	m_bullet->setPosition(x, y);
+	m_bullet->setRotation(p.readCompressedFloat(0, 360, 0.01f));
 }
 
 std::vector<std::pair<std::string, std::string>> Bullet::serializeToStrings() const
 {
 	return {
-		{"Position", fmt::format("{{{}, {}}}", bullet->getPosition().x, bullet->getPosition().y)},
-		{"Velocity", fmt::format("{{{}, {}}}", velocity.x, velocity.y)},
-		{"Rotation", std::to_string(bullet->getRotation())},
-		{"Speed", std::to_string(speed)},
-		{"Alive", alive ? "true" : "false"},
-		{"Warp Count", std::to_string(warp_count)},
-		{"Find Asteroid Timer", std::to_string(find_asteroid_timer.getElapsedTime())},
-		{"Find Asteroid Delay", std::to_string(find_asteroid_delay)},
-		{"Closest Asteroid", enki::prettyID(closest_asteroid_id)},
-		{"Closest Asteroid Distance", fmt::format("{{{}, {}}}", distance_to_asteroid.x, distance_to_asteroid.y)},
+		{"Position", fmt::format("{{{}, {}}}", m_bullet->getPosition().x, m_bullet->getPosition().y)},
+		{"Velocity", fmt::format("{{{}, {}}}", m_velocity.x, m_velocity.y)},
+		{"Rotation", std::to_string(m_bullet->getRotation())},
+		{"Speed", std::to_string(m_speed)},
+		{"Alive", m_alive ? "true" : "false"},
+		{"Warp Count", std::to_string(m_warp_count)},
+		{"Find Asteroid Timer", std::to_string(m_find_asteroid_timer.getElapsedTime())},
+		{"Find Asteroid Delay", std::to_string(m_find_asteroid_delay)},
+		{"Closest Asteroid", enki::prettyID(m_closest_asteroid_id)},
+		{"Closest Asteroid Distance", fmt::format("{{{}, {}}}", m_distance_to_asteroid.x, m_distance_to_asteroid.y)},
 	};
 }
 
 bool Bullet::isAlive() const
 {
-	return alive;
+	return m_alive;
 }
 
 enki::Vector2 Bullet::getPosition() const
 {
-	return bullet->getPosition();
+	return m_bullet->getPosition();
 }
 
 float Bullet::getRotation() const
 {
-	return bullet->getRotation();
+	return m_bullet->getRotation();
 }
 
 enki::Colour Bullet::getColour() const
 {
-	return bullet->getColour();
+	return m_bullet->getColour();
 }
 
 unsigned int Bullet::getWarpCount() const
 {
-	return warp_count;
+	return m_warp_count;
 }
 
 void Bullet::handleCollision()
 {
-	if (!custom_data->network_manager->isServer())
+	if (!m_custom_data->network_manager->isServer())
 	{
 		return;
 	}
 
-	if (alive)
+	if (m_alive)
 	{
-		alive = false;
-		custom_data->scenetree->deleteEntity(info.ID);
+		m_alive = false;
+		m_custom_data->scenetree->deleteEntity(info.ID);
 	}
 }

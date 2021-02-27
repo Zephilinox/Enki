@@ -142,19 +142,19 @@ void Player::update(float dt)
 		ship->getPosition().y + velocity.y * dt
 	);
 
-	if (ship->getPosition().x + (ship_tex->getWidth() / 2) <= 0)
+	if (ship->getPosition().x + (ship_tex->getWidth() / 2) <= 0.0f)
 	{
-		ship->setPosition(custom_data->window->getWidth(), ship->getPosition().y);
+		ship->setPosition(static_cast<float>(custom_data->window->getWidth()), ship->getPosition().y);
 	}
-	else if (ship->getPosition().x - (ship_tex->getWidth() / 2) >= custom_data->window->getWidth())
+	else if (ship->getPosition().x - static_cast<float>(ship_tex->getWidth() / 2) >= static_cast<float>(custom_data->window->getWidth()))
 	{
 		ship->setPosition(0, ship->getPosition().y);
 	}
-	else if (ship->getPosition().y + (ship_tex->getHeight() / 2) <= 0)
+	else if (ship->getPosition().y + static_cast<float>(ship_tex->getHeight() / 2) <= 0.0f)
 	{
-		ship->setPosition(ship->getPosition().x, custom_data->window->getHeight());
+		ship->setPosition(ship->getPosition().x, static_cast<float>(custom_data->window->getHeight()));
 	}
-	else if (ship->getPosition().y - (ship_tex->getHeight() / 2) >= custom_data->window->getHeight())
+	else if (ship->getPosition().y - static_cast<float>(ship_tex->getHeight() / 2) >= static_cast<float>(custom_data->window->getHeight()))
 	{
 		ship->setPosition(ship->getPosition().x, 0);
 	}

@@ -91,12 +91,12 @@ public:
 
 	[[nodiscard]] const std::vector<EntityID>& getRootEntitiesIDs() const
 	{
-		return entitiesParentless;
+		return m_entities_parentless;
 	}
 
 	[[nodiscard]] std::size_t getEntityCount() const
 	{
-		return entities[Local].size() + entities[Networked].size();
+		return m_entities[Local].size() + m_entities[Networked].size();
 	}
 
 	void forEachEntity(std::function<void(const Entity&)> function);
@@ -209,40 +209,40 @@ private:
 	
 	//////////////////
 
-	std::shared_ptr<spdlog::logger> console;
+	std::shared_ptr<spdlog::logger> m_console;
 
-	const unsigned int Local = 1;
-	const unsigned int Networked = 0;
+	static constexpr unsigned int Local = 1;
+	static constexpr unsigned int Networked = 0;
 
-	std::array<std::vector<VersionEntityPair>, 2> entities;
-	std::array<std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>>, 2> entities_free_indices;
+	std::array<std::vector<VersionEntityPair>, 2> m_entities;
+	std::array<std::priority_queue<std::uint32_t, std::vector<std::uint32_t>, std::greater<>>, 2> m_entities_free_indices;
 
-	std::map<EntityType, BuilderFunction> registeredTypes;
-	std::map<EntityType, std::vector<EntityChildCreationInfo>> registeredChildCreationInfo;
+	std::map<EntityType, BuilderFunction> m_registered_types;
+	std::map<EntityType, std::vector<EntityChildCreationInfo>> m_registered_child_creation_info;
 
-	std::vector<EntityID> entitiesParentless;
+	std::vector<EntityID> m_entities_parentless;
 
 	//Networking
-	NetworkManager* network_manager;
-	ManagedConnection mc1;
-	ManagedConnection mc2;
-	ManagedConnection mc3;
+	NetworkManager* m_network_manager;
+	ManagedConnection m_mc1;
+	ManagedConnection m_mc2;
+	ManagedConnection m_mc3;
 
-	bool network_ready = false;
-	std::uint32_t total_network_ticks = 0;
+	bool m_network_ready = false;
+	std::uint32_t m_total_network_ticks = 0;
 };
 
 template <typename T>
 bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCreationInfo> children)
 {
-	registeredTypes[type] = [](EntityInfo info) -> std::unique_ptr<Entity> {
+	m_registered_types[type] = [](EntityInfo info) -> std::unique_ptr<Entity> {
 		return std::make_unique<T>(std::move(info));
 	};
 
 	const bool valid = registerChildren(type, std::move(children));
 	if (!valid)
 	{
-		registeredTypes[type] = {};
+		m_registered_types[type] = {};
 		return false;
 	}
 
@@ -252,14 +252,14 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 template <typename T, typename... Args>
 bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCreationInfo> children, Args... args)
 {
-	registeredTypes[type] = [args...](EntityInfo info) -> std::unique_ptr<Entity> {
+	m_registered_types[type] = [args...](EntityInfo info) -> std::unique_ptr<Entity> {
 		return std::make_unique<T>(std::move(info), args...);
 	};
 
 	const bool valid = registerChildren(type, std::move(children));
 	if (!valid)
 	{
-		registeredTypes[type] = {};
+		m_registered_types[type] = {};
 		return false;
 	}
 
@@ -269,13 +269,13 @@ bool Scenetree::registerEntity(const EntityType type, std::vector<EntityChildCre
 template <typename T>
 T* Scenetree::findEntityByType(HashedID type) const
 {
-	for (const auto& [version, entity] : entities[Local])
+	for (const auto& [version, entity] : m_entities[Local])
 	{
 		if (entity && entity->info.type == type)
 			return static_cast<T*>(entity.get());
 	}
 
-	for (const auto& [version, entity] : entities[Networked])
+	for (const auto& [version, entity] : m_entities[Networked])
 	{
 		if (entity && entity->info.type == type)
 			return static_cast<T*>(entity.get());
@@ -287,13 +287,13 @@ T* Scenetree::findEntityByType(HashedID type) const
 template <typename T>
 T* Scenetree::findEntityByName(const std::string& name) const
 {
-	for (const auto& [version, entity] : entities[Local])
+	for (const auto& [version, entity] : m_entities[Local])
 	{
 		if (entity && entity->info.name == name)
 			return static_cast<T*>(entity.get());
 	}
 
-	for (const auto& [version, entity] : entities[Networked])
+	for (const auto& [version, entity] : m_entities[Networked])
 	{
 		if (entity && entity->info.name == name)
 			return static_cast<T*>(entity.get());
@@ -305,13 +305,13 @@ T* Scenetree::findEntityByName(const std::string& name) const
 template <typename T>
 T* Scenetree::findEntityByPredicate(const std::function<bool(const Entity&)>& predicate) const
 {
-	for (const auto& [version, entity] : entities[Local])
+	for (const auto& [version, entity] : m_entities[Local])
 	{
 		if (entity && predicate(*entity))
 			return static_cast<T*>(entity.get());
 	}
 
-	for (const auto& [version, entity] : entities[Networked])
+	for (const auto& [version, entity] : m_entities[Networked])
 	{
 		if (entity && predicate(*entity))
 			return static_cast<T*>(entity.get());
@@ -325,13 +325,13 @@ std::vector<T*> Scenetree::findEntitiesByType(HashedID type) const
 {
 	std::vector<T*> ents;
 
-	for (const auto& [version, entity] : entities[Local])
+	for (const auto& [version, entity] : m_entities[Local])
 	{
 		if (entity && entity->info.type == type)
 			ents.push_back(static_cast<T*>(entity.get()));
 	}
 
-	for (const auto& [version, entity] : entities[Networked])
+	for (const auto& [version, entity] : m_entities[Networked])
 	{
 		if (entity && entity->info.type == type)
 			ents.push_back(static_cast<T*>(entity.get()));
@@ -350,24 +350,24 @@ Entity* Scenetree::_findEntity(EntityID ID) const
 	const auto version = static_cast<std::uint32_t>(ID >> 31);
 	const auto index = static_cast<std::uint32_t>(ID & 0x0000'0000'7FFF'FFFFLL) - 1;
 
-	if (index >= entities[local].size())
+	if (index >= m_entities[local].size())
 	{
-		spdlog::get("Enki")->warn("tag {}. Entity {} has an index of {} which is beyond {}, the number of existing entities", tag, prettyID(ID), index, entities[local].size());
+		spdlog::get("Enki")->warn("tag {}. Entity {} has an index of {} which is beyond {}, the number of existing entities", tag, prettyID(ID), index, m_entities[local].size());
 		return nullptr;
 	}
 
-	if (entities[local][index].version != version)
+	if (m_entities[local][index].version != version)
 	{
 		//todo: should we warn users when we fail to find an entity because of a different version?
 		//tag 1 is internal find entity calls, e.g. as a result of calling scenetree->update(), so it ensures children/parent ids are valid
 		if constexpr (tag == 1)
 		{
-			spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), entities[local][index].version, version);
+			spdlog::get("Enki")->warn("tag {}. Entity {} found with version {}, but expected version {}", tag, prettyID(ID), m_entities[local][index].version, version);
 		}
 		return nullptr;
 	}
 
-	return entities[local][index].entity.get();
+	return m_entities[local][index].entity.get();
 }
 
 inline void printTree(Scenetree* tree, EntityID root = 0, const int depth = 0)

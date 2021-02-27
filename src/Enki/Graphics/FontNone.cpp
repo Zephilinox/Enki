@@ -9,7 +9,7 @@ FontNone::FontNone()
 	
 }
 
-bool FontNone::loadFromFile(const std::string& file)
+bool FontNone::loadFromFile(const std::string&)
 {
 	return true;
 }
