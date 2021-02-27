@@ -279,7 +279,7 @@ void Game::update(float dt)
 		int port = custom_data.network_manager->server_port;
 		ImGui::InputInt("Port", &port);
 		//todo: check port fits uint16
-		custom_data.network_manager->server_port = port;
+		custom_data.network_manager->server_port = static_cast<std::uint16_t>(port);
 		
 		ImGui::End();
 	}

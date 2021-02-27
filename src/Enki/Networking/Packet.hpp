@@ -449,9 +449,9 @@ bool Packet::canDeserialize()
 	//Use list intialization to fill array of n size
 	//with the size of each arg through parameter pack expansion
 	constexpr std::array<std::size_t, sizeof...(Args)> sizes = {sizeof(Args)...};
-	int size = std::accumulate(sizes.begin(), sizes.end(), 0);
+	auto size = std::accumulate(sizes.begin(), sizes.end(), std::size_t{0});
 
-	if (m_bytes_read + size > bytes.size())
+	if (m_bytes_read + static_cast<int>(size) > bytes.size())
 	{
 		return false;
 	}

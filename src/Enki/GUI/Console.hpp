@@ -2,7 +2,7 @@
 
 //SELF
 #include "Enki/Entity.hpp"
-#include "IMGUI/imgui.h"
+#include <Enki/GUI/IMGUI/imgui.h> //todo: move out
 
 namespace enki
 {

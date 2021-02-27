@@ -426,7 +426,7 @@ void Console::update(float)
 				if (data->EventKey == ImGuiKey_UpArrow)
 				{
 					if (console->history_index < 0)
-						console->history_index = console->history.size() - 1;
+						console->history_index = static_cast<int>(console->history.size()) - 1;
 					else if (console->history_index > 0)
 						console->history_index--;
 				}
@@ -435,7 +435,7 @@ void Console::update(float)
 					if (console->history_index >= 0)
 					{
 						console->history_index++;
-						if (console->history_index > console->history.size() - 1)
+						if (console->history_index > static_cast<int>(console->history.size()) - 1)
 							console->history_index = -1;
 					}
 				}
@@ -444,7 +444,7 @@ void Console::update(float)
 				{
 					std::string history_str;
 					if (console->history_index >= 0
-						&& console->history_index < console->history.size())
+						&& console->history_index < static_cast<int>(console->history.size()))
 					{
 						history_str = console->history[console->history_index];
 					}

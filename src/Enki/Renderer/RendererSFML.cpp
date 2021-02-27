@@ -54,7 +54,7 @@ void RendererSFML::queue(const Sprite* sprite)
 	sfml->draw(sf_sprite->getRawSprite());
 }
 
-void RendererSFML::queue(const Text* text)
+void RendererSFML::queue(const Text*)
 {
 	
 }
